@@ -61,7 +61,6 @@ export default function Login() {
           </button>
 
           <p className="muted center">Pas encore de compte élève ? <Link to="/register">Créer un compte</Link></p>
-          <p className="hint">Démo admin : admin@example.com / password</p>
         </form>
       </div>
     </section>
