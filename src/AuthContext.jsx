@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import api from './api.js';
+import api, { getCsrfCookie } from './api.js';
 
 const AuthContext = createContext(null);
 
@@ -30,6 +30,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function login(payload) {
+    // ✅ Récupérer le CSRF cookie avant l'authentification
+    await getCsrfCookie();
+    
     const response = await api.post('/auth/login', payload);
     localStorage.setItem('qcm_token', response.data.token);
     setUser(response.data.user);
@@ -37,6 +40,9 @@ export function AuthProvider({ children }) {
   }
 
   async function register(payload) {
+    // ✅ Récupérer le CSRF cookie avant l'enregistrement
+    await getCsrfCookie();
+    
     const response = await api.post('/auth/register', payload);
     localStorage.setItem('qcm_token', response.data.token);
     setUser(response.data.user);
