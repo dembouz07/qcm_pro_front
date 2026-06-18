@@ -52,23 +52,37 @@ export default function ImportQuiz() {
           {error && <div className="alert error span-2">{error}</div>}
 
           <label>
-            Titre du QCM
-            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Peut aussi venir du JSON" />
+            Titre du QCM *
+            <input 
+              value={form.title} 
+              onChange={(e) => setForm({ ...form, title: e.target.value })} 
+              placeholder="Titre obligatoire" 
+              required 
+            />
           </label>
 
           <label>
-            Classe concernée
-            <select value={form.school_class_id} onChange={(e) => setForm({ ...form, school_class_id: e.target.value })}>
+            Classe concernée *
+            <select 
+              value={form.school_class_id} 
+              onChange={(e) => setForm({ ...form, school_class_id: e.target.value })}
+              required
+            >
               <option value="">Choisir une classe</option>
               {classes.map((classe) => <option key={classe.id} value={classe.id}>{classe.name}</option>)}
             </select>
           </label>
 
           <label>
-            Ouverture précise
+            Ouverture précise *
             <div className="input-icon plain">
               <FontAwesomeIcon icon={faCalendarDays} />
-              <input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} />
+              <input 
+                type="datetime-local" 
+                value={form.starts_at} 
+                onChange={(e) => setForm({ ...form, starts_at: e.target.value })} 
+                required 
+              />
             </div>
           </label>
 
