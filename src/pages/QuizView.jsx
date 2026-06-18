@@ -1,0 +1,181 @@
+import { useEffect, useState } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faEye, 
+  faEdit, 
+  faTrash,
+  faArrowLeft,
+  faCheckCircle,
+  faTimesCircle,
+  faCalendarDays,
+  faLayerGroup,
+  faUsers
+} from '@fortawesome/free-solid-svg-icons';
+import api, { getApiError } from '../api.js';
+import { formatDateTime } from '../utils/time.js';
+
+export default function QuizView() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [quiz, setQuiz] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    loadQuiz();
+  }, [id]);
+
+  async function loadQuiz() {
+    try {
+      const response = await api.get(`/admin/quizzes/${id}`);
+      setQuiz(response.data);
+    } catch (err) {
+      setError(getApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function deleteQuiz() {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce QCM ?')) return;
+    
+    try {
+      await api.delete(`/admin/quizzes/${id}`);
+      navigate('/admin/quizzes');
+    } catch (err) {
+      alert(getApiError(err));
+    }
+  }
+
+  function getStatusBadge(quiz) {
+    const now = new Date();
+    const startsAt = new Date(quiz.starts_at);
+    const endsAt = quiz.ends_at ? new Date(quiz.ends_at) : null;
+
+    if (!quiz.is_published) {
+      return <span className="badge badge-draft">Brouillon</span>;
+    }
+    
+    if (now < startsAt) {
+      return <span className="badge badge-locked">Verrouillé</span>;
+    }
+    
+    if (endsAt && now > endsAt) {
+      return <span className="badge badge-closed">Fermé</span>;
+    }
+    
+    return <span className="badge badge-open">Ouvert</span>;
+  }
+
+  if (loading) return <div className="page"><div className="panel">Chargement...</div></div>;
+  if (error) return <div className="page"><div className="alert error">{error}</div></div>;
+  if (!quiz) return <div className="page"><div className="panel">QCM introuvable</div></div>;
+
+  return (
+    <div className="page">
+      <div className="page-header">
+        <div>
+          <Link to="/admin/quizzes" className="back-link">
+            <FontAwesomeIcon icon={faArrowLeft} /> Retour à la liste
+          </Link>
+          <span className="eyebrow"><FontAwesomeIcon icon={faEye} /> Visualisation</span>
+          <h1>{quiz.title}</h1>
+          <p>{quiz.description || 'Aucune description'}</p>
+        </div>
+        <div className="header-actions">
+          <Link to={`/admin/quizzes/${quiz.id}/edit`} className="primary-btn">
+            <FontAwesomeIcon icon={faEdit} /> Modifier
+          </Link>
+          <button onClick={deleteQuiz} className="danger-btn">
+            <FontAwesomeIcon icon={faTrash} /> Supprimer
+          </button>
+        </div>
+      </div>
+
+      <div className="grid-two">
+        <div className="panel">
+          <h2>Informations</h2>
+          <div className="info-grid">
+            <div className="info-item">
+              <span className="info-label">Statut</span>
+              {getStatusBadge(quiz)}
+            </div>
+            <div className="info-item">
+              <span className="info-label"><FontAwesomeIcon icon={faLayerGroup} /> Classe</span>
+              <span>{quiz.school_class?.name || '-'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label"><FontAwesomeIcon icon={faCalendarDays} /> Ouverture</span>
+              <span>{formatDateTime(quiz.starts_at)}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label"><FontAwesomeIcon icon={faCalendarDays} /> Fermeture</span>
+              <span>{quiz.ends_at ? formatDateTime(quiz.ends_at) : 'Pas de limite'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Questions</span>
+              <span>{quiz.questions?.length || 0}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label"><FontAwesomeIcon icon={faUsers} /> Soumissions</span>
+              <span>{quiz.submissions_count || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="panel">
+          <h2>Statistiques</h2>
+          <div className="stats-list">
+            <div className="stat-item">
+              <span>Total de points</span>
+              <strong>{quiz.questions?.reduce((sum, q) => sum + (q.points || 1), 0) || 0}</strong>
+            </div>
+            <div className="stat-item">
+              <span>Total de choix</span>
+              <strong>{quiz.questions?.reduce((sum, q) => sum + (q.choices?.length || 0), 0) || 0}</strong>
+            </div>
+            <div className="stat-item">
+              <span>Publié</span>
+              <strong>{quiz.is_published ? 'Oui' : 'Non'}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <h2>Questions ({quiz.questions?.length || 0})</h2>
+        {!quiz.questions || quiz.questions.length === 0 ? (
+          <div className="empty">Aucune question</div>
+        ) : (
+          <div className="questions-view">
+            {quiz.questions.map((question, index) => (
+              <div key={index} className="question-view-card">
+                <div className="question-view-header">
+                  <h3>Question {index + 1}</h3>
+                  <span className="badge">{question.points || 1} point{question.points > 1 ? 's' : ''}</span>
+                </div>
+                <p className="question-text">{question.body}</p>
+                <div className="choices-view">
+                  {question.choices?.map((choice, cIndex) => (
+                    <div 
+                      key={cIndex} 
+                      className={`choice-view ${choice.is_correct ? 'correct' : ''}`}
+                    >
+                      {choice.is_correct ? (
+                        <FontAwesomeIcon icon={faCheckCircle} className="correct-icon" />
+                      ) : (
+                        <FontAwesomeIcon icon={faTimesCircle} className="incorrect-icon" />
+                      )}
+                      <span>{choice.body}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
