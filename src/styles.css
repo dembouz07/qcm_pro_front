@@ -852,3 +852,26 @@ tr:last-child td { border-bottom: 0; }
     align-self: center;
   }
 }
+
+.alert.warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: rgba(91, 92, 246, 0.10);
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.timer.urgent {
+  background: rgba(239, 68, 68, 0.11);
+  color: #991b1b;
+}

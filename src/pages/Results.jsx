@@ -132,7 +132,7 @@ export default function Results() {
                 <div className="answer-item" key={answer.id}>
                   <strong>{answer.question?.body}</strong>
                   <span className={answer.is_correct ? 'ok' : 'bad'}>
-                    <FontAwesomeIcon icon={answer.is_correct ? faCheck : faXmark} /> {answer.choice?.body}
+                    <FontAwesomeIcon icon={answer.is_correct ? faCheck : faXmark} /> {answer.choice?.body || 'Non répondu'}
                   </span>
                 </div>
               ))}

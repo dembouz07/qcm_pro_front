@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarCheck, faCheckCircle, faClock, faLock, faPenToSquare, faTrophy } from '@fortawesome/free-solid-svg-icons';
-import api from '../api.js';
+import { faCalendarCheck, faCheckCircle, faClock, faLock, faPenToSquare, faRotateRight, faTrophy, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import api, { getApiError } from '../api.js';
+import { useAuth } from '../AuthContext.jsx';
 import { countdownTo, formatDateTime } from '../utils/time.js';
 
 function statusInfo(status) {
@@ -15,61 +16,67 @@ function statusInfo(status) {
 }
 
 export default function StudentDashboard() {
+  const { user } = useAuth();
   const [quizzes, setQuizzes] = useState([]);
+  const [studentClass, setStudentClass] = useState(user?.school_class || null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const [, setTick] = useState(0);
 
-  // Fonction pour charger les quizzes
-  const loadQuizzes = () => {
-    api.get('/student/quizzes').then((response) => {
-      const data = Array.isArray(response.data) ? response.data : response.data.data || [];
-      setQuizzes(data);
-    });
-  };
+  async function loadQuizzes() {
+    try {
+      setError('');
+      const response = await api.get('/student/quizzes');
+      const payload = response.data;
+      const data = Array.isArray(payload) ? payload : payload.data || [];
 
-  // Charger les quizzes au montage
+      setQuizzes(data);
+      if (!Array.isArray(payload) && payload.student_class) {
+        setStudentClass(payload.student_class);
+      }
+
+      if (!Array.isArray(payload) && payload.message && data.length === 0) {
+        setError(payload.message);
+      }
+    } catch (err) {
+      setQuizzes([]);
+      setError(getApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     loadQuizzes();
   }, []);
 
-  // Timer pour le countdown ET vérification des statuts (1 seconde)
   useEffect(() => {
     const interval = setInterval(() => {
       setTick((value) => value + 1);
-      
-      // Vérifier si un quiz doit changer de statut
-      const now = new Date();
-      let shouldReload = false;
 
-      quizzes.forEach((quiz) => {
+      const now = new Date();
+      const shouldReload = quizzes.some((quiz) => {
         if (quiz.status === 'locked') {
-          const startsAt = new Date(quiz.starts_at);
-          // Si le quiz devrait être ouvert maintenant (avec marge de 2 secondes)
-          if (now >= new Date(startsAt.getTime() - 2000)) {
-            shouldReload = true;
-          }
-        } else if (quiz.status === 'open' && quiz.ends_at) {
-          const endsAt = new Date(quiz.ends_at);
-          // Si le quiz devrait être fermé maintenant
-          if (now >= endsAt) {
-            shouldReload = true;
-          }
+          return now >= new Date(new Date(quiz.starts_at).getTime() - 2000);
         }
+
+        if (quiz.status === 'open' && quiz.ends_at) {
+          return now >= new Date(quiz.ends_at);
+        }
+
+        return false;
       });
 
-      // Recharger les données si un statut a changé
       if (shouldReload) {
         loadQuizzes();
       }
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, [quizzes]);
 
-  // Recharger les données toutes les 30 secondes en backup
   useEffect(() => {
-    const interval = setInterval(() => {
-      loadQuizzes();
-    }, 30000);
+    const interval = setInterval(loadQuizzes, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -85,9 +92,21 @@ export default function StudentDashboard() {
         <div>
           <span className="eyebrow"><FontAwesomeIcon icon={faCalendarCheck} /> Espace élève</span>
           <h1>Mes QCM</h1>
-          <p>Vous voyez uniquement les QCM programmés pour votre classe.</p>
+          <p>
+            Vous voyez uniquement les QCM programmés pour votre classe
+            {studentClass?.name ? ` : ${studentClass.name}.` : '.'}
+          </p>
         </div>
+        <button className="secondary-btn" type="button" onClick={loadQuizzes} disabled={loading}>
+          <FontAwesomeIcon icon={faRotateRight} /> Actualiser
+        </button>
       </div>
+
+      {error && (
+        <div className="alert warning">
+          <FontAwesomeIcon icon={faTriangleExclamation} /> {error}
+        </div>
+      )}
 
       <section className="stats-grid">
         <div className="stat-card"><FontAwesomeIcon icon={faPenToSquare} /><span>{stats.open}</span><small>Disponibles</small></div>
@@ -96,13 +115,21 @@ export default function StudentDashboard() {
       </section>
 
       <section className="quiz-grid">
-        {quizzes.length === 0 ? <div className="empty panel">Aucun QCM pour votre classe.</div> : quizzes.map((quiz) => {
+        {loading ? (
+          <div className="empty panel">Chargement des QCM...</div>
+        ) : quizzes.length === 0 ? (
+          <div className="empty panel">
+            Aucun QCM pour votre classe.
+            <br />Vérifiez que l'administrateur a choisi exactement votre classe et que le QCM est publié.
+          </div>
+        ) : quizzes.map((quiz) => {
           const info = statusInfo(quiz.status);
           return (
             <article className="quiz-card" key={quiz.id}>
               <div className={`status-pill ${info.className}`}><FontAwesomeIcon icon={info.icon} /> {info.label}</div>
               <h2>{quiz.title}</h2>
               <p>{quiz.description || 'Aucune description.'}</p>
+              {quiz.school_class?.name && <div className="meta-line">Classe : {quiz.school_class.name}</div>}
               <div className="meta-line"><FontAwesomeIcon icon={faCalendarCheck} /> Ouverture : {formatDateTime(quiz.starts_at)}</div>
               {quiz.ends_at && <div className="meta-line"><FontAwesomeIcon icon={faClock} /> Fermeture : {formatDateTime(quiz.ends_at)}</div>}
               <div className="meta-line">{quiz.questions_count} questions</div>

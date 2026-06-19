@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faCircleQuestion, faClock, faPaperPlane, faRotateLeft, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
@@ -12,6 +12,15 @@ export default function TakeQuiz() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [autoSubmitting, setAutoSubmitting] = useState(false);
+
+  const answersRef = useRef({});
+  const submittingRef = useRef(false);
+  const autoSubmittedRef = useRef(false);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
 
   useEffect(() => {
     api.get(`/student/quizzes/${id}`)
@@ -19,122 +28,107 @@ export default function TakeQuiz() {
       .catch((err) => setError(getApiError(err)));
   }, [id]);
 
-  // Timer pour le compte à rebours et soumission automatique
   useEffect(() => {
     if (!quiz || !quiz.ends_at || result) return;
 
-    const interval = setInterval(() => {
-      const now = new Date();
-      const endsAt = new Date(quiz.ends_at);
-      const diff = endsAt - now;
+    function updateTimer() {
+      const endsAt = new Date(quiz.ends_at).getTime();
+      const diff = endsAt - Date.now();
 
       if (diff <= 0) {
-        // Temps écoulé - soumettre automatiquement
-        clearInterval(interval);
         setTimeLeft(0);
-        
-        // Soumettre immédiatement sans attendre
-        if (!result && !loading) {
-          handleAutoSubmit();
+
+        if (!autoSubmittedRef.current) {
+          autoSubmittedRef.current = true;
+          submitAnswers({ auto: true });
         }
-      } else {
-        // Calculer le temps restant
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        
-        setTimeLeft({ hours, minutes, seconds, total: diff });
+
+        return;
       }
-    }, 1000);
+
+      setTimeLeft({
+        hours: Math.floor(diff / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+        total: diff
+      });
+    }
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [quiz, result, loading]);
+  }, [quiz, result]);
 
-  // Fonction de soumission automatique
-  async function handleAutoSubmit() {
-    if (loading || result) return;
-    
+  function buildPayload(auto = false) {
+    const currentAnswers = auto ? answersRef.current : answers;
+
+    return {
+      auto_submit: auto,
+      answers: Object.entries(currentAnswers).map(([questionId, choiceId]) => ({
+        question_id: Number(questionId),
+        choice_id: Number(choiceId)
+      }))
+    };
+  }
+
+  async function submitAnswers({ auto = false } = {}) {
+    if (submittingRef.current || result || !quiz) return;
+
+    if (!auto) {
+      const answeredCount = Object.keys(answers).length;
+      const totalQuestions = quiz.questions.length;
+
+      if (answeredCount !== totalQuestions) {
+        setError(`Veuillez répondre à toutes les questions avant d'envoyer. (${answeredCount}/${totalQuestions} répondues)`);
+        return;
+      }
+    }
+
+    submittingRef.current = true;
     setLoading(true);
+    setError('');
+
+    if (auto) {
+      setAutoSubmitting(true);
+    }
 
     try {
-      // Pour la soumission automatique, créer des réponses pour toutes les questions
-      // Les questions non répondues auront le premier choix (qui sera faux)
-      const allAnswers = quiz.questions.map(question => {
-        const answeredChoiceId = answers[question.id];
-        // Si pas de réponse, prendre le premier choix (sera compté comme faux)
-        const choiceId = answeredChoiceId || question.choices[0]?.id;
-        
-        return {
-          question_id: question.id,
-          choice_id: choiceId
-        };
-      });
-
-      const payload = { answers: allAnswers };
-      const response = await api.post(`/student/quizzes/${id}/submit`, payload);
+      const response = await api.post(`/student/quizzes/${id}/submit`, buildPayload(auto));
       setResult(response.data.submission);
     } catch (err) {
       setError(getApiError(err));
     } finally {
+      submittingRef.current = false;
       setLoading(false);
+      setAutoSubmitting(false);
     }
   }
 
   function choose(questionId, choiceId) {
-    setAnswers({ ...answers, [questionId]: choiceId });
+    if (timeLeft === 0 || loading || autoSubmitting) return;
+    setAnswers((current) => ({ ...current, [questionId]: choiceId }));
   }
 
-  async function submit(event) {
+  function submit(event) {
     event.preventDefault();
-    
-    // Éviter les soumissions multiples
-    if (loading || result) return;
-    
-    setError('');
-
-    const answeredCount = Object.keys(answers).length;
-    const totalQuestions = quiz.questions.length;
-
-    // Vérifier que toutes les questions sont répondues
-    if (answeredCount !== totalQuestions) {
-      setError(`Veuillez répondre à toutes les questions avant d'envoyer. (${answeredCount}/${totalQuestions} répondues)`);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const payload = {
-        answers: Object.entries(answers).map(([questionId, choiceId]) => ({
-          question_id: Number(questionId),
-          choice_id: Number(choiceId)
-        }))
-      };
-      const response = await api.post(`/student/quizzes/${id}/submit`, payload);
-      setResult(response.data.submission);
-    } catch (err) {
-      setError(getApiError(err));
-    } finally {
-      setLoading(false);
-    }
+    submitAnswers({ auto: false });
   }
 
-  // Formater le temps restant
   function formatTimeLeft() {
+    if (!quiz?.ends_at) return <div className="timer"><FontAwesomeIcon icon={faClock} /> Pas d'heure de fermeture définie</div>;
     if (!timeLeft) return null;
-    if (timeLeft === 0) return 'Temps écoulé !';
-    
+    if (timeLeft === 0) return <div className="timer urgent"><FontAwesomeIcon icon={faClock} /> Temps écoulé</div>;
+
     const { hours, minutes, seconds, total } = timeLeft;
-    
-    // Afficher en rouge si moins de 5 minutes
     const isUrgent = total < 5 * 60 * 1000;
     const className = isUrgent ? 'timer urgent' : 'timer';
-    
+
     let text = '';
     if (hours > 0) text += `${hours}h `;
     if (minutes > 0 || hours > 0) text += `${minutes}m `;
     text += `${seconds}s`;
-    
+
     return <div className={className}><FontAwesomeIcon icon={faClock} /> Temps restant : {text}</div>;
   }
 
@@ -181,8 +175,8 @@ export default function TakeQuiz() {
 
       <form onSubmit={submit} className="test-form">
         {error && <div className="alert error">{error}</div>}
-        {timeLeft === 0 && <div className="alert warning"><FontAwesomeIcon icon={faClock} /> Temps écoulé ! Soumission automatique en cours...</div>}
-        
+        {autoSubmitting && <div className="alert warning"><FontAwesomeIcon icon={faClock} /> Temps écoulé : soumission automatique en cours...</div>}
+
         {quiz.questions.map((question, index) => (
           <article className="question-card test-question" key={question.id}>
             <h2>Question {index + 1}</h2>
@@ -190,7 +184,13 @@ export default function TakeQuiz() {
             <div className="choice-options">
               {question.choices.map((choice) => (
                 <label className={`answer-option ${answers[question.id] === choice.id ? 'selected' : ''}`} key={choice.id}>
-                  <input type="radio" name={`question-${question.id}`} checked={answers[question.id] === choice.id} onChange={() => choose(question.id, choice.id)} disabled={timeLeft === 0 || loading} />
+                  <input
+                    type="radio"
+                    name={`question-${question.id}`}
+                    checked={answers[question.id] === choice.id}
+                    onChange={() => choose(question.id, choice.id)}
+                    disabled={timeLeft === 0 || loading || autoSubmitting}
+                  />
                   <span>{choice.body}</span>
                 </label>
               ))}
@@ -200,7 +200,7 @@ export default function TakeQuiz() {
 
         <div className="builder-actions sticky-actions">
           <Link className="secondary-btn" to="/student">Annuler</Link>
-          <button className="primary-btn" disabled={loading || timeLeft === 0}>
+          <button className="primary-btn" disabled={loading || timeLeft === 0 || autoSubmitting}>
             <FontAwesomeIcon icon={faPaperPlane} /> {loading ? 'Envoi...' : 'Envoyer mes réponses'}
           </button>
         </div>
