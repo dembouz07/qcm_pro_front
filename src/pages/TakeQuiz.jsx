@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faCircleQuestion, faClock, faPaperPlane, faRotateLeft, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
@@ -12,7 +12,6 @@ export default function TakeQuiz() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
-  const submitRef = useRef(null);
 
   useEffect(() => {
     api.get(`/student/quizzes/${id}`)
@@ -31,11 +30,12 @@ export default function TakeQuiz() {
 
       if (diff <= 0) {
         // Temps écoulé - soumettre automatiquement
-        setTimeLeft(0);
         clearInterval(interval);
+        setTimeLeft(0);
         
-        if (submitRef.current && !result) {
-          submitRef.current();
+        // Soumettre immédiatement sans attendre
+        if (!result && !loading) {
+          handleAutoSubmit();
         }
       } else {
         // Calculer le temps restant
@@ -48,14 +48,36 @@ export default function TakeQuiz() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [quiz, result]);
+  }, [quiz, result, loading]);
+
+  // Fonction de soumission automatique
+  async function handleAutoSubmit() {
+    if (loading || result) return;
+    
+    setLoading(true);
+
+    try {
+      const payload = {
+        answers: Object.entries(answers).map(([questionId, choiceId]) => ({
+          question_id: Number(questionId),
+          choice_id: Number(choiceId)
+        }))
+      };
+      const response = await api.post(`/student/quizzes/${id}/submit`, payload);
+      setResult(response.data.submission);
+    } catch (err) {
+      setError(getApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function choose(questionId, choiceId) {
     setAnswers({ ...answers, [questionId]: choiceId });
   }
 
   async function submit(event) {
-    if (event) event.preventDefault();
+    event.preventDefault();
     
     // Éviter les soumissions multiples
     if (loading || result) return;
@@ -65,8 +87,8 @@ export default function TakeQuiz() {
     const answeredCount = Object.keys(answers).length;
     const totalQuestions = quiz.questions.length;
 
-    // Si soumission manuelle, vérifier que toutes les questions sont répondues
-    if (answeredCount !== totalQuestions && event) {
+    // Vérifier que toutes les questions sont répondues
+    if (answeredCount !== totalQuestions) {
       setError(`Veuillez répondre à toutes les questions avant d'envoyer. (${answeredCount}/${totalQuestions} répondues)`);
       return;
     }
@@ -88,11 +110,6 @@ export default function TakeQuiz() {
       setLoading(false);
     }
   }
-
-  // Référence pour la soumission automatique
-  useEffect(() => {
-    submitRef.current = submit;
-  });
 
   // Formater le temps restant
   function formatTimeLeft() {
