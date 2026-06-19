@@ -31,46 +31,47 @@ export default function StudentDashboard() {
     loadQuizzes();
   }, []);
 
-  // Timer pour le countdown (1 seconde)
+  // Timer pour le countdown ET vérification des statuts (1 seconde)
   useEffect(() => {
-    const interval = setInterval(() => setTick((value) => value + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const interval = setInterval(() => {
+      setTick((value) => value + 1);
+      
+      // Vérifier si un quiz doit changer de statut
+      const now = new Date();
+      let shouldReload = false;
 
-  // Recharger les données toutes les 30 secondes pour mettre à jour les statuts
+      quizzes.forEach((quiz) => {
+        if (quiz.status === 'locked') {
+          const startsAt = new Date(quiz.starts_at);
+          // Si le quiz devrait être ouvert maintenant (avec marge de 2 secondes)
+          if (now >= new Date(startsAt.getTime() - 2000)) {
+            shouldReload = true;
+          }
+        } else if (quiz.status === 'open' && quiz.ends_at) {
+          const endsAt = new Date(quiz.ends_at);
+          // Si le quiz devrait être fermé maintenant
+          if (now >= endsAt) {
+            shouldReload = true;
+          }
+        }
+      });
+
+      // Recharger les données si un statut a changé
+      if (shouldReload) {
+        loadQuizzes();
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [quizzes]);
+
+  // Recharger les données toutes les 30 secondes en backup
   useEffect(() => {
     const interval = setInterval(() => {
       loadQuizzes();
-    }, 30000); // 30 secondes
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  // Vérifier et mettre à jour les statuts localement chaque seconde
-  useEffect(() => {
-    const now = new Date();
-    let shouldReload = false;
-
-    quizzes.forEach((quiz) => {
-      if (quiz.status === 'locked') {
-        const startsAt = new Date(quiz.starts_at);
-        // Si le quiz devrait être ouvert maintenant
-        if (now >= startsAt) {
-          shouldReload = true;
-        }
-      } else if (quiz.status === 'open' && quiz.ends_at) {
-        const endsAt = new Date(quiz.ends_at);
-        // Si le quiz devrait être fermé maintenant
-        if (now >= endsAt) {
-          shouldReload = true;
-        }
-      }
-    });
-
-    // Recharger les données si un statut a changé
-    if (shouldReload) {
-      loadQuizzes();
-    }
-  }, [quizzes]);
 
   const stats = useMemo(() => ({
     open: quizzes.filter((quiz) => quiz.status === 'open').length,
