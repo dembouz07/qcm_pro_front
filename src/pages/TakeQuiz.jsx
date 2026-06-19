@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faCircleQuestion, faPaperPlane, faRotateLeft, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faCircleQuestion, faClock, faPaperPlane, faRotateLeft, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 
 export default function TakeQuiz() {
@@ -11,6 +11,8 @@ export default function TakeQuiz() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const submitRef = useRef(null);
 
   useEffect(() => {
     api.get(`/student/quizzes/${id}`)
@@ -18,16 +20,54 @@ export default function TakeQuiz() {
       .catch((err) => setError(getApiError(err)));
   }, [id]);
 
+  // Timer pour le compte à rebours et soumission automatique
+  useEffect(() => {
+    if (!quiz || !quiz.ends_at || result) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const endsAt = new Date(quiz.ends_at);
+      const diff = endsAt - now;
+
+      if (diff <= 0) {
+        // Temps écoulé - soumettre automatiquement
+        setTimeLeft(0);
+        clearInterval(interval);
+        
+        if (submitRef.current && !result) {
+          submitRef.current();
+        }
+      } else {
+        // Calculer le temps restant
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        setTimeLeft({ hours, minutes, seconds, total: diff });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [quiz, result]);
+
   function choose(questionId, choiceId) {
     setAnswers({ ...answers, [questionId]: choiceId });
   }
 
   async function submit(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
+    
+    // Éviter les soumissions multiples
+    if (loading || result) return;
+    
     setError('');
 
-    if (Object.keys(answers).length !== quiz.questions.length) {
-      setError('Veuillez répondre à toutes les questions avant d’envoyer.');
+    const answeredCount = Object.keys(answers).length;
+    const totalQuestions = quiz.questions.length;
+
+    // Si soumission manuelle, vérifier que toutes les questions sont répondues
+    if (answeredCount !== totalQuestions && event) {
+      setError(`Veuillez répondre à toutes les questions avant d'envoyer. (${answeredCount}/${totalQuestions} répondues)`);
       return;
     }
 
@@ -47,6 +87,30 @@ export default function TakeQuiz() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Référence pour la soumission automatique
+  useEffect(() => {
+    submitRef.current = submit;
+  });
+
+  // Formater le temps restant
+  function formatTimeLeft() {
+    if (!timeLeft) return null;
+    if (timeLeft === 0) return 'Temps écoulé !';
+    
+    const { hours, minutes, seconds, total } = timeLeft;
+    
+    // Afficher en rouge si moins de 5 minutes
+    const isUrgent = total < 5 * 60 * 1000;
+    const className = isUrgent ? 'timer urgent' : 'timer';
+    
+    let text = '';
+    if (hours > 0) text += `${hours}h `;
+    if (minutes > 0 || hours > 0) text += `${minutes}m `;
+    text += `${seconds}s`;
+    
+    return <div className={className}><FontAwesomeIcon icon={faClock} /> Temps restant : {text}</div>;
   }
 
   if (error && !quiz) {
@@ -86,11 +150,14 @@ export default function TakeQuiz() {
           <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Test en cours</span>
           <h1>{quiz.title}</h1>
           <p>{quiz.description}</p>
+          {formatTimeLeft()}
         </div>
       </div>
 
       <form onSubmit={submit} className="test-form">
         {error && <div className="alert error">{error}</div>}
+        {timeLeft === 0 && <div className="alert warning"><FontAwesomeIcon icon={faClock} /> Temps écoulé ! Soumission automatique en cours...</div>}
+        
         {quiz.questions.map((question, index) => (
           <article className="question-card test-question" key={question.id}>
             <h2>Question {index + 1}</h2>
@@ -98,7 +165,7 @@ export default function TakeQuiz() {
             <div className="choice-options">
               {question.choices.map((choice) => (
                 <label className={`answer-option ${answers[question.id] === choice.id ? 'selected' : ''}`} key={choice.id}>
-                  <input type="radio" name={`question-${question.id}`} checked={answers[question.id] === choice.id} onChange={() => choose(question.id, choice.id)} />
+                  <input type="radio" name={`question-${question.id}`} checked={answers[question.id] === choice.id} onChange={() => choose(question.id, choice.id)} disabled={timeLeft === 0 || loading} />
                   <span>{choice.body}</span>
                 </label>
               ))}
@@ -108,7 +175,7 @@ export default function TakeQuiz() {
 
         <div className="builder-actions sticky-actions">
           <Link className="secondary-btn" to="/student">Annuler</Link>
-          <button className="primary-btn" disabled={loading}>
+          <button className="primary-btn" disabled={loading || timeLeft === 0}>
             <FontAwesomeIcon icon={faPaperPlane} /> {loading ? 'Envoi...' : 'Envoyer mes réponses'}
           </button>
         </div>
