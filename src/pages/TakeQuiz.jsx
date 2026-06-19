@@ -57,12 +57,20 @@ export default function TakeQuiz() {
     setLoading(true);
 
     try {
-      const payload = {
-        answers: Object.entries(answers).map(([questionId, choiceId]) => ({
-          question_id: Number(questionId),
-          choice_id: Number(choiceId)
-        }))
-      };
+      // Pour la soumission automatique, créer des réponses pour toutes les questions
+      // Les questions non répondues auront le premier choix (qui sera faux)
+      const allAnswers = quiz.questions.map(question => {
+        const answeredChoiceId = answers[question.id];
+        // Si pas de réponse, prendre le premier choix (sera compté comme faux)
+        const choiceId = answeredChoiceId || question.choices[0]?.id;
+        
+        return {
+          question_id: question.id,
+          choice_id: choiceId
+        };
+      });
+
+      const payload = { answers: allAnswers };
       const response = await api.post(`/student/quizzes/${id}/submit`, payload);
       setResult(response.data.submission);
     } catch (err) {
