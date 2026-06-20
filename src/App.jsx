@@ -4,6 +4,7 @@ import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import ClassManager from './pages/ClassManager.jsx';
 import QuizForm from './pages/QuizForm.jsx';
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/" element={<HomeRedirect />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/classes" element={<ProtectedRoute role="admin"><ClassManager /></ProtectedRoute>} />

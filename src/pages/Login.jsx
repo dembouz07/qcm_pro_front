@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock, faRightToBracket, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faLock, faRightToBracket, faWandMagicSparkles, faKey, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../AuthContext.jsx';
 import { getApiError } from '../api.js';
 
@@ -60,7 +60,14 @@ export default function Login() {
             <FontAwesomeIcon icon={faRightToBracket} /> {loading ? 'Connexion...' : 'Se connecter'}
           </button>
 
-          <p className="muted center">Pas encore de compte élève ? <Link to="/register">Créer un compte</Link></p>
+          <div className="auth-links">
+            <Link className="auth-link" to="/forgot-password">
+              <FontAwesomeIcon icon={faKey} /> Mot de passe oublié ?
+            </Link>
+            <Link className="auth-link accent" to="/register">
+              <FontAwesomeIcon icon={faUserPlus} /> Créer un compte
+            </Link>
+          </div>
         </form>
       </div>
     </section>
