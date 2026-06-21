@@ -76,9 +76,18 @@ export default function StudentDashboard() {
   }, [quizzes]);
 
   useEffect(() => {
-    const interval = setInterval(loadQuizzes, 30000);
+    const interval = setInterval(loadQuizzes, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const sortedQuizzes = useMemo(() => {
+    return [...quizzes].sort((a, b) => {
+      const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (bDate !== aDate) return bDate - aDate;
+      return (b.id || 0) - (a.id || 0);
+    });
+  }, [quizzes]);
 
   const stats = useMemo(() => ({
     open: quizzes.filter((quiz) => quiz.status === 'open').length,
@@ -122,7 +131,7 @@ export default function StudentDashboard() {
             Aucun QCM pour votre classe.
             <br />Vérifiez que l'administrateur a choisi exactement votre classe et que le QCM est publié.
           </div>
-        ) : quizzes.map((quiz) => {
+        ) : sortedQuizzes.map((quiz) => {
           const info = statusInfo(quiz.status);
           return (
             <article className="quiz-card" key={quiz.id}>
