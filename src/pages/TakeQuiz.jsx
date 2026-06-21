@@ -177,26 +177,31 @@ export default function TakeQuiz() {
         {error && <div className="alert error">{error}</div>}
         {autoSubmitting && <div className="alert warning"><FontAwesomeIcon icon={faClock} /> Temps écoulé : soumission automatique en cours...</div>}
 
-        {quiz.questions.map((question, index) => (
-          <article className="question-card test-question" key={question.id}>
-            <h2>Question {index + 1}</h2>
-            <p className="question-text">{question.body}</p>
-            <div className="choice-options">
-              {question.choices.map((choice) => (
-                <label className={`answer-option ${answers[question.id] === choice.id ? 'selected' : ''}`} key={choice.id}>
-                  <input
-                    type="radio"
-                    name={`question-${question.id}`}
-                    checked={answers[question.id] === choice.id}
-                    onChange={() => choose(question.id, choice.id)}
-                    disabled={timeLeft === 0 || loading || autoSubmitting}
-                  />
-                  <span>{choice.body}</span>
-                </label>
-              ))}
-            </div>
-          </article>
-        ))}
+        {quiz.questions.map((question, index) => {
+          const longestChoice = question.choices.reduce((max, c) => Math.max(max, (c.body || '').length), 0);
+          const useSingleColumn = question.choices.length < 2 || longestChoice > 60;
+
+          return (
+            <article className="question-card test-question" key={question.id}>
+              <h2>Question {index + 1}</h2>
+              <p className="question-text">{question.body}</p>
+              <div className={`choice-options ${useSingleColumn ? 'single-column' : ''}`}>
+                {question.choices.map((choice) => (
+                  <label className={`answer-option ${answers[question.id] === choice.id ? 'selected' : ''}`} key={choice.id}>
+                    <input
+                      type="radio"
+                      name={`question-${question.id}`}
+                      checked={answers[question.id] === choice.id}
+                      onChange={() => choose(question.id, choice.id)}
+                      disabled={timeLeft === 0 || loading || autoSubmitting}
+                    />
+                    <span>{choice.body}</span>
+                  </label>
+                ))}
+              </div>
+            </article>
+          );
+        })}
 
         <div className="builder-actions sticky-actions">
           <Link className="secondary-btn" to="/student">Annuler</Link>

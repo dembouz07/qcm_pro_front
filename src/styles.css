@@ -348,8 +348,9 @@ tr:last-child td { border-bottom: 0; }
 .test-form { display: flex; flex-direction: column; gap: 18px; }
 .test-question h2 { margin: 0 0 12px; color: var(--primary); }
 .question-text { font-size: 1.12rem; font-weight: 800; }
-.choice-options { display: flex; flex-direction: column; gap: 12px; }
-.answer-option { flex-direction: row; align-items: center; padding: 16px; border: 1px solid var(--border); border-radius: 18px; background: rgba(255, 255, 255, 0.68); transition: 0.18s ease; cursor: pointer; }
+.choice-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.choice-options.single-column { grid-template-columns: 1fr; }
+.answer-option { display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 16px; border: 1px solid var(--border); border-radius: 18px; background: rgba(255, 255, 255, 0.68); transition: 0.18s ease; cursor: pointer; }
 .answer-option input { width: auto; accent-color: var(--primary); }
 .answer-option.selected { border-color: rgba(91, 92, 246, 0.55); background: rgba(91, 92, 246, 0.08); }
 .sticky-actions { position: sticky; bottom: 20px; padding: 14px; background: rgba(255, 255, 255, 0.72); border: 1px solid var(--border); border-radius: 22px; backdrop-filter: blur(18px); }
@@ -384,6 +385,7 @@ tr:last-child td { border-bottom: 0; }
   .main-content { padding: 16px; }
   .choice-row { grid-template-columns: 42px 1fr; }
   .choice-row .icon-btn { grid-column: 2; justify-self: end; }
+  .choice-options { grid-template-columns: 1fr; }
   th, td { padding: 12px 8px; }
 }
 
