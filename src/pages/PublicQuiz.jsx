@@ -232,34 +232,56 @@ export default function PublicQuiz() {
   if (step === 'info') {
     return (
       <div className="page narrow public-quiz-page">
-        <div className="panel center">
+        <div className="panel center public-hero">
           <div className="big-icon"><FontAwesomeIcon icon={faBookOpen} /></div>
           <h1>{quizInfo.title}</h1>
-          {quizInfo.description && <p>{quizInfo.description}</p>}
-          <div className="meta-line"><FontAwesomeIcon icon={faClock} /> Ouverture : {formatDateTime(quizInfo.starts_at)}</div>
-          {quizInfo.ends_at && <div className="meta-line"><FontAwesomeIcon icon={faClock} /> Fermeture : {formatDateTime(quizInfo.ends_at)}</div>}
-          <div className="meta-line">{quizInfo.questions_count} questions</div>
+          {quizInfo.description && <p className="quiz-description">{quizInfo.description}</p>}
+          
+          <div className="quiz-meta-grid">
+            <div className="quiz-meta-item">
+              <FontAwesomeIcon icon={faClock} />
+              <div>
+                <small>Ouverture</small>
+                <strong>{formatDateTime(quizInfo.starts_at)}</strong>
+              </div>
+            </div>
+            {quizInfo.ends_at && (
+              <div className="quiz-meta-item">
+                <FontAwesomeIcon icon={faClock} />
+                <div>
+                  <small>Fermeture</small>
+                  <strong>{formatDateTime(quizInfo.ends_at)}</strong>
+                </div>
+              </div>
+            )}
+            <div className="quiz-meta-item">
+              <FontAwesomeIcon icon={faCircleQuestion} />
+              <div>
+                <small>Questions</small>
+                <strong>{quizInfo.questions_count}</strong>
+              </div>
+            </div>
+          </div>
+
+          {quizInfo.is_closed && (
+            <div className="public-status closed">
+              <FontAwesomeIcon icon={faTriangleExclamation} />
+              <span>Ce QCM est fermé.</span>
+            </div>
+          )}
+
+          {quizInfo.is_locked && (
+            <div className="public-status locked">
+              <FontAwesomeIcon icon={faLock} />
+              <span>Ouvre dans {countdownTo(quizInfo.starts_at)}</span>
+            </div>
+          )}
         </div>
 
-        {quizInfo.is_closed && (
-          <div className="alert warning">
-            <FontAwesomeIcon icon={faTriangleExclamation} /> Ce QCM est fermé.
-          </div>
-        )}
-
-        {quizInfo.is_locked && (
-          <div className="panel center">
-            <div className="big-icon"><FontAwesomeIcon icon={faLock} /></div>
-            <h2>QCM pas encore ouvert</h2>
-            <p>Ce QCM sera disponible le <strong>{formatDateTime(quizInfo.starts_at)}</strong></p>
-            <div className="countdown"><FontAwesomeIcon icon={faLock} /> Ouvre dans {countdownTo(quizInfo.starts_at)}</div>
-          </div>
-        )}
-
         {quizInfo.is_open && (
-          <form className="panel form-grid" onSubmit={handleStart}>
-            <h2><FontAwesomeIcon icon={faUser} /> Identification</h2>
-            <p>Renseignez vos informations pour accéder au QCM.</p>
+          <form className="panel form-grid public-form" onSubmit={handleStart}>
+            <h2 className="span-2"><FontAwesomeIcon icon={faUser} /> Identification</h2>
+            <p className="span-2 muted">Renseignez vos informations pour accéder au QCM.</p>
 
             {error && <div className="alert error span-2">{error}</div>}
 
