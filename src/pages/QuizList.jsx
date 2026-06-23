@@ -89,7 +89,7 @@ export default function QuizList() {
             <FontAwesomeIcon icon={faCirclePlus} /> Nouveau QCM
           </Link>
           <Link className="secondary-btn" to="/admin/quizzes/import">
-            <FontAwesomeIcon icon={faFileImport} /> Importer
+            <FontAwesomeIcon icon={faFileImport} /> Créer QCM
           </Link>
         </div>
       </div>

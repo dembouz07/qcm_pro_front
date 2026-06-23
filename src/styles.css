@@ -931,3 +931,60 @@ tr:last-child td { border-bottom: 0; }
   background: rgba(239, 68, 68, 0.11);
   color: #991b1b;
 }
+
+
+/* ─── Share Link Box ────────────────────────────────── */
+.share-link-box {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.share-link-input {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.share-link-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+/* ─── Public Quiz Page ──────────────────────────────── */
+.public-quiz-page .panel.center {
+  text-align: center;
+  padding: 2.5rem;
+}
+
+.public-quiz-page .big-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+.public-quiz-page .big-icon.warning {
+  color: var(--warning);
+}
+
+.public-quiz-page .big-icon.success {
+  color: var(--accent);
+}
+
+.public-quiz-page .countdown {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--warning);
+}
+
+.public-quiz-page .meta-line {
+  margin: 0.3rem 0;
+  color: var(--muted);
+}

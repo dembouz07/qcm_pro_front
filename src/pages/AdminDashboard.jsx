@@ -46,7 +46,7 @@ export default function AdminDashboard() {
         </div>
         <div className="header-actions">
           <Link className="primary-btn" to="/admin/quizzes/new"><FontAwesomeIcon icon={faCirclePlus} /> Nouveau QCM</Link>
-          <Link className="secondary-btn" to="/admin/quizzes/import"><FontAwesomeIcon icon={faFileImport} /> Importer</Link>
+          <Link className="secondary-btn" to="/admin/quizzes/import"><FontAwesomeIcon icon={faFileImport} /> Créer QCM</Link>
         </div>
       </div>
 

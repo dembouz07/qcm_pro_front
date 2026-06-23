@@ -47,7 +47,7 @@ export default function Navbar() {
               <NavLink to="/admin/classes"><FontAwesomeIcon icon={faLayerGroup} /> Classes</NavLink>
               <NavLink to="/admin/quizzes"><FontAwesomeIcon icon={faLayerGroup} /> Gérer les QCM</NavLink>
               <NavLink to="/admin/quizzes/new"><FontAwesomeIcon icon={faCirclePlus} /> Nouveau QCM</NavLink>
-              <NavLink to="/admin/quizzes/import"><FontAwesomeIcon icon={faFileImport} /> Importer QCM</NavLink>
+              <NavLink to="/admin/quizzes/import"><FontAwesomeIcon icon={faFileImport} /> Créer QCM</NavLink>
               <NavLink to="/admin/results"><FontAwesomeIcon icon={faChartLine} /> Notes</NavLink>
             </>
           ) : (

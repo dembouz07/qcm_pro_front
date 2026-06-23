@@ -10,7 +10,9 @@ import {
   faTimesCircle,
   faCalendarDays,
   faLayerGroup,
-  faUsers
+  faUsers,
+  faLink,
+  faCopy
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { formatDateTime } from '../utils/time.js';
@@ -21,6 +23,7 @@ export default function QuizView() {
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadQuiz();
@@ -46,6 +49,20 @@ export default function QuizView() {
     } catch (err) {
       alert(getApiError(err));
     }
+  }
+
+  function getPublicLink() {
+    if (!quiz?.access_token) return null;
+    return `${window.location.origin}/quiz/${quiz.access_token}`;
+  }
+
+  function copyLink() {
+    const link = getPublicLink();
+    if (!link) return;
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   }
 
   function getStatusBadge(quiz) {
@@ -125,7 +142,26 @@ export default function QuizView() {
         </div>
 
         <div className="panel">
-          <h2>Statistiques</h2>
+          <h2><FontAwesomeIcon icon={faLink} /> Lien de partage</h2>
+          <p>Envoyez ce lien aux participants pour qu'ils accèdent au QCM :</p>
+          {getPublicLink() ? (
+            <div className="share-link-box">
+              <input 
+                type="text" 
+                value={getPublicLink()} 
+                readOnly 
+                className="share-link-input"
+                onClick={(e) => e.target.select()}
+              />
+              <button type="button" className="primary-btn" onClick={copyLink}>
+                <FontAwesomeIcon icon={faCopy} /> {copied ? 'Copié !' : 'Copier'}
+              </button>
+            </div>
+          ) : (
+            <p className="muted">Aucun lien disponible.</p>
+          )}
+
+          <h2 style={{marginTop: '1.5rem'}}>Statistiques</h2>
           <div className="stats-list">
             <div className="stat-item">
               <span>Total de points</span>
