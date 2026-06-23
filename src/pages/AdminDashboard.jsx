@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine, faClock, faCirclePlus, faFileImport, faLayerGroup, faMedal, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faChartLine, faClock, faCirclePlus, faFileImport, faLayerGroup, faMedal } from '@fortawesome/free-solid-svg-icons';
 import api from '../api.js';
 import { formatDateTime } from '../utils/time.js';
 
@@ -53,7 +53,6 @@ export default function AdminDashboard() {
       <section className="stats-grid">
         <div className="stat-card"><FontAwesomeIcon icon={faLayerGroup} /><span>{classes.length}</span><small>Classes</small></div>
         <div className="stat-card"><FontAwesomeIcon icon={faCirclePlus} /><span>{quizzes.length}</span><small>QCM créés</small></div>
-        <div className="stat-card"><FontAwesomeIcon icon={faUsers} /><span>{classes.reduce((sum, item) => sum + (item.users_count || 0), 0)}</span><small>Élèves</small></div>
         <div className="stat-card"><FontAwesomeIcon icon={faMedal} /><span>{results.length}</span><small>Notes reçues</small></div>
       </section>
 
