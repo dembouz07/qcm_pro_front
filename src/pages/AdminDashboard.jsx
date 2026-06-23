@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine, faClock, faCirclePlus, faFileImport, faLayerGroup, faMedal } from '@fortawesome/free-solid-svg-icons';
+import { faChartLine, faClock, faCirclePlus, faFileImport, faLayerGroup, faMedal, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
 import api from '../api.js';
 import { formatDateTime } from '../utils/time.js';
 
@@ -47,6 +47,7 @@ export default function AdminDashboard() {
         <div className="header-actions">
           <Link className="primary-btn" to="/admin/quizzes/new"><FontAwesomeIcon icon={faCirclePlus} /> Nouveau QCM</Link>
           <Link className="secondary-btn" to="/admin/quizzes/import"><FontAwesomeIcon icon={faFileImport} /> Créer QCM</Link>
+          <Link className="secondary-btn" to="/admin/quizzes/progressive"><FontAwesomeIcon icon={faDiagramProject} /> QCM progressif</Link>
         </div>
       </div>
 

@@ -35,6 +35,10 @@ export default function PublicQuiz() {
   const [timeLeft, setTimeLeft] = useState(null);
   const [autoSubmitting, setAutoSubmitting] = useState(false);
 
+  // Diagnostic progressif
+  const [currentStage, setCurrentStage] = useState(0);
+  const [progressiveResult, setProgressiveResult] = useState(null);
+
   const answersRef = useRef({});
   const submittingRef = useRef(false);
   const autoSubmittedRef = useRef(false);
@@ -115,10 +119,84 @@ export default function PublicQuiz() {
         referentiel
       });
       setQuiz(response.data);
-      setStep('quiz');
+      if (response.data.type === 'progressive') {
+        setCurrentStage(0);
+        setStep('progressive');
+      } else {
+        setStep('quiz');
+      }
     } catch (err) {
       setError(getApiError(err));
     } finally {
+      setLoading(false);
+    }
+  }
+
+  // ─── Diagnostic progressif ─────────────────────────────
+  function countOuiForStage(stage) {
+    return stage.questions.reduce((count, question) => {
+      const chosenId = answers[question.id];
+      const ouiChoice = question.choices.find((c) => c.is_oui);
+      return count + (ouiChoice && chosenId === ouiChoice.id ? 1 : 0);
+    }, 0);
+  }
+
+  function stageFullyAnswered(stage) {
+    return stage.questions.every((q) => answers[q.id] !== undefined);
+  }
+
+  async function handleNextStage() {
+    const stages = quiz.stages || [];
+    const stage = stages[currentStage];
+
+    if (!stageFullyAnswered(stage)) {
+      setError('Veuillez répondre à toutes les questions de ce stade.');
+      return;
+    }
+
+    setError('');
+    const threshold = quiz.stage_threshold;
+    const score = countOuiForStage(stage);
+    const isLastStage = currentStage >= stages.length - 1;
+
+    // Stade validé (score >= seuil) et il reste des stades → on avance
+    if (score >= threshold && !isLastStage) {
+      setCurrentStage((s) => s + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Sinon : fin du diagnostic, on soumet
+    await submitProgressive();
+  }
+
+  async function submitProgressive() {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setLoading(true);
+    setError('');
+
+    const payload = {
+      nom,
+      prenom,
+      referentiel,
+      answers: Object.entries(answers).map(([questionId, choiceId]) => ({
+        question_id: Number(questionId),
+        choice_id: Number(choiceId)
+      }))
+    };
+
+    try {
+      const response = await api.post(`/public/quiz/${token}/submit`, payload);
+      setProgressiveResult({
+        stade_atteint: response.data.stade_atteint,
+        stage_scores: response.data.stage_scores
+      });
+      setStep('result');
+    } catch (err) {
+      setError(getApiError(err));
+    } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   }
@@ -214,6 +292,32 @@ export default function PublicQuiz() {
   }
 
   // ─── ÉTAPE : Résultat ────────────────────────────────────
+  if (step === 'result' && progressiveResult) {
+    return (
+      <div className="page narrow public-quiz-page">
+        <div className="panel center success-panel">
+          <div className="big-icon success"><FontAwesomeIcon icon={faCheckCircle} /></div>
+          <h1>Diagnostic terminé</h1>
+          <p>Merci <strong>{prenom} {nom}</strong>, vos réponses ont été enregistrées.</p>
+          <div className="stade-result">
+            <small>Stade atteint</small>
+            <div className="final-score">Stade {progressiveResult.stade_atteint}</div>
+          </div>
+          {progressiveResult.stage_scores && (
+            <div className="stage-scores">
+              {Object.entries(progressiveResult.stage_scores).map(([stage, score]) => (
+                <div className="stage-score-item" key={stage}>
+                  <span>Stade {stage}</span>
+                  <strong>{score} Oui</strong>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (step === 'result' && result) {
     return (
       <div className="page narrow public-quiz-page">
@@ -371,6 +475,75 @@ export default function PublicQuiz() {
           <div className="builder-actions sticky-actions">
             <button className="primary-btn" disabled={loading || timeLeft === 0 || autoSubmitting}>
               <FontAwesomeIcon icon={faPaperPlane} /> {loading ? 'Envoi...' : 'Envoyer mes réponses'}
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // ─── ÉTAPE : Diagnostic progressif (par stade) ──────────
+  if (step === 'progressive' && quiz) {
+    const stages = quiz.stages || [];
+    const stage = stages[currentStage];
+    const isLastStage = currentStage >= stages.length - 1;
+
+    return (
+      <div className="page narrow public-quiz-page">
+        <div className="page-header">
+          <div>
+            <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Diagnostic en cours</span>
+            <h1>{quiz.title}</h1>
+            <p className="muted">Participant : {prenom} {nom} · {referentiel}</p>
+          </div>
+        </div>
+
+        <div className="stage-progress">
+          {stages.map((_, i) => (
+            <div
+              key={i}
+              className={`stage-dot ${i === currentStage ? 'active' : ''} ${i < currentStage ? 'done' : ''}`}
+            >
+              {i + 1}
+            </div>
+          ))}
+        </div>
+
+        <div className="stage-banner">
+          <FontAwesomeIcon icon={faLayerGroup} /> Stade {stage.stage} · {stage.questions.length} questions
+        </div>
+
+        <form onSubmit={(e) => { e.preventDefault(); handleNextStage(); }} className="test-form">
+          {error && <div className="alert error">{error}</div>}
+
+          {stage.questions.map((question, index) => (
+            <article className="question-card test-question" key={question.id}>
+              <h2>Question {index + 1}</h2>
+              <p className="question-text">{question.body}</p>
+              <div className="choice-options">
+                {question.choices.map((choice) => (
+                  <label className={`answer-option ${answers[question.id] === choice.id ? 'selected' : ''}`} key={choice.id}>
+                    <input
+                      type="radio"
+                      name={`question-${question.id}`}
+                      checked={answers[question.id] === choice.id}
+                      onChange={() => setAnswers((c) => ({ ...c, [question.id]: choice.id }))}
+                      disabled={loading}
+                    />
+                    <span>{choice.body}</span>
+                  </label>
+                ))}
+              </div>
+            </article>
+          ))}
+
+          <div className="builder-actions sticky-actions">
+            <button className="primary-btn" disabled={loading}>
+              {isLastStage ? (
+                <><FontAwesomeIcon icon={faPaperPlane} /> {loading ? 'Envoi...' : 'Terminer le diagnostic'}</>
+              ) : (
+                <><FontAwesomeIcon icon={faCircleQuestion} /> {loading ? '...' : 'Valider ce stade'}</>
+              )}
             </button>
           </div>
         </form>

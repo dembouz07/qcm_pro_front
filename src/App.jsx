@@ -13,6 +13,7 @@ import QuizView from './pages/QuizView.jsx';
 import QuizEdit from './pages/QuizEdit.jsx';
 import ImportQuiz from './pages/ImportQuiz.jsx';
 import ConvertQuiz from './pages/ConvertQuiz.jsx';
+import ProgressiveQuizForm from './pages/ProgressiveQuizForm.jsx';
 import Results from './pages/Results.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import TakeQuiz from './pages/TakeQuiz.jsx';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/admin/quizzes/:id" element={<ProtectedRoute role="admin"><QuizView /></ProtectedRoute>} />
           <Route path="/admin/quizzes/:id/edit" element={<ProtectedRoute role="admin"><QuizEdit /></ProtectedRoute>} />
           <Route path="/admin/quizzes/import" element={<ProtectedRoute role="admin"><ImportQuiz /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/progressive" element={<ProtectedRoute role="admin"><ProgressiveQuizForm /></ProtectedRoute>} />
           <Route path="/admin/quizzes/convert" element={<ProtectedRoute role="admin"><ConvertQuiz /></ProtectedRoute>} />
           <Route path="/admin/results" element={<ProtectedRoute role="admin"><Results /></ProtectedRoute>} />
 
