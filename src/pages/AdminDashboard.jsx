@@ -76,10 +76,12 @@ export default function AdminDashboard() {
           {results.length === 0 ? <div className="empty">Aucune note reçue.</div> : results.slice(0, 5).map((result) => (
             <div className="list-item" key={result.id}>
               <div>
-                <strong>{result.user?.name}</strong>
+                <strong>{result.user?.name || [result.participant_prenom, result.participant_nom].filter(Boolean).join(' ') || 'Anonyme'}</strong>
                 <small>{result.quiz?.title}</small>
               </div>
-              <span className="score-badge">{result.note_sur_20}/20</span>
+              <span className="score-badge">
+                {result.quiz?.type === 'progressive' ? `Stade ${result.stade_atteint ?? '-'}` : `${result.note_sur_20}/20`}
+              </span>
             </div>
           ))}
         </div>

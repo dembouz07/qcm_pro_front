@@ -11,6 +11,19 @@ export default function Results() {
   const [selectedClass, setSelectedClass] = useState('');
   const [selected, setSelected] = useState(null);
 
+  // Nom du participant : élève connecté OU participant public (nom/prénom)
+  function participantName(result) {
+    if (result.user?.name) return result.user.name;
+    const full = [result.participant_prenom, result.participant_nom].filter(Boolean).join(' ').trim();
+    return full || 'Anonyme';
+  }
+
+  // Référentiel / classe selon le type de participant
+  function participantContext(result) {
+    if (result.participant_referentiel) return result.participant_referentiel;
+    return result.user?.school_class?.name || result.quiz?.school_class?.name || '-';
+  }
+
   // Fonction pour charger les résultats
   const loadResults = () => {
     Promise.all([
@@ -95,8 +108,8 @@ export default function Results() {
           <table>
             <thead>
               <tr>
-                <th>Élève</th>
-                <th>Classe</th>
+                <th>Participant</th>
+                <th>Classe / Référentiel</th>
                 <th>QCM</th>
                 <th>Score</th>
                 <th>Note</th>
@@ -107,11 +120,17 @@ export default function Results() {
             <tbody>
               {results.map((result) => (
                 <tr key={result.id}>
-                  <td>{result.user?.name}</td>
-                  <td>{result.user?.school_class?.name || result.quiz?.school_class?.name}</td>
+                  <td><strong>{participantName(result)}</strong></td>
+                  <td>{participantContext(result)}</td>
                   <td>{result.quiz?.title}</td>
                   <td>{result.score}/{result.total_points}</td>
-                  <td><span className="score-badge"><FontAwesomeIcon icon={faAward} /> {result.note_sur_20}/20</span></td>
+                  <td>
+                    {result.quiz?.type === 'progressive' ? (
+                      <span className="score-badge"><FontAwesomeIcon icon={faAward} /> Stade {result.stade_atteint ?? '-'}</span>
+                    ) : (
+                      <span className="score-badge"><FontAwesomeIcon icon={faAward} /> {result.note_sur_20}/20</span>
+                    )}
+                  </td>
                   <td>{formatDateTime(result.submitted_at)}</td>
                   <td><button className="secondary-btn small" onClick={() => setSelected(result)}><FontAwesomeIcon icon={faEye} /> Détails</button></td>
                 </tr>
@@ -125,8 +144,13 @@ export default function Results() {
         <div className="modal-backdrop" onClick={() => setSelected(null)}>
           <div className="modal" onClick={(event) => event.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelected(null)}>×</button>
-            <h2>{selected.user?.name} — {selected.note_sur_20}/20</h2>
+            <h2>
+              {participantName(selected)} — {selected.quiz?.type === 'progressive'
+                ? `Stade ${selected.stade_atteint ?? '-'}`
+                : `${selected.note_sur_20}/20`}
+            </h2>
             <p className="muted">{selected.quiz?.title} · {formatDateTime(selected.submitted_at)}</p>
+            <p className="muted">{participantContext(selected)}</p>
             <div className="answer-list">
               {selected.answers?.map((answer) => (
                 <div className="answer-item" key={answer.id}>
