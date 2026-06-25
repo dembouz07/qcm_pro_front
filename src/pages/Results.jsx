@@ -8,7 +8,9 @@ export default function Results() {
   const [results, setResults] = useState([]);
   const [allResults, setAllResults] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
+  const [selectedQuiz, setSelectedQuiz] = useState('');
   const [selected, setSelected] = useState(null);
 
   // Nom du participant : élève connecté OU participant public (nom/prénom)
@@ -24,27 +26,32 @@ export default function Results() {
     return result.user?.school_class?.name || result.quiz?.school_class?.name || '-';
   }
 
+  function applyFilters(data, classId, quizId) {
+    let filtered = data;
+    if (classId !== '') {
+      filtered = filtered.filter((result) =>
+        result.user?.school_class?.id === parseInt(classId) ||
+        result.quiz?.school_class_id === parseInt(classId)
+      );
+    }
+    if (quizId !== '') {
+      filtered = filtered.filter((result) => result.quiz?.id === parseInt(quizId));
+    }
+    return filtered;
+  }
+
   // Fonction pour charger les résultats
   const loadResults = () => {
     Promise.all([
       api.get('/admin/results'),
-      api.get('/admin/classes')
-    ]).then(([resultsResponse, classesResponse]) => {
+      api.get('/admin/classes'),
+      api.get('/admin/quizzes')
+    ]).then(([resultsResponse, classesResponse, quizzesResponse]) => {
       const resultsData = resultsResponse.data;
       setAllResults(resultsData);
-      
-      // Appliquer le filtre actuel si un filtre est sélectionné
-      if (selectedClass === '') {
-        setResults(resultsData);
-      } else {
-        const filtered = resultsData.filter(result => 
-          result.user?.school_class?.id === parseInt(selectedClass) ||
-          result.quiz?.school_class_id === parseInt(selectedClass)
-        );
-        setResults(filtered);
-      }
-      
+      setResults(applyFilters(resultsData, selectedClass, selectedQuiz));
       setClasses(classesResponse.data);
+      setQuizzes(quizzesResponse.data);
     });
   };
 
@@ -59,20 +66,16 @@ export default function Results() {
       loadResults();
     }, 30000); // 30 secondes
     return () => clearInterval(interval);
-  }, [selectedClass]);
+  }, [selectedClass, selectedQuiz]);
 
-  function handleFilterChange(classId) {
+  function handleClassFilter(classId) {
     setSelectedClass(classId);
-    
-    if (classId === '') {
-      setResults(allResults);
-    } else {
-      const filtered = allResults.filter(result => 
-        result.user?.school_class?.id === parseInt(classId) ||
-        result.quiz?.school_class_id === parseInt(classId)
-      );
-      setResults(filtered);
-    }
+    setResults(applyFilters(allResults, classId, selectedQuiz));
+  }
+
+  function handleQuizFilter(quizId) {
+    setSelectedQuiz(quizId);
+    setResults(applyFilters(allResults, selectedClass, quizId));
   }
 
   return (
@@ -89,11 +92,20 @@ export default function Results() {
         <div className="filter-group">
           <FontAwesomeIcon icon={faFilter} />
           <label>
-            Filtrer par classe :
-            <select value={selectedClass} onChange={(e) => handleFilterChange(e.target.value)}>
+            Classe :
+            <select value={selectedClass} onChange={(e) => handleClassFilter(e.target.value)}>
               <option value="">Toutes les classes</option>
               {classes.map((classe) => (
                 <option key={classe.id} value={classe.id}>{classe.name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            QCM :
+            <select value={selectedQuiz} onChange={(e) => handleQuizFilter(e.target.value)}>
+              <option value="">Tous les QCM</option>
+              {quizzes.map((quiz) => (
+                <option key={quiz.id} value={quiz.id}>{quiz.title}</option>
               ))}
             </select>
           </label>

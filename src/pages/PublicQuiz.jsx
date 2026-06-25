@@ -16,8 +16,9 @@ import { countdownTo, formatDateTime } from '../utils/time.js';
 
 export default function PublicQuiz() {
   const { token } = useParams();
+  const storageKey = `qcm_public_${token}`;
 
-  // Étapes : 'loading' | 'info' | 'quiz' | 'result' | 'error'
+  // Étapes : 'loading' | 'info' | 'quiz' | 'progressive' | 'result' | 'error'
   const [step, setStep] = useState('loading');
   const [quizInfo, setQuizInfo] = useState(null);
   const [quiz, setQuiz] = useState(null);
@@ -42,6 +43,33 @@ export default function PublicQuiz() {
   const answersRef = useRef({});
   const submittingRef = useRef(false);
   const autoSubmittedRef = useRef(false);
+  const restoredRef = useRef(false);
+
+  // ─── Persistance locale (localStorage) ─────────────────
+  function loadStored() {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function saveStored(patch) {
+    try {
+      const current = loadStored() || {};
+      localStorage.setItem(storageKey, JSON.stringify({ ...current, ...patch }));
+    } catch {
+      // ignore les erreurs de quota / mode privé
+    }
+  }
+
+  // Sauvegarder l'identité et les réponses en cours
+  useEffect(() => {
+    if (step === 'quiz' || step === 'progressive') {
+      saveStored({ nom, prenom, referentiel, answers, currentStage, inProgress: true });
+    }
+  }, [answers, currentStage, step, nom, prenom, referentiel]);
 
   useEffect(() => {
     answersRef.current = answers;
@@ -52,13 +80,64 @@ export default function PublicQuiz() {
     api.get(`/public/quiz/${token}`)
       .then((response) => {
         setQuizInfo(response.data);
-        setStep('info');
+        restoreState(response.data);
       })
       .catch((err) => {
         setError(getApiError(err));
         setStep('error');
       });
   }, [token]);
+
+  // Restaure l'état depuis localStorage (résultat déjà obtenu ou quiz en cours)
+  async function restoreState(info) {
+    if (restoredRef.current) {
+      setStep('info');
+      return;
+    }
+    restoredRef.current = true;
+
+    const stored = loadStored();
+
+    // Déjà soumis : on réaffiche directement le résultat (interdit de refaire)
+    if (stored?.submitted) {
+      setNom(stored.nom || '');
+      setPrenom(stored.prenom || '');
+      setReferentiel(stored.referentiel || '');
+      if (stored.progressiveResult) setProgressiveResult(stored.progressiveResult);
+      if (stored.result) setResult(stored.result);
+      setStep('result');
+      return;
+    }
+
+    // Pré-remplir l'identité si connue
+    if (stored?.nom) setNom(stored.nom);
+    if (stored?.prenom) setPrenom(stored.prenom);
+    if (stored?.referentiel) setReferentiel(stored.referentiel);
+
+    // Reprise d'un quiz en cours (si ouvert et identité connue)
+    if (stored?.inProgress && info.is_open && stored.nom && stored.prenom && stored.referentiel) {
+      try {
+        const response = await api.post(`/public/quiz/${token}/start`, {
+          nom: stored.nom,
+          prenom: stored.prenom,
+          referentiel: stored.referentiel
+        });
+        setQuiz(response.data);
+        setAnswers(stored.answers || {});
+        if (response.data.type === 'progressive') {
+          setCurrentStage(stored.currentStage || 0);
+          setStep('progressive');
+        } else {
+          setStep('quiz');
+        }
+        return;
+      } catch {
+        // si la reprise échoue (ex: déjà soumis côté serveur), on retombe sur l'accueil
+      }
+    }
+
+    setStep('info');
+  }
 
   // Rafraîchir les infos si le quiz est verrouillé (pour le countdown)
   useEffect(() => {
@@ -192,6 +271,17 @@ export default function PublicQuiz() {
         stade_atteint: response.data.stade_atteint,
         stage_scores: response.data.stage_scores
       });
+      saveStored({
+        submitted: true,
+        inProgress: false,
+        nom,
+        prenom,
+        referentiel,
+        progressiveResult: {
+          stade_atteint: response.data.stade_atteint,
+          stage_scores: response.data.stage_scores
+        }
+      });
       setStep('result');
     } catch (err) {
       setError(getApiError(err));
@@ -237,6 +327,14 @@ export default function PublicQuiz() {
       const response = await api.post(`/public/quiz/${token}/submit`, buildPayload(auto));
       setResult(response.data.submission);
       setStep('result');
+      saveStored({
+        submitted: true,
+        inProgress: false,
+        nom,
+        prenom,
+        referentiel,
+        result: response.data.submission
+      });
     } catch (err) {
       setError(getApiError(err));
     } finally {
