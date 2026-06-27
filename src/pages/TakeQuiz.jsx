@@ -28,6 +28,31 @@ export default function TakeQuiz() {
       .catch((err) => setError(getApiError(err)));
   }, [id]);
 
+  // Restaurer la progression sauvegardée localement
+  useEffect(() => {
+    if (!quiz) return;
+    try {
+      const raw = localStorage.getItem(`qcm_progress_${id}`);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved?.answers) setAnswers(saved.answers);
+      }
+    } catch {
+      // ignore
+    }
+  }, [quiz, id]);
+
+  // Sauvegarder la progression à chaque réponse
+  useEffect(() => {
+    if (!quiz || result) return;
+    if (Object.keys(answers).length === 0) return;
+    try {
+      localStorage.setItem(`qcm_progress_${id}`, JSON.stringify({ answers }));
+    } catch {
+      // ignore
+    }
+  }, [answers, quiz, result, id]);
+
   useEffect(() => {
     if (!quiz || !quiz.ends_at || result) return;
 
@@ -96,6 +121,7 @@ export default function TakeQuiz() {
     try {
       const response = await api.post(`/student/quizzes/${id}/submit`, buildPayload(auto));
       setResult(response.data.submission);
+      try { localStorage.removeItem(`qcm_progress_${id}`); } catch { /* ignore */ }
     } catch (err) {
       setError(getApiError(err));
     } finally {
