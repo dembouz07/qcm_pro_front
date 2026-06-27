@@ -52,7 +52,10 @@ export default function Navbar() {
               <NavLink to="/admin/results"><FontAwesomeIcon icon={faChartLine} /> Notes</NavLink>
             </>
           ) : (
-            <NavLink to="/student"><FontAwesomeIcon icon={faBookOpen} /> Mes QCM</NavLink>
+            <>
+              <NavLink to="/student" end><FontAwesomeIcon icon={faBookOpen} /> Mes QCM</NavLink>
+              <NavLink to="/student/notes"><FontAwesomeIcon icon={faChartLine} /> Notes</NavLink>
+            </>
           )}
         </nav>
 
