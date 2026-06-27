@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faUserPlus, faKey, faRightToBracket, faGraduationCap, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { getApiError } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
+import AuthTopbar from '../components/AuthTopbar.jsx';
 
 export default function Register() {
   const { register } = useAuth();
@@ -29,6 +30,7 @@ export default function Register() {
 
   return (
     <section className="auth-page">
+      <AuthTopbar active="register" />
       <div className="auth-card">
         <div className="auth-hero">
           <span><FontAwesomeIcon icon={faGraduationCap} /></span>
