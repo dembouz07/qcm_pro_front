@@ -45,9 +45,7 @@ export default function AdminDashboard() {
           <p>Créez vos QCM, choisissez la classe, programmez l'heure d'accès et suivez les notes.</p>
         </div>
         <div className="header-actions">
-          <Link className="primary-btn" to="/admin/quizzes/new"><FontAwesomeIcon icon={faCirclePlus} /> Nouveau QCM</Link>
-          <Link className="secondary-btn" to="/admin/quizzes/import"><FontAwesomeIcon icon={faFileImport} /> Créer QCM</Link>
-          <Link className="secondary-btn" to="/admin/quizzes/progressive"><FontAwesomeIcon icon={faDiagramProject} /> QCM progressif</Link>
+          <Link className="primary-btn" to="/admin/quizzes/create"><FontAwesomeIcon icon={faCirclePlus} /> Créer un QCM</Link>
         </div>
       </div>
 

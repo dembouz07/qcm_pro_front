@@ -45,10 +45,8 @@ export default function Navbar() {
             <>
               <NavLink to="/admin" end><FontAwesomeIcon icon={faChartLine} /> Tableau de bord</NavLink>
               <NavLink to="/admin/classes"><FontAwesomeIcon icon={faLayerGroup} /> Classes</NavLink>
-              <NavLink to="/admin/quizzes"><FontAwesomeIcon icon={faLayerGroup} /> Gérer les QCM</NavLink>
-              <NavLink to="/admin/quizzes/new"><FontAwesomeIcon icon={faCirclePlus} /> Nouveau QCM</NavLink>
-              <NavLink to="/admin/quizzes/import"><FontAwesomeIcon icon={faFileImport} /> Créer QCM</NavLink>
-              <NavLink to="/admin/quizzes/progressive"><FontAwesomeIcon icon={faDiagramProject} /> QCM progressif</NavLink>
+              <NavLink to="/admin/quizzes" end><FontAwesomeIcon icon={faLayerGroup} /> Gérer les QCM</NavLink>
+              <NavLink to="/admin/quizzes/create"><FontAwesomeIcon icon={faCirclePlus} /> Créer un QCM</NavLink>
               <NavLink to="/admin/results"><FontAwesomeIcon icon={faChartLine} /> Notes</NavLink>
             </>
           ) : (

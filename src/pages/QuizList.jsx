@@ -85,11 +85,8 @@ export default function QuizList() {
           <p>Consultez, modifiez et supprimez vos questionnaires.</p>
         </div>
         <div className="header-actions">
-          <Link className="primary-btn" to="/admin/quizzes/new">
-            <FontAwesomeIcon icon={faCirclePlus} /> Nouveau QCM
-          </Link>
-          <Link className="secondary-btn" to="/admin/quizzes/import">
-            <FontAwesomeIcon icon={faFileImport} /> Créer QCM
+          <Link className="primary-btn" to="/admin/quizzes/create">
+            <FontAwesomeIcon icon={faCirclePlus} /> Créer un QCM
           </Link>
         </div>
       </div>

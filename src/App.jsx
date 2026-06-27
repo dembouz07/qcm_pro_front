@@ -14,6 +14,7 @@ import QuizEdit from './pages/QuizEdit.jsx';
 import ImportQuiz from './pages/ImportQuiz.jsx';
 import ConvertQuiz from './pages/ConvertQuiz.jsx';
 import ProgressiveQuizForm from './pages/ProgressiveQuizForm.jsx';
+import CreateQuizMenu from './pages/CreateQuizMenu.jsx';
 import Results from './pages/Results.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import StudentResults from './pages/StudentResults.jsx';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/classes" element={<ProtectedRoute role="admin"><ClassManager /></ProtectedRoute>} />
           <Route path="/admin/quizzes" element={<ProtectedRoute role="admin"><QuizList /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/create" element={<ProtectedRoute role="admin"><CreateQuizMenu /></ProtectedRoute>} />
           <Route path="/admin/quizzes/new" element={<ProtectedRoute role="admin"><QuizForm /></ProtectedRoute>} />
           <Route path="/admin/quizzes/:id" element={<ProtectedRoute role="admin"><QuizView /></ProtectedRoute>} />
           <Route path="/admin/quizzes/:id/edit" element={<ProtectedRoute role="admin"><QuizEdit /></ProtectedRoute>} />
