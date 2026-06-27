@@ -21,11 +21,12 @@ import StudentResults from './pages/StudentResults.jsx';
 import TakeQuiz from './pages/TakeQuiz.jsx';
 import PublicQuiz from './pages/PublicQuiz.jsx';
 import MyResults from './pages/MyResults.jsx';
+import Landing from './pages/Landing.jsx';
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
   if (loading) return <div className="center-screen">Chargement...</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Landing />;
   return <Navigate to={user.role === 'admin' ? '/admin' : '/student'} replace />;
 }
 
