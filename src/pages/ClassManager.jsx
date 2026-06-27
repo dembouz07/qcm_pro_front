@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
+import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 
 export default function ClassManager() {
@@ -11,6 +11,7 @@ export default function ClassManager() {
   const [selectedClass, setSelectedClass] = useState(null);
   const [students, setStudents] = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
+  const [search, setSearch] = useState('');
 
   async function loadClasses() {
     const response = await api.get('/admin/classes');
@@ -24,6 +25,7 @@ export default function ClassManager() {
   async function selectClass(classe) {
     setSelectedClass(classe);
     setStudents([]);
+    setSearch('');
     setLoadingStudents(true);
     try {
       const response = await api.get(`/admin/classes/${classe.id}`);
@@ -77,29 +79,33 @@ export default function ClassManager() {
       <div className="grid-two">
         <div className="panel">
           <h2><FontAwesomeIcon icon={faLayerGroup} /> Classes</h2>
-          {classes.length === 0 ? <div className="empty">Aucune classe créée.</div> : classes.map((classe) => (
-            <div
-              className={`list-item class-row ${selectedClass?.id === classe.id ? 'selected' : ''}`}
-              key={classe.id}
-              onClick={() => selectClass(classe)}
-              role="button"
-            >
-              <div>
-                <strong>{classe.name}</strong>
-                <small>Code : {classe.code || '—'} · {classe.quizzes_count || 0} QCM</small>
-              </div>
-              <div className="row-actions">
-                <span className="badge"><FontAwesomeIcon icon={faUsers} /> {classe.users_count || 0} élèves</span>
-                <button
-                  className="icon-btn danger"
-                  onClick={(e) => { e.stopPropagation(); removeClass(classe.id); }}
+          {classes.length === 0 ? <div className="empty">Aucune classe créée.</div> : (
+            <div className="classes-scroll">
+              {classes.map((classe) => (
+                <div
+                  className={`list-item class-row ${selectedClass?.id === classe.id ? 'selected' : ''}`}
+                  key={classe.id}
+                  onClick={() => selectClass(classe)}
+                  role="button"
                 >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-                <FontAwesomeIcon icon={faChevronRight} className="text-muted" />
-              </div>
+                  <div>
+                    <strong>{classe.name}</strong>
+                    <small>Code : {classe.code || '—'} · {classe.quizzes_count || 0} QCM</small>
+                  </div>
+                  <div className="row-actions">
+                    <span className="badge"><FontAwesomeIcon icon={faUsers} /> {classe.users_count || 0} élèves</span>
+                    <button
+                      className="icon-btn danger"
+                      onClick={(e) => { e.stopPropagation(); removeClass(classe.id); }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                    <FontAwesomeIcon icon={faChevronRight} className="text-muted" />
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
         <div className="panel">
@@ -111,16 +117,46 @@ export default function ClassManager() {
           ) : students.length === 0 ? (
             <div className="empty">Aucun étudiant dans cette classe.</div>
           ) : (
-            <div className="answer-list">
-              {students.map((student) => (
-                <div className="list-item" key={student.id}>
-                  <div>
-                    <strong>{student.name}</strong>
-                    <small><FontAwesomeIcon icon={faEnvelope} /> {student.email}</small>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="input-icon" style={{ marginBottom: 14 }}>
+                <FontAwesomeIcon icon={faMagnifyingGlass} />
+                <input
+                  type="search"
+                  placeholder="Rechercher un étudiant (nom ou email)..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              {(() => {
+                const q = search.trim().toLowerCase();
+                const filtered = q
+                  ? students.filter((s) =>
+                      (s.name || '').toLowerCase().includes(q) ||
+                      (s.email || '').toLowerCase().includes(q))
+                  : students;
+
+                return (
+                  <>
+                    <div className="muted" style={{ marginBottom: 8, fontSize: '0.85rem' }}>
+                      {filtered.length} / {students.length} étudiant{students.length > 1 ? 's' : ''}
+                    </div>
+                    <div className="students-scroll">
+                      {filtered.length === 0 ? (
+                        <div className="empty">Aucun étudiant ne correspond à « {search} ».</div>
+                      ) : filtered.map((student) => (
+                        <div className="list-item" key={student.id}>
+                          <div>
+                            <strong>{student.name}</strong>
+                            <small><FontAwesomeIcon icon={faEnvelope} /> {student.email}</small>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
+            </>
           )}
         </div>
       </div>
