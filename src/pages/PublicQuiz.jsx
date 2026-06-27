@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCheckCircle, 
@@ -9,7 +9,8 @@ import {
   faPaperPlane, 
   faTriangleExclamation,
   faUser,
-  faBookOpen
+  faBookOpen,
+  faClipboardList
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { countdownTo, formatDateTime } from '../utils/time.js';
@@ -411,6 +412,9 @@ export default function PublicQuiz() {
               ))}
             </div>
           )}
+          <Link className="secondary-btn" to="/mes-notes" style={{ marginTop: '1.5rem' }}>
+            <FontAwesomeIcon icon={faClipboardList} /> Voir toutes mes notes
+          </Link>
         </div>
       </div>
     );
@@ -425,6 +429,9 @@ export default function PublicQuiz() {
           <p>Merci <strong>{prenom} {nom}</strong>, votre note a été enregistrée.</p>
           <div className="final-score">{result.note_sur_20}/20</div>
           <p className="muted">Score : {result.score}/{result.total_points} · {result.percentage}%</p>
+          <Link className="secondary-btn" to="/mes-notes" style={{ marginTop: '1.5rem' }}>
+            <FontAwesomeIcon icon={faClipboardList} /> Voir toutes mes notes
+          </Link>
         </div>
       </div>
     );
