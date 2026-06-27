@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass, faKey, faCopy } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 
 export default function ClassManager() {
@@ -12,6 +12,7 @@ export default function ClassManager() {
   const [students, setStudents] = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [search, setSearch] = useState('');
+  const [copied, setCopied] = useState(false);
 
   async function loadClasses() {
     const response = await api.get('/admin/classes');
@@ -21,6 +22,13 @@ export default function ClassManager() {
   useEffect(() => {
     loadClasses();
   }, []);
+
+  function copyCode(code) {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   async function selectClass(classe) {
     setSelectedClass(classe);
@@ -72,7 +80,7 @@ export default function ClassManager() {
       <form className="panel inline-form" onSubmit={addClass}>
         {error && <div className="alert error full">{error}</div>}
         <input placeholder="Nom de la classe" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-        <input placeholder="Code, ex: TA" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
+        <input placeholder="Code (laisser vide = auto)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
         <button className="primary-btn"><FontAwesomeIcon icon={faPlus} /> Ajouter</button>
       </form>
 
@@ -112,50 +120,64 @@ export default function ClassManager() {
           <h2><FontAwesomeIcon icon={faUserGraduate} /> Étudiants {selectedClass ? `· ${selectedClass.name}` : ''}</h2>
           {!selectedClass ? (
             <div className="empty">Sélectionnez une classe à gauche pour voir ses étudiants.</div>
-          ) : loadingStudents ? (
-            <div className="empty">Chargement...</div>
-          ) : students.length === 0 ? (
-            <div className="empty">Aucun étudiant dans cette classe.</div>
           ) : (
             <>
-              <div className="input-icon" style={{ marginBottom: 14 }}>
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-                <input
-                  type="search"
-                  placeholder="Rechercher un étudiant (nom ou email)..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+              <div className="class-code-banner">
+                <div>
+                  <small><FontAwesomeIcon icon={faKey} /> Code à communiquer aux élèves pour s'inscrire</small>
+                  <strong>{selectedClass.code}</strong>
+                </div>
+                <button type="button" className="secondary-btn small" onClick={() => copyCode(selectedClass.code)}>
+                  <FontAwesomeIcon icon={faCopy} /> {copied ? 'Copié !' : 'Copier'}
+                </button>
               </div>
 
-              {(() => {
-                const q = search.trim().toLowerCase();
-                const filtered = q
-                  ? students.filter((s) =>
-                      (s.name || '').toLowerCase().includes(q) ||
-                      (s.email || '').toLowerCase().includes(q))
-                  : students;
+              {loadingStudents ? (
+                <div className="empty">Chargement...</div>
+              ) : students.length === 0 ? (
+                <div className="empty">Aucun étudiant dans cette classe.</div>
+              ) : (
+                <>
+                  <div className="input-icon" style={{ marginBottom: 14 }}>
+                    <FontAwesomeIcon icon={faMagnifyingGlass} />
+                    <input
+                      type="search"
+                      placeholder="Rechercher un étudiant (nom ou email)..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </div>
 
-                return (
-                  <>
-                    <div className="muted" style={{ marginBottom: 8, fontSize: '0.85rem' }}>
-                      {filtered.length} / {students.length} étudiant{students.length > 1 ? 's' : ''}
-                    </div>
-                    <div className="students-scroll">
-                      {filtered.length === 0 ? (
-                        <div className="empty">Aucun étudiant ne correspond à « {search} ».</div>
-                      ) : filtered.map((student) => (
-                        <div className="list-item" key={student.id}>
-                          <div>
-                            <strong>{student.name}</strong>
-                            <small><FontAwesomeIcon icon={faEnvelope} /> {student.email}</small>
-                          </div>
+                  {(() => {
+                    const q = search.trim().toLowerCase();
+                    const filtered = q
+                      ? students.filter((s) =>
+                          (s.name || '').toLowerCase().includes(q) ||
+                          (s.email || '').toLowerCase().includes(q))
+                      : students;
+
+                    return (
+                      <>
+                        <div className="muted" style={{ marginBottom: 8, fontSize: '0.85rem' }}>
+                          {filtered.length} / {students.length} étudiant{students.length > 1 ? 's' : ''}
                         </div>
-                      ))}
-                    </div>
-                  </>
-                );
-              })()}
+                        <div className="students-scroll">
+                          {filtered.length === 0 ? (
+                            <div className="empty">Aucun étudiant ne correspond à « {search} ».</div>
+                          ) : filtered.map((student) => (
+                            <div className="list-item" key={student.id}>
+                              <div>
+                                <strong>{student.name}</strong>
+                                <small><FontAwesomeIcon icon={faEnvelope} /> {student.email}</small>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </>
+              )}
             </>
           )}
         </div>

@@ -1,21 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faGraduationCap, faLock, faUserPlus } from '@fortawesome/free-solid-svg-icons';
-import api, { getApiError } from '../api.js';
+import { faEnvelope, faGraduationCap, faLock, faUserPlus, faKey } from '@fortawesome/free-solid-svg-icons';
+import { getApiError } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [classes, setClasses] = useState([]);
-  const [form, setForm] = useState({ name: '', email: '', school_class_id: '', password: '', password_confirmation: '' });
+  const [form, setForm] = useState({ name: '', email: '', class_code: '', password: '', password_confirmation: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    api.get('/classes').then((response) => setClasses(response.data));
-  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -23,7 +18,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      await register(form);
+      await register({ ...form, class_code: form.class_code.trim().toUpperCase() });
       navigate('/student');
     } catch (err) {
       setError(getApiError(err));
@@ -55,14 +50,18 @@ export default function Register() {
         </label>
 
         <label>
-          Classe
+          Code de la classe
           <div className="input-icon">
-            <FontAwesomeIcon icon={faGraduationCap} />
-            <select value={form.school_class_id} onChange={(e) => setForm({ ...form, school_class_id: e.target.value })} required>
-              <option value="">Choisir une classe</option>
-              {classes.map((classe) => <option key={classe.id} value={classe.id}>{classe.name}</option>)}
-            </select>
+            <FontAwesomeIcon icon={faKey} />
+            <input
+              value={form.class_code}
+              onChange={(e) => setForm({ ...form, class_code: e.target.value })}
+              placeholder="Ex : AB12CD"
+              style={{ textTransform: 'uppercase' }}
+              required
+            />
           </div>
+          <small className="hint"><FontAwesomeIcon icon={faGraduationCap} /> Demandez ce code à votre formateur.</small>
         </label>
 
         <label>
