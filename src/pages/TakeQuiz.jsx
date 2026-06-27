@@ -133,7 +133,12 @@ export default function TakeQuiz() {
 
   function choose(questionId, choiceId) {
     if (timeLeft === 0 || loading || autoSubmitting) return;
-    setAnswers((current) => ({ ...current, [questionId]: choiceId }));
+    setAnswers((current) => {
+      const next = { ...current, [questionId]: choiceId };
+      // Sauvegarde immédiate (ne dépend pas du cycle de rendu)
+      try { localStorage.setItem(`qcm_progress_${id}`, JSON.stringify({ answers: next })); } catch { /* ignore */ }
+      return next;
+    });
   }
 
   function submit(event) {
