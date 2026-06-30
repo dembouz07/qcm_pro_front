@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faCheck, faEye, faMedal, faXmark, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faAward, faCheck, faEye, faMedal, faXmark, faFilter, faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import api from '../api.js';
 import { formatDateTime } from '../utils/time.js';
 
@@ -24,6 +24,71 @@ export default function Results() {
   function participantContext(result) {
     if (result.participant_referentiel) return result.participant_referentiel;
     return result.user?.school_class?.name || result.quiz?.school_class?.name || '-';
+  }
+
+  // Prépare les lignes à exporter (selon le filtre courant)
+  function buildExportRows() {
+    return results.map((r) => ({
+      Participant: participantName(r),
+      'Classe / Référentiel': participantContext(r),
+      QCM: r.quiz?.title || '',
+      Score: `${r.score}/${r.total_points}`,
+      'Résultat': r.quiz?.type === 'progressive'
+        ? `Stade ${r.stade_atteint ?? '-'}`
+        : `${r.note_sur_20}/20`,
+      'Envoyé le': formatDateTime(r.submitted_at)
+    }));
+  }
+
+  // Export Excel (CSV compatible Excel, séparateur ; + BOM pour les accents)
+  function exportExcel() {
+    const rows = buildExportRows();
+    if (rows.length === 0) return;
+    const headers = Object.keys(rows[0]);
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = [
+      headers.join(';'),
+      ...rows.map((row) => headers.map((h) => esc(row[h])).join(';'))
+    ].join('\r\n');
+
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `notes-qcm-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Export PDF via la fenêtre d'impression (l'utilisateur choisit "Enregistrer en PDF")
+  function exportPdf() {
+    const rows = buildExportRows();
+    if (rows.length === 0) return;
+    const headers = Object.keys(rows[0]);
+    const escapeHtml = (v) => String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+    const thead = `<tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr>`;
+    const tbody = rows.map((row) => `<tr>${headers.map((h) => `<td>${escapeHtml(row[h])}</td>`).join('')}</tr>`).join('');
+
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Notes QCM</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 24px; color: #1a2233; }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        p.sub { color: #6b7280; margin: 0 0 18px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #5b5cf6; color: #fff; text-align: left; padding: 8px; }
+        td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+        tr:nth-child(even) td { background: #f6f7fb; }
+      </style></head>
+      <body>
+        <h1>Notes des participants — QCM Pro</h1>
+        <p class="sub">${rows.length} résultat(s) · Exporté le ${new Date().toLocaleString('fr-FR')}</p>
+        <table><thead>${thead}</thead><tbody>${tbody}</tbody></table>
+        <script>window.onload = function(){ window.print(); }<\/script>
+      </body></html>`);
+    win.document.close();
   }
 
   function applyFilters(data, classId, quizId) {
@@ -85,6 +150,14 @@ export default function Results() {
           <span className="eyebrow"><FontAwesomeIcon icon={faMedal} /> Notes</span>
           <h1>Résultats des élèves</h1>
           <p>L'administrateur reçoit ici toutes les notes envoyées.</p>
+        </div>
+        <div className="header-actions">
+          <button className="secondary-btn" onClick={exportExcel} disabled={results.length === 0}>
+            <FontAwesomeIcon icon={faFileExcel} /> Excel
+          </button>
+          <button className="secondary-btn" onClick={exportPdf} disabled={results.length === 0}>
+            <FontAwesomeIcon icon={faFilePdf} /> PDF
+          </button>
         </div>
       </div>
 
