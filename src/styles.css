@@ -1750,3 +1750,44 @@ tr:last-child td { border-bottom: 0; }
   font-weight: 600;
 }
 .start-meta span { display: inline-flex; align-items: center; gap: 7px; }
+
+/* ─── Page abonnement ───────────────────────────────── */
+.sub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: stretch;
+  text-align: center;
+}
+.sub-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  text-align: left;
+}
+.sub-status svg { font-size: 1.6rem; }
+.sub-status strong { display: block; }
+.sub-status small { color: var(--muted); }
+.sub-status.active { background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.30); }
+.sub-status.active svg { color: var(--accent); }
+.sub-status.inactive { background: rgba(245, 158, 11, 0.10); border: 1px solid rgba(245, 158, 11, 0.30); }
+.sub-status.inactive svg { color: var(--warning); }
+
+.sub-price { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
+.sub-amount { font-size: 3rem; font-weight: 950; color: var(--primary); letter-spacing: -0.05em; }
+.sub-currency { color: var(--muted); font-weight: 700; }
+
+.sub-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.sub-features li { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.sub-features li svg { color: var(--accent); }

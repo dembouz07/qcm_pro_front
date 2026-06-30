@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBookOpen, faChartLine, faDoorOpen, faFileImport, faGraduationCap, faLayerGroup, faCirclePlus, faUserShield, faBars, faXmark, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
+import { faBookOpen, faChartLine, faDoorOpen, faFileImport, faGraduationCap, faLayerGroup, faCirclePlus, faUserShield, faBars, faXmark, faDiagramProject, faCrown } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../AuthContext.jsx';
 
 export default function Navbar() {
@@ -48,6 +48,7 @@ export default function Navbar() {
               <NavLink to="/admin/quizzes" end><FontAwesomeIcon icon={faLayerGroup} /> Gérer les QCM</NavLink>
               <NavLink to="/admin/quizzes/create"><FontAwesomeIcon icon={faCirclePlus} /> Créer un QCM</NavLink>
               <NavLink to="/admin/results"><FontAwesomeIcon icon={faChartLine} /> Notes</NavLink>
+              <NavLink to="/admin/subscription"><FontAwesomeIcon icon={faCrown} /> Abonnement</NavLink>
             </>
           ) : (
             <>

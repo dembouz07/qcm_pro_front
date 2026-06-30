@@ -4,8 +4,10 @@ import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import RegisterAdmin from './pages/RegisterAdmin.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import Subscription from './pages/Subscription.jsx';
 import ClassManager from './pages/ClassManager.jsx';
 import QuizForm from './pages/QuizForm.jsx';
 import QuizList from './pages/QuizList.jsx';
@@ -39,23 +41,25 @@ export default function App() {
           <Route path="/" element={<HomeRedirect />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/register-admin" element={<RegisterAdmin />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Route publique pour accès au quiz via lien partagé */}
           <Route path="/quiz/:token" element={<PublicQuiz />} />
           <Route path="/mes-notes" element={<MyResults />} />
 
-          <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/classes" element={<ProtectedRoute role="admin"><ClassManager /></ProtectedRoute>} />
-          <Route path="/admin/quizzes" element={<ProtectedRoute role="admin"><QuizList /></ProtectedRoute>} />
-          <Route path="/admin/quizzes/create" element={<ProtectedRoute role="admin"><CreateQuizMenu /></ProtectedRoute>} />
-          <Route path="/admin/quizzes/new" element={<ProtectedRoute role="admin"><QuizForm /></ProtectedRoute>} />
-          <Route path="/admin/quizzes/:id" element={<ProtectedRoute role="admin"><QuizView /></ProtectedRoute>} />
-          <Route path="/admin/quizzes/:id/edit" element={<ProtectedRoute role="admin"><QuizEdit /></ProtectedRoute>} />
-          <Route path="/admin/quizzes/import" element={<ProtectedRoute role="admin"><ImportQuiz /></ProtectedRoute>} />
-          <Route path="/admin/quizzes/progressive" element={<ProtectedRoute role="admin"><ProgressiveQuizForm /></ProtectedRoute>} />
-          <Route path="/admin/quizzes/convert" element={<ProtectedRoute role="admin"><ConvertQuiz /></ProtectedRoute>} />
-          <Route path="/admin/results" element={<ProtectedRoute role="admin"><Results /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute role="admin" requireSubscription><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/subscription" element={<ProtectedRoute role="admin"><Subscription /></ProtectedRoute>} />
+          <Route path="/admin/classes" element={<ProtectedRoute role="admin" requireSubscription><ClassManager /></ProtectedRoute>} />
+          <Route path="/admin/quizzes" element={<ProtectedRoute role="admin" requireSubscription><QuizList /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/create" element={<ProtectedRoute role="admin" requireSubscription><CreateQuizMenu /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/new" element={<ProtectedRoute role="admin" requireSubscription><QuizForm /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/:id" element={<ProtectedRoute role="admin" requireSubscription><QuizView /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/:id/edit" element={<ProtectedRoute role="admin" requireSubscription><QuizEdit /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/import" element={<ProtectedRoute role="admin" requireSubscription><ImportQuiz /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/progressive" element={<ProtectedRoute role="admin" requireSubscription><ProgressiveQuizForm /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/convert" element={<ProtectedRoute role="admin" requireSubscription><ConvertQuiz /></ProtectedRoute>} />
+          <Route path="/admin/results" element={<ProtectedRoute role="admin" requireSubscription><Results /></ProtectedRoute>} />
 
           <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
           <Route path="/student/notes" element={<ProtectedRoute role="student"><StudentResults /></ProtectedRoute>} />

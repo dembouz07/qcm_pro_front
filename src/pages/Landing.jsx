@@ -31,6 +31,7 @@ export default function Landing() {
           <span>QCM Pro</span>
         </div>
         <div className="landing-nav-actions">
+          <Link className="auth-topbar-link" to="/register-admin">Espace formateur</Link>
           <Link className="secondary-btn" to="/login"><FontAwesomeIcon icon={faRightToBracket} /> Connexion</Link>
           <Link className="primary-btn" to="/register"><FontAwesomeIcon icon={faUserPlus} /> Inscription</Link>
         </div>
