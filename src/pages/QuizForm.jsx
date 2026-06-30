@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDays, faCheckCircle, faCirclePlus, faCircleQuestion, faFloppyDisk, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDays, faCheckCircle, faCirclePlus, faCircleQuestion, faFloppyDisk, faPlus, faTrash, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 
 const emptyQuestion = () => ({
@@ -93,6 +93,7 @@ export default function QuizForm() {
     <div className="page">
       <div className="page-header">
         <div>
+          <Link to="/admin/quizzes/create" className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> Retour au choix du format</Link>
           <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Création manuelle</span>
           <h1>Nouveau QCM</h1>
           <p>Saisissez les questions, les choix et cochez la bonne réponse.</p>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDays, faDownload, faFileCsv, faFileImport, faFileLines, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDays, faDownload, faFileCsv, faFileImport, faFileLines, faUpload, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 
 export default function ImportQuiz() {
@@ -41,6 +41,7 @@ export default function ImportQuiz() {
     <div className="page">
       <div className="page-header">
         <div>
+          <Link to="/admin/quizzes/create" className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> Retour au choix du format</Link>
           <span className="eyebrow"><FontAwesomeIcon icon={faFileImport} /> Import</span>
           <h1>Importer un QCM</h1>
           <p>Importez un fichier CSV ou JSON, puis choisissez la classe et l'heure d'ouverture.</p>

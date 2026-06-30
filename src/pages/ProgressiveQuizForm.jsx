@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faLayerGroup,
@@ -7,7 +7,8 @@ import {
   faTrash,
   faCalendarDays,
   faDiagramProject,
-  faCircleQuestion
+  faCircleQuestion,
+  faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 
@@ -104,6 +105,7 @@ export default function ProgressiveQuizForm() {
     <div className="page">
       <div className="page-header">
         <div>
+          <Link to="/admin/quizzes/create" className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> Retour au choix du format</Link>
           <span className="eyebrow"><FontAwesomeIcon icon={faDiagramProject} /> Diagnostic progressif</span>
           <h1>Créer un QCM progressif</h1>
           <p>
