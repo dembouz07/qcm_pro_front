@@ -10,7 +10,10 @@ import {
   faFileImport,
   faArrowRight,
   faRightToBracket,
-  faUserPlus
+  faUserPlus,
+  faCircleCheck,
+  faUserShield,
+  faUser
 } from '@fortawesome/free-solid-svg-icons';
 
 const features = [
@@ -31,6 +34,7 @@ export default function Landing() {
           <span>QCM Pro</span>
         </div>
         <div className="landing-nav-actions">
+          <a className="auth-topbar-link" href="#tarifs">Tarifs</a>
           <Link className="auth-topbar-link" to="/register-admin">Espace formateur</Link>
           <Link className="secondary-btn" to="/login"><FontAwesomeIcon icon={faRightToBracket} /> Connexion</Link>
           <Link className="primary-btn" to="/register"><FontAwesomeIcon icon={faUserPlus} /> Inscription</Link>
@@ -84,11 +88,51 @@ export default function Landing() {
         </div>
       </section>
 
+      <section className="landing-pricing" id="tarifs">
+        <h2>Tarifs simples</h2>
+        <p className="landing-pricing-sub">Les élèves utilisent QCM Pro gratuitement. Les formateurs s'abonnent pour créer et gérer.</p>
+        <div className="pricing-grid">
+          <div className="pricing-card">
+            <div className="pricing-icon student"><FontAwesomeIcon icon={faUser} /></div>
+            <h3>Élève</h3>
+            <div className="pricing-price"><span className="pricing-amount">Gratuit</span></div>
+            <ul className="pricing-features">
+              <li><FontAwesomeIcon icon={faCircleCheck} /> Rejoindre une classe avec un code</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} /> Passer les QCM programmés</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} /> Consulter ses notes</li>
+            </ul>
+            <Link className="secondary-btn large" to="/register">
+              <FontAwesomeIcon icon={faUserPlus} /> Inscription élève
+            </Link>
+          </div>
+
+          <div className="pricing-card featured">
+            <div className="pricing-badge">Formateur</div>
+            <div className="pricing-icon admin"><FontAwesomeIcon icon={faUserShield} /></div>
+            <h3>Formateur</h3>
+            <div className="pricing-price">
+              <span className="pricing-amount">1000</span>
+              <span className="pricing-unit">FCFA / mois</span>
+            </div>
+            <ul className="pricing-features">
+              <li><FontAwesomeIcon icon={faCircleCheck} /> Classes et élèves illimités</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} /> QCM manuel, import (CSV/Word/PDF), progressif</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} /> Liens publics et suivi des notes</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} /> Export Excel / PDF des résultats</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} /> Paiement Wave / Orange Money / carte</li>
+            </ul>
+            <Link className="primary-btn large" to="/register-admin">
+              <FontAwesomeIcon icon={faUserShield} /> Devenir formateur
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="landing-final">
         <h2>Prêt à lancer votre premier QCM ?</h2>
         <p>Rejoignez QCM Pro et commencez à évaluer vos apprenants dès aujourd'hui.</p>
-        <Link className="primary-btn large" to="/register">
-          Créer un compte <FontAwesomeIcon icon={faArrowRight} />
+        <Link className="primary-btn large" to="/register-admin">
+          Devenir formateur <FontAwesomeIcon icon={faArrowRight} />
         </Link>
       </section>
 
