@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAward, faCheck, faEye, faMedal, faXmark, faFilter, faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import * as XLSX from 'xlsx';
 import api from '../api.js';
 import { formatDateTime } from '../utils/time.js';
 
@@ -40,24 +41,19 @@ export default function Results() {
     }));
   }
 
-  // Export Excel (CSV compatible Excel, séparateur ; + BOM pour les accents)
+  // Export Excel (vrai fichier .xlsx)
   function exportExcel() {
     const rows = buildExportRows();
     if (rows.length === 0) return;
-    const headers = Object.keys(rows[0]);
-    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const csv = [
-      headers.join(';'),
-      ...rows.map((row) => headers.map((h) => esc(row[h])).join(';'))
-    ].join('\r\n');
 
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `notes-qcm-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    // Largeur des colonnes
+    worksheet['!cols'] = [
+      { wch: 24 }, { wch: 26 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 20 }
+    ];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Notes');
+    XLSX.writeFile(workbook, `notes-qcm-${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
   // Export PDF via la fenêtre d'impression (l'utilisateur choisit "Enregistrer en PDF")
