@@ -15,6 +15,7 @@ import {
 import api, { getApiError } from '../api.js';
 import { countdownTo, formatDateTime } from '../utils/time.js';
 import { useAntiCheat } from '../useAntiCheat.js';
+import AntiCheatRules from '../components/AntiCheatRules.jsx';
 
 export default function PublicQuiz() {
   const { token } = useParams();
@@ -511,6 +512,8 @@ export default function PublicQuiz() {
           <form className="panel form-grid public-form" onSubmit={handleStart}>
             <h2 className="span-2"><FontAwesomeIcon icon={faUser} /> Identification</h2>
             <p className="span-2 muted">Renseignez vos informations pour accéder au QCM.</p>
+
+            <div className="span-2"><AntiCheatRules /></div>
 
             {error && <div className="alert error span-2">{error}</div>}
 

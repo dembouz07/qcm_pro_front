@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faCircleQuestion, faClock, faPaperPlane, faRotateLeft, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useAntiCheat } from '../useAntiCheat.js';
+import AntiCheatRules from '../components/AntiCheatRules.jsx';
 
 export default function TakeQuiz() {
   const { id } = useParams();
@@ -16,14 +17,15 @@ export default function TakeQuiz() {
   const [autoSubmitting, setAutoSubmitting] = useState(false);
   const [warning, setWarning] = useState('');
   const [terminationReason, setTerminationReason] = useState('');
+  const [started, setStarted] = useState(false);
 
   const answersRef = useRef({});
   const submittingRef = useRef(false);
   const autoSubmittedRef = useRef(false);
 
-  // Anti-triche : terminer le test si l'élève quitte / copie / capture
+  // Anti-triche : actif seulement une fois le test démarré
   useAntiCheat({
-    active: !!quiz && !result,
+    active: !!quiz && started && !result,
     onWarn: (msg) => setWarning(msg),
     onTerminate: (reason) => {
       setTerminationReason(reason);
@@ -48,7 +50,10 @@ export default function TakeQuiz() {
       const raw = localStorage.getItem(`qcm_progress_${id}`);
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved?.answers) setAnswers(saved.answers);
+        if (saved?.answers && Object.keys(saved.answers).length > 0) {
+          setAnswers(saved.answers);
+          setStarted(true); // reprise : le test était déjà commencé
+        }
       }
     } catch {
       // ignore
@@ -202,6 +207,31 @@ export default function TakeQuiz() {
           <div className="final-score">{result.note_sur_20}/20</div>
           <p className="muted">Score : {result.score}/{result.total_points} · {result.percentage}%</p>
           <Link className="primary-btn" to="/student">Retour à mes QCM</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!started) {
+    return (
+      <div className="page narrow">
+        <div className="panel start-panel">
+          <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Avant de commencer</span>
+          <h1>{quiz.title}</h1>
+          {quiz.description && <p>{quiz.description}</p>}
+          <div className="start-meta">
+            <span>{quiz.questions.length} questions</span>
+            {quiz.ends_at && <span><FontAwesomeIcon icon={faClock} /> Fermeture : {new Date(quiz.ends_at).toLocaleString('fr-FR')}</span>}
+          </div>
+
+          <AntiCheatRules />
+
+          <div className="builder-actions">
+            <Link className="secondary-btn" to="/student"><FontAwesomeIcon icon={faRotateLeft} /> Retour</Link>
+            <button className="primary-btn" onClick={() => setStarted(true)}>
+              <FontAwesomeIcon icon={faCircleQuestion} /> Commencer le test
+            </button>
+          </div>
         </div>
       </div>
     );
