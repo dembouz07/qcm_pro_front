@@ -21,7 +21,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 // 👉 Remplace par ton vrai numéro WhatsApp (format international, sans +, sans espaces)
-const WHATSAPP_NUMBER = '221770000000';
+const WHATSAPP_NUMBER = '221774006235';
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 32 32" width="28" height="28" fill="currentColor" aria-hidden="true">
