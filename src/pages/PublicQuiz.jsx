@@ -14,6 +14,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { countdownTo, formatDateTime } from '../utils/time.js';
+import { useAntiCheat } from '../useAntiCheat.js';
 
 export default function PublicQuiz() {
   const { token } = useParams();
@@ -40,6 +41,23 @@ export default function PublicQuiz() {
   // Diagnostic progressif
   const [currentStage, setCurrentStage] = useState(0);
   const [progressiveResult, setProgressiveResult] = useState(null);
+
+  // Anti-triche
+  const [warning, setWarning] = useState('');
+  const [terminationReason, setTerminationReason] = useState('');
+
+  useAntiCheat({
+    active: (step === 'quiz' || step === 'progressive') && !result && !progressiveResult,
+    onWarn: (msg) => setWarning(msg),
+    onTerminate: (reason) => {
+      setTerminationReason(reason);
+      if (step === 'progressive') {
+        submitProgressive();
+      } else {
+        submitAnswers({ auto: true });
+      }
+    }
+  });
 
   const answersRef = useRef({});
   const submittingRef = useRef(false);
@@ -396,7 +414,8 @@ export default function PublicQuiz() {
       <div className="page narrow public-quiz-page">
         <div className="panel center success-panel">
           <div className="big-icon success"><FontAwesomeIcon icon={faCheckCircle} /></div>
-          <h1>Diagnostic terminé</h1>
+          <h1>{terminationReason ? 'Diagnostic terminé' : 'Diagnostic terminé'}</h1>
+          {terminationReason && <div className="alert error">{terminationReason}</div>}
           <p>Merci <strong>{prenom} {nom}</strong>, vos réponses ont été enregistrées.</p>
           <div className="stade-result">
             <small>Stade atteint</small>
@@ -425,7 +444,8 @@ export default function PublicQuiz() {
       <div className="page narrow public-quiz-page">
         <div className="panel center success-panel">
           <div className="big-icon success"><FontAwesomeIcon icon={faCheckCircle} /></div>
-          <h1>Réponses envoyées</h1>
+          <h1>{terminationReason ? 'Test terminé' : 'Réponses envoyées'}</h1>
+          {terminationReason && <div className="alert error">{terminationReason}</div>}
           <p>Merci <strong>{prenom} {nom}</strong>, votre note a été enregistrée.</p>
           <div className="final-score">{result.note_sur_20}/20</div>
           <p className="muted">Score : {result.score}/{result.total_points} · {result.percentage}%</p>
@@ -536,19 +556,23 @@ export default function PublicQuiz() {
   // ─── ÉTAPE : Quiz en cours ───────────────────────────────
   if (step === 'quiz' && quiz) {
     return (
-      <div className="page narrow public-quiz-page">
+      <div className="page narrow public-quiz-page no-select">
         <div className="page-header">
           <div>
             <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Test en cours</span>
             <h1>{quiz.title}</h1>
             <p>{quiz.description}</p>
             <p className="muted">Participant : {prenom} {nom} · {referentiel}</p>
+            <div className="alert warning anticheat-notice">
+              <FontAwesomeIcon icon={faTriangleExclamation} /> Anti-triche actif : quitter la page, copier ou capturer l'écran mettra fin au test.
+            </div>
             {formatTimeLeftDisplay()}
           </div>
         </div>
 
         <form onSubmit={submit} className="test-form">
           {error && <div className="alert error">{error}</div>}
+          {warning && <div className="alert warning">{warning}</div>}
           {autoSubmitting && <div className="alert warning"><FontAwesomeIcon icon={faClock} /> Temps écoulé : soumission automatique en cours...</div>}
 
           {quiz.questions.map((question, index) => {
@@ -594,12 +618,15 @@ export default function PublicQuiz() {
     const isLastStage = currentStage >= stages.length - 1;
 
     return (
-      <div className="page narrow public-quiz-page">
+      <div className="page narrow public-quiz-page no-select">
         <div className="page-header">
           <div>
             <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Diagnostic en cours</span>
             <h1>{quiz.title}</h1>
             <p className="muted">Participant : {prenom} {nom} · {referentiel}</p>
+            <div className="alert warning anticheat-notice">
+              <FontAwesomeIcon icon={faTriangleExclamation} /> Anti-triche actif : quitter la page, copier ou capturer l'écran mettra fin au test.
+            </div>
           </div>
         </div>
 
@@ -620,6 +647,7 @@ export default function PublicQuiz() {
 
         <form onSubmit={(e) => { e.preventDefault(); handleNextStage(); }} className="test-form">
           {error && <div className="alert error">{error}</div>}
+          {warning && <div className="alert warning">{warning}</div>}
 
           {stage.questions.map((question, index) => (
             <article className="question-card test-question" key={question.id}>

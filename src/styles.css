@@ -1674,3 +1674,21 @@ tr:last-child td { border-bottom: 0; }
 @media (max-width: 400px) {
   .stats-grid { grid-template-columns: 1fr; }
 }
+
+/* ─── Anti-triche ───────────────────────────────────── */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+/* On garde les champs de saisie utilisables */
+.no-select input,
+.no-select textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.anticheat-notice {
+  margin-top: 12px;
+  font-size: 0.9rem;
+}

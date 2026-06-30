@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faCircleQuestion, faClock, faPaperPlane, faRotateLeft, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { useAntiCheat } from '../useAntiCheat.js';
 
 export default function TakeQuiz() {
   const { id } = useParams();
@@ -13,10 +14,22 @@ export default function TakeQuiz() {
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [autoSubmitting, setAutoSubmitting] = useState(false);
+  const [warning, setWarning] = useState('');
+  const [terminationReason, setTerminationReason] = useState('');
 
   const answersRef = useRef({});
   const submittingRef = useRef(false);
   const autoSubmittedRef = useRef(false);
+
+  // Anti-triche : terminer le test si l'élève quitte / copie / capture
+  useAntiCheat({
+    active: !!quiz && !result,
+    onWarn: (msg) => setWarning(msg),
+    onTerminate: (reason) => {
+      setTerminationReason(reason);
+      submitAnswers({ auto: true });
+    }
+  });
 
   useEffect(() => {
     answersRef.current = answers;
@@ -183,7 +196,8 @@ export default function TakeQuiz() {
       <div className="page narrow">
         <div className="panel center success-panel">
           <div className="big-icon success"><FontAwesomeIcon icon={faCheckCircle} /></div>
-          <h1>Réponses envoyées</h1>
+          <h1>{terminationReason ? 'Test terminé' : 'Réponses envoyées'}</h1>
+          {terminationReason && <div className="alert error">{terminationReason}</div>}
           <p>Votre note a été transmise à l'administrateur.</p>
           <div className="final-score">{result.note_sur_20}/20</div>
           <p className="muted">Score : {result.score}/{result.total_points} · {result.percentage}%</p>
@@ -194,19 +208,23 @@ export default function TakeQuiz() {
   }
 
   return (
-    <div className="page narrow">
+    <div className="page narrow no-select">
       <div className="page-header">
         <div>
           <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Test en cours</span>
           <h1>{quiz.title}</h1>
           <p>{quiz.description}</p>
+          <div className="alert warning anticheat-notice">
+            <FontAwesomeIcon icon={faTriangleExclamation} /> Anti-triche actif : quitter la page, copier ou capturer l'écran mettra fin au test.
+          </div>
           {formatTimeLeft()}
         </div>
       </div>
 
       <form onSubmit={submit} className="test-form">
         {error && <div className="alert error">{error}</div>}
-        {autoSubmitting && <div className="alert warning"><FontAwesomeIcon icon={faClock} /> Temps écoulé : soumission automatique en cours...</div>}
+        {warning && <div className="alert warning">{warning}</div>}
+        {autoSubmitting && <div className="alert warning"><FontAwesomeIcon icon={faClock} /> Soumission automatique en cours...</div>}
 
         {quiz.questions.map((question, index) => {
           const longestChoice = question.choices.reduce((max, c) => Math.max(max, (c.body || '').length), 0);
