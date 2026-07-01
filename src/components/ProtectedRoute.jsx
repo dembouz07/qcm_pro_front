@@ -13,8 +13,9 @@ export default function ProtectedRoute({ role, children, requireSubscription }) 
 
   // Admin sans abonnement actif : rediriger vers la page d'abonnement
   if (requireSubscription && user.role === 'admin') {
-    const active = user.subscription_status === 'active'
-      && user.subscribed_until && new Date(user.subscribed_until) > new Date();
+    const active = user.is_super_admin
+      || (user.subscription_status === 'active'
+        && user.subscribed_until && new Date(user.subscribed_until) > new Date());
     if (!active) return <Navigate to="/admin/subscription" replace />;
   }
 
