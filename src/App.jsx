@@ -20,6 +20,8 @@ import CreateQuizMenu from './pages/CreateQuizMenu.jsx';
 import Results from './pages/Results.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import StudentResults from './pages/StudentResults.jsx';
+import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
+import SuperAdminUsers from './pages/SuperAdminUsers.jsx';
 import TakeQuiz from './pages/TakeQuiz.jsx';
 import PublicQuiz from './pages/PublicQuiz.jsx';
 import MyResults from './pages/MyResults.jsx';
@@ -29,6 +31,7 @@ function HomeRedirect() {
   const { user, loading } = useAuth();
   if (loading) return <div className="center-screen">Chargement...</div>;
   if (!user) return <Landing />;
+  if (user.role === 'superadmin') return <Navigate to="/superadmin" replace />;
   return <Navigate to={user.role === 'admin' ? '/admin' : '/student'} replace />;
 }
 
@@ -64,6 +67,9 @@ export default function App() {
           <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
           <Route path="/student/notes" element={<ProtectedRoute role="student"><StudentResults /></ProtectedRoute>} />
           <Route path="/student/quizzes/:id" element={<ProtectedRoute role="student"><TakeQuiz /></ProtectedRoute>} />
+
+          <Route path="/superadmin" element={<ProtectedRoute role="superadmin"><SuperAdminDashboard /></ProtectedRoute>} />
+          <Route path="/superadmin/users" element={<ProtectedRoute role="superadmin"><SuperAdminUsers /></ProtectedRoute>} />
         </Routes>
       </main>
     </div>

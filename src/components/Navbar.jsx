@@ -21,7 +21,7 @@ export default function Navbar() {
   return (
     <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
-        <Link className="brand" to={user.role === 'admin' ? '/admin' : '/student'} onClick={() => setMenuOpen(false)}>
+        <Link className="brand" to={user.role === 'superadmin' ? '/superadmin' : user.role === 'admin' ? '/admin' : '/student'} onClick={() => setMenuOpen(false)}>
           <span className="brand-icon"><FontAwesomeIcon icon={faGraduationCap} /></span>
           <span>QCM Pro</span>
         </Link>
@@ -33,15 +33,20 @@ export default function Navbar() {
 
       <div className="sidebar-body">
         <div className="user-pill">
-          <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faBookOpen} />
+          <FontAwesomeIcon icon={user.role === 'superadmin' ? faCrown : user.role === 'admin' ? faUserShield : faBookOpen} />
           <div>
             <strong>{user.name}</strong>
-            <small>{user.role === 'admin' ? 'Administrateur' : user.school_class?.name || 'Élève'}</small>
+            <small>{user.role === 'superadmin' ? 'Super-administrateur' : user.role === 'admin' ? 'Administrateur' : user.school_class?.name || 'Élève'}</small>
           </div>
         </div>
 
         <nav onClick={() => setMenuOpen(false)}>
-          {user.role === 'admin' ? (
+          {user.role === 'superadmin' ? (
+            <>
+              <NavLink to="/superadmin" end><FontAwesomeIcon icon={faChartLine} /> Tableau de bord</NavLink>
+              <NavLink to="/superadmin/users"><FontAwesomeIcon icon={faUserShield} /> Utilisateurs</NavLink>
+            </>
+          ) : user.role === 'admin' ? (
             <>
               <NavLink to="/admin" end><FontAwesomeIcon icon={faChartLine} /> Tableau de bord</NavLink>
               <NavLink to="/admin/classes"><FontAwesomeIcon icon={faLayerGroup} /> Classes</NavLink>

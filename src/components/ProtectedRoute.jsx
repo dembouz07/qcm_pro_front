@@ -9,7 +9,8 @@ export default function ProtectedRoute({ role, children, requireSubscription }) 
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  if (role && user.role !== role) return <Navigate to={user.role === 'admin' ? '/admin' : '/student'} replace />;
+  const homeFor = (r) => (r === 'superadmin' ? '/superadmin' : r === 'admin' ? '/admin' : '/student');
+  if (role && user.role !== role) return <Navigate to={homeFor(user.role)} replace />;
 
   // Admin sans abonnement actif : rediriger vers la page d'abonnement
   if (requireSubscription && user.role === 'admin') {
