@@ -22,6 +22,7 @@ import StudentDashboard from './pages/StudentDashboard.jsx';
 import StudentResults from './pages/StudentResults.jsx';
 import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
 import SuperAdminUsers from './pages/SuperAdminUsers.jsx';
+import SuperAdminRevenue from './pages/SuperAdminRevenue.jsx';
 import TakeQuiz from './pages/TakeQuiz.jsx';
 import PublicQuiz from './pages/PublicQuiz.jsx';
 import MyResults from './pages/MyResults.jsx';
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="/student/quizzes/:id" element={<ProtectedRoute role="student"><TakeQuiz /></ProtectedRoute>} />
 
           <Route path="/superadmin" element={<ProtectedRoute role="superadmin"><SuperAdminDashboard /></ProtectedRoute>} />
+          <Route path="/superadmin/revenue" element={<ProtectedRoute role="superadmin"><SuperAdminRevenue /></ProtectedRoute>} />
           <Route path="/superadmin/users" element={<ProtectedRoute role="superadmin"><SuperAdminUsers /></ProtectedRoute>} />
         </Routes>
       </main>

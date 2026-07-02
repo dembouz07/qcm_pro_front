@@ -41,6 +41,9 @@ export default function SuperAdminDashboard() {
           <p>Vue globale de l'activité de la plateforme QCM Pro.</p>
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Link className="secondary-btn" to="/superadmin/revenue">
+            <FontAwesomeIcon icon={faSackDollar} /> Revenus
+          </Link>
           <Link className="secondary-btn" to="/superadmin/users">
             <FontAwesomeIcon icon={faUsersGear} /> Gérer les utilisateurs
           </Link>

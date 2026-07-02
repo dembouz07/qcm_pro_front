@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBookOpen, faChartLine, faDoorOpen, faFileImport, faGraduationCap, faLayerGroup, faCirclePlus, faUserShield, faBars, faXmark, faDiagramProject, faCrown } from '@fortawesome/free-solid-svg-icons';
+import { faBookOpen, faChartLine, faDoorOpen, faFileImport, faGraduationCap, faLayerGroup, faCirclePlus, faUserShield, faBars, faXmark, faDiagramProject, faCrown, faSackDollar } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../AuthContext.jsx';
 
 export default function Navbar() {
@@ -44,6 +44,7 @@ export default function Navbar() {
           {user.role === 'superadmin' ? (
             <>
               <NavLink to="/superadmin" end><FontAwesomeIcon icon={faChartLine} /> Tableau de bord</NavLink>
+              <NavLink to="/superadmin/revenue"><FontAwesomeIcon icon={faSackDollar} /> Revenus</NavLink>
               <NavLink to="/superadmin/users"><FontAwesomeIcon icon={faUserShield} /> Utilisateurs</NavLink>
             </>
           ) : user.role === 'admin' ? (
