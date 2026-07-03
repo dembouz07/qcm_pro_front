@@ -46,7 +46,7 @@ const steps = [
 
 const faqs = [
   { q: "Comment mes élèves accèdent-ils aux QCM ?", a: "Soit ils créent un compte gratuit avec le code de votre classe, soit vous leur envoyez un lien public (sans compte)." },
-  { q: "Quels moyens de paiement sont acceptés ?", a: "Wave, Orange Money et carte bancaire, via PayDunya — paiement 100% sécurisé." },
+  { q: "Quels moyens de paiement sont acceptés ?", a: "Wave, Orange Money et carte bancaire, via PayTech — paiement 100% sécurisé." },
   { q: "Puis-je essayer avant de payer ?", a: "Oui ! Votre 1er mois est offert à l'inscription formateur. Vous payez seulement pour continuer ensuite." },
   { q: "Y a-t-il un système anti-triche ?", a: "Oui : une seule tentative par participant, et le test se termine si l'élève quitte la page ou tente de copier." },
   { q: "Comment sont calculées les notes ?", a: "Automatiquement (note sur 20 et pourcentage), avec export Excel/PDF et filtres par classe et par QCM." }

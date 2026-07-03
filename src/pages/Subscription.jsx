@@ -59,7 +59,7 @@ export default function Subscription() {
     try {
       const response = await api.post('/admin/subscription/checkout');
       if (response.data.url) {
-        window.location.href = response.data.url; // redirection vers PayDunya
+        window.location.href = response.data.url; // redirection vers PayTech
       }
     } catch (err) {
       setError(getApiError(err));
@@ -112,7 +112,7 @@ export default function Subscription() {
           {paying ? 'Redirection...' : isActive ? 'Renouveler (1 mois)' : 'Payer 1000 FCFA'}
         </button>
         <p className="muted center" style={{ fontSize: '0.85rem' }}>
-          Paiement sécurisé via PayDunya (Wave, Orange Money, carte).
+          Paiement sécurisé via PayTech (Wave, Orange Money, carte).
         </p>
       </div>
     </div>
