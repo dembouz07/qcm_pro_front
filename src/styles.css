@@ -1589,16 +1589,20 @@ tr:last-child td { border-bottom: 0; }
 @media (max-width: 560px) {
   .landing-nav {
     padding: 12px 16px;
-    gap: 8px;
+    gap: 10px;
+    flex-wrap: nowrap;
   }
-  .landing-brand { font-size: 1.05rem; }
-  .landing-nav .brand-icon { width: 36px; height: 36px; }
-  .landing-nav-actions { gap: 8px; }
+  .landing-brand { font-size: 1.05rem; flex-shrink: 0; }
+  .landing-nav .brand-icon { width: 34px; height: 34px; }
+  /* On masque les liens texte secondaires pour garder une nav alignée sur une seule ligne */
+  .landing-nav-actions .auth-topbar-link { display: none; }
+  .landing-nav-actions { gap: 8px; flex-wrap: nowrap; align-items: center; }
   .landing-nav-actions .secondary-btn,
   .landing-nav-actions .primary-btn {
-    padding: 9px 12px;
-    font-size: 0.85rem;
+    padding: 8px 12px;
+    font-size: 0.82rem;
     border-radius: 12px;
+    white-space: nowrap;
   }
 
   .landing-hero { padding: 28px 18px 10px; gap: 24px; }
@@ -1619,6 +1623,13 @@ tr:last-child td { border-bottom: 0; }
   .landing-features { padding: 36px 18px; }
   .landing-final { margin: 0 14px 30px; padding: 40px 18px; }
   .landing-footer { padding: 22px 18px; flex-direction: column; text-align: center; }
+}
+
+@media (max-width: 360px) {
+  /* Très petits écrans : on garde uniquement l'icône du logo pour laisser la place aux boutons */
+  .landing-brand span:last-child { display: none; }
+  .landing-nav-actions .secondary-btn,
+  .landing-nav-actions .primary-btn { padding: 7px 10px; font-size: 0.78rem; }
 }
 
 /* ─── Bannière code de classe ───────────────────────── */
