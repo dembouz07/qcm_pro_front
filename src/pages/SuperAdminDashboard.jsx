@@ -40,7 +40,7 @@ export default function SuperAdminDashboard() {
           <h1>Tableau de bord plateforme</h1>
           <p>Vue globale de l'activité de la plateforme QCM Pro.</p>
         </div>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <div className="header-actions">
           <Link className="secondary-btn" to="/superadmin/revenue">
             <FontAwesomeIcon icon={faSackDollar} /> Revenus
           </Link>

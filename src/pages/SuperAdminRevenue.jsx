@@ -104,7 +104,7 @@ export default function SuperAdminRevenue() {
           <h1>Statistiques de revenus</h1>
           <p>Suivez les revenus des abonnements par semaine, mois ou année.</p>
         </div>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <div className="header-actions">
           <Link className="secondary-btn" to="/superadmin"><FontAwesomeIcon icon={faArrowLeft} /> Retour</Link>
           <button className="secondary-btn" type="button" onClick={loadRevenue} disabled={loading}>
             <FontAwesomeIcon icon={faRotateRight} /> Actualiser
