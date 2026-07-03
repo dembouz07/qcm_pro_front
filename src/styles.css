@@ -482,10 +482,13 @@ tr:last-child td { border-bottom: 0; }
   .auth-page { padding: 88px 16px 24px; }
   .auth-hero { display: none; }
   .auth-card { display: block; }
-  .auth-topbar { padding: 12px 16px; }
-  .auth-topbar-link { padding: 6px 8px; font-size: 0.9rem; }
+  .auth-topbar { padding: 12px 16px; flex-wrap: nowrap; gap: 10px; }
+  .auth-topbar-brand { font-size: 1.02rem; flex-shrink: 0; }
+  .auth-topbar .brand-icon { width: 34px; height: 34px; }
+  .auth-topbar-actions { flex-wrap: nowrap; gap: 8px; }
+  .auth-topbar-link { padding: 6px 8px; font-size: 0.86rem; white-space: nowrap; }
   .auth-topbar-actions .secondary-btn,
-  .auth-topbar-actions .primary-btn { padding: 8px 11px; font-size: 0.82rem; }
+  .auth-topbar-actions .primary-btn { padding: 8px 11px; font-size: 0.82rem; white-space: nowrap; }
   .form-card { padding: 22px; }
   .main-content { padding: 16px; }
   .choice-row { grid-template-columns: 42px 1fr; }
@@ -1630,6 +1633,11 @@ tr:last-child td { border-bottom: 0; }
   .landing-brand span:last-child { display: none; }
   .landing-nav-actions .secondary-btn,
   .landing-nav-actions .primary-btn { padding: 7px 10px; font-size: 0.78rem; }
+
+  .auth-topbar-brand span:last-child { display: none; }
+  .auth-topbar-actions .secondary-btn,
+  .auth-topbar-actions .primary-btn { padding: 7px 10px; font-size: 0.78rem; }
+  .auth-topbar-link { padding: 6px; font-size: 0.82rem; }
 }
 
 /* ─── Bannière code de classe ───────────────────────── */
