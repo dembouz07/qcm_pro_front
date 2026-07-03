@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBookOpen, faChartLine, faDoorOpen, faFileImport, faGraduationCap, faLayerGroup, faCirclePlus, faUserShield, faBars, faXmark, faDiagramProject, faCrown, faSackDollar } from '@fortawesome/free-solid-svg-icons';
@@ -8,6 +8,12 @@ export default function Navbar() {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Verrouille le défilement de la page quand le tiroir est ouvert
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
 
   async function handleLogout() {
     setMenuOpen(false);
@@ -68,6 +74,12 @@ export default function Navbar() {
           <FontAwesomeIcon icon={faDoorOpen} /> Déconnexion
         </button>
       </div>
+
+      <div
+        className="sidebar-backdrop"
+        onClick={() => setMenuOpen(false)}
+        aria-hidden="true"
+      />
     </aside>
   );
 }
