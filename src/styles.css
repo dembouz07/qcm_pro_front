@@ -75,12 +75,10 @@ a { color: inherit; text-decoration: none; }
 }
 
 .brand-logo {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 72px;
+  height: 72px;
   display: block;
   object-fit: contain;
-  box-shadow: 0 12px 26px rgba(91, 92, 246, 0.35);
 }
 
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -486,7 +484,7 @@ tr:last-child td { border-bottom: 0; }
   .sidebar-header { flex: 1; }
   .sidebar .brand { font-size: 1.15rem; }
   .sidebar .brand-icon { width: 38px; height: 38px; }
-  .sidebar .brand-logo { width: 38px; height: 38px; }
+  .sidebar .brand-logo { width: 56px; height: 56px; }
   .menu-toggle { display: flex; }
 
   /* Tiroir latéral coulissant */
@@ -554,7 +552,7 @@ tr:last-child td { border-bottom: 0; }
   .auth-topbar { padding: 12px 16px; flex-wrap: nowrap; gap: 10px; }
   .auth-topbar-brand { font-size: 1.02rem; flex-shrink: 0; }
   .auth-topbar .brand-icon { width: 34px; height: 34px; }
-  .auth-topbar .brand-logo { width: 34px; height: 34px; }
+  .auth-topbar .brand-logo { width: 52px; height: 52px; }
   .auth-topbar-actions { flex-wrap: nowrap; gap: 8px; }
   .auth-topbar-link { padding: 6px 8px; font-size: 0.86rem; white-space: nowrap; }
   .auth-topbar-actions .secondary-btn,
@@ -1667,7 +1665,7 @@ tr:last-child td { border-bottom: 0; }
   }
   .landing-brand { font-size: 1.05rem; flex-shrink: 0; }
   .landing-nav .brand-icon { width: 34px; height: 34px; }
-  .landing-nav .brand-logo { width: 34px; height: 34px; }
+  .landing-nav .brand-logo { width: 52px; height: 52px; }
   /* On masque les liens texte secondaires pour garder une nav alignée sur une seule ligne */
   .landing-nav-actions .auth-topbar-link { display: none; }
   .landing-nav-actions { gap: 8px; flex-wrap: nowrap; align-items: center; }

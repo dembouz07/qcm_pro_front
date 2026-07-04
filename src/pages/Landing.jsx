@@ -60,7 +60,6 @@ export default function Landing() {
       <header className="landing-nav">
         <div className="brand landing-brand">
           <img src="/logo.png" className="brand-logo" alt="QCM Pro" />
-          <span>QCM Pro</span>
         </div>
         <div className="landing-nav-actions">
           <a className="auth-topbar-link" href="#tarifs">Tarifs</a>
@@ -194,7 +193,6 @@ export default function Landing() {
       <footer className="landing-footer">
         <div className="brand landing-brand">
           <img src="/logo.png" className="brand-logo" alt="QCM Pro" />
-          <span>QCM Pro</span>
         </div>
         <small>© {new Date().getFullYear()} QCM Pro — Plateforme d'évaluation en ligne</small>
       </footer>
