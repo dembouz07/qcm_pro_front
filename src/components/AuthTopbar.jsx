@@ -6,7 +6,7 @@ export default function AuthTopbar({ active }) {
   return (
     <header className="auth-topbar">
       <Link className="brand auth-topbar-brand" to="/">
-        <img src="/app-icon.svg" className="brand-logo" alt="QCM Pro" />
+        <img src="/logo.png" className="brand-logo" alt="QCM Pro" />
         <span>QCM Pro</span>
       </Link>
 

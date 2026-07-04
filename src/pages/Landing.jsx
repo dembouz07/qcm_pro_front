@@ -59,7 +59,7 @@ export default function Landing() {
     <div className="landing">
       <header className="landing-nav">
         <div className="brand landing-brand">
-          <img src="/app-icon.svg" className="brand-logo" alt="QCM Pro" />
+          <img src="/logo.png" className="brand-logo" alt="QCM Pro" />
           <span>QCM Pro</span>
         </div>
         <div className="landing-nav-actions">
@@ -193,7 +193,7 @@ export default function Landing() {
 
       <footer className="landing-footer">
         <div className="brand landing-brand">
-          <img src="/app-icon.svg" className="brand-logo" alt="QCM Pro" />
+          <img src="/logo.png" className="brand-logo" alt="QCM Pro" />
           <span>QCM Pro</span>
         </div>
         <small>© {new Date().getFullYear()} QCM Pro — Plateforme d'évaluation en ligne</small>
