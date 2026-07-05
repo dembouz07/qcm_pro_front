@@ -12,7 +12,8 @@ import {
   faLayerGroup,
   faUsers,
   faLink,
-  faCopy
+  faCopy,
+  faPaperPlane
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
@@ -26,6 +27,7 @@ export default function QuizView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [notifying, setNotifying] = useState(false);
 
   useEffect(() => {
     loadQuiz();
@@ -55,6 +57,25 @@ export default function QuizView() {
       navigate('/admin/quizzes');
     } catch (err) {
       alert({ title: 'Erreur', message: getApiError(err), variant: 'error' });
+    }
+  }
+
+  async function notifyStudents() {
+    const ok = await confirm({
+      title: 'Notifier les élèves',
+      message: 'Envoyer un email à tous les élèves de la classe pour les informer de ce QCM ?',
+      confirmText: 'Envoyer',
+      danger: false,
+    });
+    if (!ok) return;
+    setNotifying(true);
+    try {
+      const response = await api.post(`/admin/quizzes/${id}/notify`);
+      await alert({ title: 'Notification envoyée', message: response.data.message });
+    } catch (err) {
+      await alert({ title: 'Erreur', message: getApiError(err), variant: 'error' });
+    } finally {
+      setNotifying(false);
     }
   }
 
@@ -108,6 +129,9 @@ export default function QuizView() {
           <p>{quiz.description || 'Aucune description'}</p>
         </div>
         <div className="header-actions">
+          <button onClick={notifyStudents} className="secondary-btn" disabled={notifying}>
+            <FontAwesomeIcon icon={faPaperPlane} /> {notifying ? 'Envoi...' : 'Notifier par email'}
+          </button>
           <Link to={`/admin/quizzes/${quiz.id}/edit`} className="primary-btn">
             <FontAwesomeIcon icon={faEdit} /> Modifier
           </Link>
