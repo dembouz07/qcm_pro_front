@@ -109,7 +109,6 @@ export default function QuizList() {
                 <th>Classe</th>
                 <th>Questions</th>
                 <th>Soumissions</th>
-                <th>Date d'ouverture</th>
                 <th>Statut</th>
                 <th>Actions</th>
               </tr>
@@ -117,7 +116,7 @@ export default function QuizList() {
             <tbody>
               {quizzes.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="empty-state">
+                  <td colSpan="6" className="empty-state">
                     Aucun QCM pour le moment. Créez-en un ou importez un fichier.
                   </td>
                 </tr>
@@ -133,7 +132,6 @@ export default function QuizList() {
                     <td>{quiz.school_class?.name || '-'}</td>
                     <td>{quiz.questions_count || 0}</td>
                     <td>{quiz.submissions_count || 0}</td>
-                    <td>{formatDateTime(quiz.starts_at)}</td>
                     <td>{getStatusBadge(quiz)}</td>
                     <td className="actions">
                       <Link to={`/admin/quizzes/${quiz.id}`} className="icon-btn" title="Voir les détails">
