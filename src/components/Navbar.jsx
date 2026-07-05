@@ -28,7 +28,7 @@ export default function Navbar() {
     <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
         <Link className="brand" to={user.role === 'superadmin' ? '/superadmin' : user.role === 'admin' ? '/admin' : '/student'} onClick={() => setMenuOpen(false)}>
-          <img src="/logo.png" className="brand-logo" alt="QCM Pro" />
+          <img src="/logoSidebar.png" className="brand-logo" alt="QCM Pro" />
         </Link>
 
         <button className="menu-toggle" onClick={() => setMenuOpen((open) => !open)} aria-label="Menu" aria-expanded={menuOpen}>
