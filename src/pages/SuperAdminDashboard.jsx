@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, animate, useMotionValue, useTransform } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faListCheck, faCircleCheck, faStar, faArrowUp, faArrowDown,
@@ -10,7 +11,20 @@ import api, { getApiError } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 
 const CAT_COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#7c3aed', '#c7d2fe'];
-const fmt = (n) => new Intl.NumberFormat('fr-FR').format(n || 0);
+const nf = new Intl.NumberFormat('fr-FR');
+const fmt = (n) => nf.format(n || 0);
+
+/* Compteur animé (0 -> valeur) */
+function CountUp({ value, suffix = '' }) {
+  const mv = useMotionValue(0);
+  const text = useTransform(mv, (v) => fmt(Math.round(v)) + suffix);
+  useEffect(() => {
+    const controls = animate(mv, value || 0, { duration: 1.1, ease: [0.22, 1, 0.36, 1] });
+    return controls.stop;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+  return <motion.span>{text}</motion.span>;
+}
 
 function Trend({ value }) {
   const up = (value ?? 0) >= 0;
@@ -55,11 +69,29 @@ function LineChart({ series }) {
           </g>
         );
       })}
-      {area && <path d={area} fill="url(#lcArea)" />}
-      {line && <path d={line} fill="none" stroke="#6366f1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />}
+      {area && (
+        <motion.path
+          d={area} fill="url(#lcArea)"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+        />
+      )}
+      {line && (
+        <motion.path
+          d={line} fill="none" stroke="#6366f1" strokeWidth="3"
+          strokeLinecap="round" strokeLinejoin="round"
+          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+          transition={{ duration: 1.1, ease: 'easeInOut' }}
+        />
+      )}
       {pts.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#6366f1" strokeWidth="2.5" />
+          <motion.circle
+            cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#6366f1" strokeWidth="2.5"
+            initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.5 + i * 0.09, type: 'spring', stiffness: 400, damping: 18 }}
+            style={{ transformOrigin: `${p.x}px ${p.y}px` }}
+          />
           <text x={p.x} y={h - 10} fontSize="10" fill="#64748b" textAnchor="middle">{p.label}</text>
         </g>
       ))}
@@ -70,7 +102,6 @@ function LineChart({ series }) {
 function Donut({ data }) {
   const total = data.reduce((s, d) => s + d.value, 0);
   const r = 62, cx = 80, cy = 80, stroke = 24;
-  const circ = 2 * Math.PI * r;
   let acc = 0;
 
   return (
@@ -79,38 +110,51 @@ function Donut({ data }) {
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#eef2ff" strokeWidth={stroke} />
         {total > 0 && data.map((d, i) => {
           const frac = d.value / total;
-          const dash = frac * circ;
-          const seg = (
-            <circle
+          const offset = acc;
+          acc += frac;
+          return (
+            <motion.circle
               key={i}
               cx={cx} cy={cy} r={r} fill="none"
               stroke={CAT_COLORS[i % CAT_COLORS.length]}
               strokeWidth={stroke}
-              strokeDasharray={`${dash} ${circ - dash}`}
-              strokeDashoffset={-acc * circ}
               transform={`rotate(-90 ${cx} ${cy})`}
-              strokeLinecap="butt"
+              style={{ pathOffset: offset }}
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: frac }}
+              transition={{ duration: 0.9, delay: 0.25 + i * 0.12, ease: 'easeOut' }}
             />
           );
-          acc += frac;
-          return seg;
         })}
         <text x={cx} y={cy - 4} fontSize="26" fontWeight="800" fill="#0f172a" textAnchor="middle">{fmt(total)}</text>
         <text x={cx} y={cy + 16} fontSize="11" fill="#64748b" textAnchor="middle">Total</text>
       </svg>
       <ul className="sa-legend">
         {data.map((d, i) => (
-          <li key={i}>
+          <motion.li
+            key={i}
+            initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 + i * 0.08 }}
+          >
             <span className="dot" style={{ background: CAT_COLORS[i % CAT_COLORS.length] }} />
             <span className="lbl">{d.label}</span>
             <span className="val">{fmt(d.value)}</span>
-          </li>
+          </motion.li>
         ))}
         {data.length === 0 && <li className="muted">Aucune donnée</li>}
       </ul>
     </div>
   );
 }
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09 } },
+};
+const rise = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+};
 
 export default function SuperAdminDashboard() {
   const { user } = useAuth();
@@ -158,44 +202,44 @@ export default function SuperAdminDashboard() {
       {loading ? (
         <div className="empty">Chargement du tableau de bord...</div>
       ) : stats && k ? (
-        <>
-          <section className="sa-kpis">
-            <div className="sa-kpi highlight">
+        <motion.div variants={container} initial="hidden" animate="show">
+          <motion.section className="sa-kpis" variants={container}>
+            <motion.div className="sa-kpi highlight" variants={rise} whileHover={{ y: -5 }}>
               <span className="sa-kpi-ico"><FontAwesomeIcon icon={faListCheck} /></span>
               <small>Total QCM</small>
-              <strong>{fmt(k.total_assessments)}</strong>
+              <strong><CountUp value={k.total_assessments} /></strong>
               <Trend value={k.total_assessments_change} />
-            </div>
-            <div className="sa-kpi">
+            </motion.div>
+            <motion.div className="sa-kpi" variants={rise} whileHover={{ y: -5 }}>
               <span className="sa-kpi-ico"><FontAwesomeIcon icon={faCircleCheck} /></span>
               <small>Tests passés</small>
-              <strong>{fmt(k.completed)}</strong>
+              <strong><CountUp value={k.completed} /></strong>
               <Trend value={k.completed_change} />
-            </div>
-            <div className="sa-kpi">
+            </motion.div>
+            <motion.div className="sa-kpi" variants={rise} whileHover={{ y: -5 }}>
               <span className="sa-kpi-ico"><FontAwesomeIcon icon={faStar} /></span>
               <small>Score moyen</small>
-              <strong>{k.avg_score}%</strong>
+              <strong><CountUp value={k.avg_score} suffix="%" /></strong>
               <Trend value={k.avg_score_change} />
-            </div>
-          </section>
+            </motion.div>
+          </motion.section>
 
-          <section className="sa-grid">
-            <div className="panel sa-perf">
+          <motion.section className="sa-grid" variants={container}>
+            <motion.div className="panel sa-perf" variants={rise}>
               <div className="sa-panel-head">
                 <h3>Performance (7 jours)</h3>
                 <span className="badge">{fmt(stats.submissions.last_7_days)} tests</span>
               </div>
               <LineChart series={stats.performance || []} />
-            </div>
+            </motion.div>
 
-            <div className="panel sa-cat">
+            <motion.div className="panel sa-cat" variants={rise}>
               <div className="sa-panel-head"><h3>QCM par classe</h3></div>
               <Donut data={stats.categories || []} />
-            </div>
-          </section>
+            </motion.div>
+          </motion.section>
 
-          <section className="panel sa-activity">
+          <motion.section className="panel sa-activity" variants={rise}>
             <div className="sa-panel-head">
               <h3>Activité récente</h3>
               <Link className="sa-link" to="/superadmin/users">Tout voir <FontAwesomeIcon icon={faArrowRight} /></Link>
@@ -205,19 +249,24 @@ export default function SuperAdminDashboard() {
             ) : (
               <ul className="sa-feed">
                 {stats.recent_activity.map((a, i) => (
-                  <li key={i}>
+                  <motion.li
+                    key={i}
+                    initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.07 }}
+                    whileHover={{ x: 4 }}
+                  >
                     <span className="sa-feed-ico"><FontAwesomeIcon icon={faClipboardCheck} /></span>
                     <div className="sa-feed-body">
                       <strong>{a.title}</strong>
                       <small>{a.participant}{a.note != null ? ` · ${a.note}/20` : ''}</small>
                     </div>
                     <span className="sa-feed-time">{a.time_ago}</span>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             )}
-          </section>
-        </>
+          </motion.section>
+        </motion.div>
       ) : null}
     </div>
   );
