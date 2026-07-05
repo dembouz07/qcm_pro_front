@@ -40,6 +40,7 @@ export default function QuizEdit() {
           return {
             id: q.id,
             body: q.body || '',
+            explanation: q.explanation || '',
             points: q.points || 1,
             choices: (q.choices || []).map((c, cIndex) => {
               console.log(`  Choice ${cIndex + 1}:`, c);
@@ -213,6 +214,15 @@ export default function QuizEdit() {
           />
         </label>
 
+        <label className="span-2 toggle-field">
+          <input
+            type="checkbox"
+            checked={quiz.show_corrections || false}
+            onChange={(e) => setQuiz({ ...quiz, show_corrections: e.target.checked })}
+          />
+          <span>Afficher la correction aux élèves après soumission (bonnes réponses + explications)</span>
+        </label>
+
         <div className="span-2">
           <h2>Questions ({quiz.questions.length})</h2>
           {quiz.questions.map((question, qIndex) => (
@@ -247,6 +257,16 @@ export default function QuizEdit() {
                   max="100"
                   value={question.points || 1}
                   onChange={(e) => updateQuestion(qIndex, 'points', parseInt(e.target.value))}
+                />
+              </label>
+
+              <label>
+                Explication (affichée dans la correction, optionnel)
+                <textarea
+                  rows="2"
+                  value={question.explanation || ''}
+                  onChange={(e) => updateQuestion(qIndex, 'explanation', e.target.value)}
+                  placeholder="Pourquoi cette réponse est correcte..."
                 />
               </label>
 

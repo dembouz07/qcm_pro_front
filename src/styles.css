@@ -2247,3 +2247,75 @@ tr:last-child td { border-bottom: 0; }
   .dlg-actions .primary-btn,
   .dlg-actions .secondary-btn { max-width: none; width: 100%; }
 }
+
+/* ─── Correction QCM ────────────────────────────────── */
+.toggle-field {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  background: rgba(91, 92, 246, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.toggle-field input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--primary); }
+
+.correction { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+.corr-q {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+}
+.corr-q.ok { border-left-color: var(--accent); }
+.corr-q.ko { border-left-color: var(--danger); }
+.corr-q-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.corr-badge {
+  width: 24px; height: 24px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 8px; color: #fff; font-size: 0.75rem;
+}
+.corr-badge.ok { background: var(--accent); }
+.corr-badge.ko { background: var(--danger); }
+.corr-choices { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.corr-choices li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(98, 112, 145, 0.05);
+  font-size: 0.95rem;
+}
+.corr-choices li.correct { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3); }
+.corr-choices li.wrong { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+.corr-mark { width: 18px; text-align: center; flex-shrink: 0; }
+.corr-choices li.correct .corr-mark { color: var(--accent); }
+.corr-choices li.wrong .corr-mark { color: var(--danger); }
+.corr-body { flex: 1; }
+.corr-tag {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  color: var(--primary); background: rgba(91, 92, 246, 0.12);
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+}
+.corr-explain {
+  margin-top: 10px; padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.1); border-radius: 10px;
+  color: #92400e; font-size: 0.9rem; line-height: 1.5;
+}
+
+.correction-modal {
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  text-align: left;
+  position: relative;
+}
+.correction-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 34px; height: 34px; border: 0; border-radius: 10px;
+  background: rgba(98, 112, 145, 0.12); color: var(--text);
+  display: grid; place-items: center; cursor: pointer;
+}

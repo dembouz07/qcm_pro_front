@@ -5,6 +5,7 @@ import { faCheckCircle, faCircleQuestion, faClock, faPaperPlane, faRotateLeft, f
 import api, { getApiError } from '../api.js';
 import { useAntiCheat } from '../useAntiCheat.js';
 import AntiCheatRules from '../components/AntiCheatRules.jsx';
+import CorrectionView from '../components/CorrectionView.jsx';
 
 export default function TakeQuiz() {
   const { id } = useParams();
@@ -12,6 +13,7 @@ export default function TakeQuiz() {
   const [answers, setAnswers] = useState({});
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [correction, setCorrection] = useState(null);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [autoSubmitting, setAutoSubmitting] = useState(false);
@@ -139,6 +141,9 @@ export default function TakeQuiz() {
     try {
       const response = await api.post(`/student/quizzes/${id}/submit`, buildPayload(auto));
       setResult(response.data.submission);
+      if (response.data.show_corrections && response.data.correction) {
+        setCorrection(response.data.correction);
+      }
       try { localStorage.removeItem(`qcm_progress_${id}`); } catch { /* ignore */ }
     } catch (err) {
       setError(getApiError(err));
@@ -208,6 +213,13 @@ export default function TakeQuiz() {
           <p className="muted">Score : {result.score}/{result.total_points} · {result.percentage}%</p>
           <Link className="primary-btn" to="/student">Retour à mes QCM</Link>
         </div>
+
+        {correction && (
+          <div className="panel" style={{ marginTop: 18 }}>
+            <h2><FontAwesomeIcon icon={faCircleQuestion} /> Correction détaillée</h2>
+            <CorrectionView correction={correction} />
+          </div>
+        )}
       </div>
     );
   }

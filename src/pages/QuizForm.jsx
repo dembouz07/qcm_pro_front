@@ -6,6 +6,7 @@ import api, { getApiError } from '../api.js';
 
 const emptyQuestion = () => ({
   body: '',
+  explanation: '',
   points: 1,
   choices: [
     { body: '', is_correct: true },
@@ -24,6 +25,7 @@ export default function QuizForm() {
     school_class_id: '',
     starts_at: '',
     ends_at: '',
+    show_corrections: false,
     questions: [emptyQuestion()]
   });
 
@@ -133,6 +135,14 @@ export default function QuizForm() {
             Description
             <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows="3" />
           </label>
+          <label className="span-2 toggle-field">
+            <input
+              type="checkbox"
+              checked={form.show_corrections}
+              onChange={(e) => setForm({ ...form, show_corrections: e.target.checked })}
+            />
+            <span>Afficher la correction aux élèves après soumission (bonnes réponses + explications)</span>
+          </label>
         </section>
 
         <section className="questions-list">
@@ -153,6 +163,16 @@ export default function QuizForm() {
               <label className="points-field">
                 Points
                 <input type="number" min="1" value={question.points} onChange={(e) => updateQuestion(questionIndex, { points: Number(e.target.value) })} />
+              </label>
+
+              <label>
+                Explication (affichée dans la correction, optionnel)
+                <textarea
+                  value={question.explanation || ''}
+                  onChange={(e) => updateQuestion(questionIndex, { explanation: e.target.value })}
+                  rows="2"
+                  placeholder="Pourquoi cette réponse est correcte..."
+                />
               </label>
 
               <div className="choices">

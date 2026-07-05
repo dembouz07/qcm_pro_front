@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faMedal, faTrophy, faRotateRight, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faAward, faMedal, faTrophy, faRotateRight, faTriangleExclamation, faListCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import CorrectionView from '../components/CorrectionView.jsx';
 import { formatDateTime } from '../utils/time.js';
 
 export default function StudentResults() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [correction, setCorrection] = useState(null);
+  const [loadingCorrection, setLoadingCorrection] = useState(false);
 
   async function loadResults() {
     try {
@@ -18,6 +22,20 @@ export default function StudentResults() {
       setError(getApiError(err));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function openCorrection(quizId) {
+    try {
+      setLoadingCorrection(true);
+      setCorrection({ loading: true });
+      const response = await api.get(`/student/quizzes/${quizId}/correction`);
+      setCorrection(response.data);
+    } catch (err) {
+      setCorrection(null);
+      setError(getApiError(err));
+    } finally {
+      setLoadingCorrection(false);
     }
   }
 
@@ -70,6 +88,7 @@ export default function StudentResults() {
                 <th>Score</th>
                 <th>Résultat</th>
                 <th>Passé le</th>
+                <th>Correction</th>
               </tr>
             </thead>
             <tbody>
@@ -85,12 +104,53 @@ export default function StudentResults() {
                     )}
                   </td>
                   <td>{formatDateTime(r.submitted_at)}</td>
+                  <td>
+                    {r.show_corrections && r.quiz_id ? (
+                      <button className="secondary-btn small" type="button" onClick={() => openCorrection(r.quiz_id)}>
+                        <FontAwesomeIcon icon={faListCheck} /> Voir
+                      </button>
+                    ) : (
+                      <span className="muted">—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      <AnimatePresence>
+        {correction && (
+          <motion.div
+            className="dlg-overlay"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setCorrection(null)}
+          >
+            <motion.div
+              className="dlg-card correction-modal"
+              initial={{ opacity: 0, scale: 0.94, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="correction-close" type="button" onClick={() => setCorrection(null)} aria-label="Fermer">
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+              {correction.loading || loadingCorrection ? (
+                <div className="empty">Chargement de la correction...</div>
+              ) : (
+                <>
+                  <h2 style={{ marginTop: 0 }}>{correction.quiz_title}</h2>
+                  <p className="muted">Note : {correction.note_sur_20}/20 · {correction.score}/{correction.total_points} points</p>
+                  <CorrectionView correction={correction} />
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
