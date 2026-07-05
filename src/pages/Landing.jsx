@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -17,7 +18,8 @@ import {
   faPenToSquare,
   faShareNodes,
   faRankingStar,
-  faGift
+  faGift,
+  faChevronDown
 } from '@fortawesome/free-solid-svg-icons';
 
 // 👉 Remplace par ton vrai numéro WhatsApp (format international, sans +, sans espaces)
@@ -54,6 +56,7 @@ const faqs = [
 
 export default function Landing() {
   const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Bonjour, je souhaite des informations sur QCM Pro.")}`;
+  const [openFaq, setOpenFaq] = useState(null);
 
   return (
     <div className="landing">
@@ -173,12 +176,27 @@ export default function Landing() {
       <section className="landing-faq">
         <h2>Questions fréquentes</h2>
         <div className="faq-list">
-          {faqs.map((f, i) => (
-            <details className="faq-item" key={i}>
-              <summary>{f.q}</summary>
-              <p>{f.a}</p>
-            </details>
-          ))}
+          {faqs.map((f, i) => {
+            const isOpen = openFaq === i;
+            return (
+              <div className={`faq-item ${isOpen ? 'open' : ''}`} key={i}>
+                <button
+                  type="button"
+                  className="faq-question"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpenFaq(isOpen ? null : i)}
+                >
+                  <span>{f.q}</span>
+                  <FontAwesomeIcon icon={faChevronDown} className="faq-chevron" />
+                </button>
+                <div className="faq-answer">
+                  <div className="faq-answer-inner">
+                    <p>{f.a}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 

@@ -2025,21 +2025,54 @@ tr:last-child td { border-bottom: 0; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 4px 18px;
+  padding: 0 18px;
   box-shadow: var(--shadow);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
-.faq-item summary {
+.faq-item.open {
+  border-color: rgba(91, 92, 246, 0.45);
+  box-shadow: 0 18px 44px rgba(91, 92, 246, 0.16);
+}
+.faq-question {
+  width: 100%;
   cursor: pointer;
   font-weight: 800;
-  padding: 14px 0;
-  list-style: none;
+  font-size: 1rem;
+  color: var(--text);
+  padding: 16px 0;
+  border: 0;
+  background: transparent;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 14px;
+  text-align: left;
 }
-.faq-item summary::after { content: '+'; color: var(--primary); font-size: 1.4rem; }
-.faq-item[open] summary::after { content: '−'; }
-.faq-item p { margin: 0 0 14px; color: var(--muted); }
+.faq-chevron {
+  color: var(--primary);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+/* Animation d'ouverture fluide (0fr -> 1fr) */
+.faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.faq-item.open .faq-answer { grid-template-rows: 1fr; }
+.faq-answer-inner { overflow: hidden; }
+.faq-answer-inner p {
+  margin: 0;
+  padding: 0 0 16px;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.3s ease 0.08s, transform 0.3s ease 0.08s;
+}
+.faq-item.open .faq-answer-inner p { opacity: 1; transform: translateY(0); }
 
 /* ─── Bouton WhatsApp flottant ──────────────────────── */
 .whatsapp-fab {
