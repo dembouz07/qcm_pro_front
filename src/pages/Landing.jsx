@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -58,9 +59,28 @@ export default function Landing() {
   const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Bonjour, je souhaite des informations sur QCM Pro.")}`;
   const [openFaq, setOpenFaq] = useState(null);
 
+  // Animations
+  const ease = [0.22, 1, 0.36, 1];
+  const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
+  const fadeUp = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
+  };
+  const reveal = {
+    initial: 'hidden',
+    whileInView: 'show',
+    viewport: { once: true, amount: 0.2 },
+    variants: stagger,
+  };
+
   return (
     <div className="landing">
-      <header className="landing-nav">
+      <motion.header
+        className="landing-nav"
+        initial={{ y: -70, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease }}
+      >
         <div className="brand landing-brand">
           <img src="/logo.png" className="brand-logo" alt="QCM Pro" />
         </div>
@@ -70,73 +90,95 @@ export default function Landing() {
           <Link className="secondary-btn" to="/login"><FontAwesomeIcon icon={faRightToBracket} /> Connexion</Link>
           <Link className="primary-btn" to="/register"><FontAwesomeIcon icon={faUserPlus} /> Inscription</Link>
         </div>
-      </header>
+      </motion.header>
 
       <section className="landing-hero">
-        <div className="landing-hero-text">
-          <span className="landing-badge"><FontAwesomeIcon icon={faGift} /> 1er mois offert pour les formateurs</span>
-          <h1>Créez, partagez et évaluez vos QCM en toute simplicité</h1>
-          <p>
+        <motion.div
+          className="landing-hero-text"
+          initial="hidden" animate="show" variants={stagger}
+        >
+          <motion.span className="landing-badge" variants={fadeUp}>
+            <FontAwesomeIcon icon={faGift} /> 1er mois offert pour les formateurs
+          </motion.span>
+          <motion.h1 variants={fadeUp}>Créez, partagez et évaluez vos QCM en toute simplicité</motion.h1>
+          <motion.p variants={fadeUp}>
             QCM Pro permet aux formateurs de créer des questionnaires, de les programmer pour leurs classes
             et de suivre les résultats en temps réel. Les apprenants passent leurs tests en ligne, où qu'ils soient.
-          </p>
-          <div className="landing-cta">
-            <Link className="primary-btn large" to="/register-admin">
-              Essayer gratuitement <FontAwesomeIcon icon={faArrowRight} />
-            </Link>
+          </motion.p>
+          <motion.div className="landing-cta" variants={fadeUp}>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+              <Link className="primary-btn large" to="/register-admin">
+                Essayer gratuitement <FontAwesomeIcon icon={faArrowRight} />
+              </Link>
+            </motion.div>
             <Link className="secondary-btn large" to="/login">
               J'ai déjà un compte
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
         <div className="landing-hero-visual">
-          <div className="floating-card card-1">
+          <motion.div
+            className="floating-card card-1"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
+            transition={{ opacity: { delay: 0.4, duration: 0.5 }, scale: { delay: 0.4, duration: 0.5 }, y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut' } }}
+          >
             <FontAwesomeIcon icon={faChartLine} />
             <div><strong>18/20</strong><small>Note moyenne</small></div>
-          </div>
-          <div className="floating-card card-2">
+          </motion.div>
+          <motion.div
+            className="floating-card card-2"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1, y: [0, -16, 0] }}
+            transition={{ opacity: { delay: 0.6, duration: 0.5 }, scale: { delay: 0.6, duration: 0.5 }, y: { repeat: Infinity, duration: 5.2, ease: 'easeInOut', delay: 0.5 } }}
+          >
             <FontAwesomeIcon icon={faClock} />
             <div><strong>Ouvre dans 5 min</strong><small>QCM programmé</small></div>
-          </div>
-          <div className="floating-card card-3">
+          </motion.div>
+          <motion.div
+            className="floating-card card-3"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1, y: [0, -12, 0] }}
+            transition={{ opacity: { delay: 0.8, duration: 0.5 }, scale: { delay: 0.8, duration: 0.5 }, y: { repeat: Infinity, duration: 4, ease: 'easeInOut', delay: 1 } }}
+          >
             <FontAwesomeIcon icon={faGraduationCap} />
             <div><strong>Stade 3</strong><small>Diagnostic équipe</small></div>
-          </div>
+          </motion.div>
           <div className="hero-glow" />
         </div>
       </section>
 
-      <section className="landing-steps">
-        <h2>Comment ça marche ?</h2>
+      <motion.section className="landing-steps" {...reveal}>
+        <motion.h2 variants={fadeUp}>Comment ça marche ?</motion.h2>
         <div className="steps-grid">
           {steps.map((s) => (
-            <div className="step-card" key={s.title}>
+            <motion.div className="step-card" key={s.title} variants={fadeUp} whileHover={{ y: -6 }}>
               <div className="step-icon"><FontAwesomeIcon icon={s.icon} /></div>
               <h3>{s.title}</h3>
               <p>{s.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="landing-features">
-        <h2>Tout ce qu'il faut pour évaluer efficacement</h2>
+      <motion.section className="landing-features" {...reveal}>
+        <motion.h2 variants={fadeUp}>Tout ce qu'il faut pour évaluer efficacement</motion.h2>
         <div className="landing-feature-grid">
           {features.map((f) => (
-            <div className="landing-feature" key={f.title}>
+            <motion.div className="landing-feature" key={f.title} variants={fadeUp} whileHover={{ y: -6 }}>
               <div className="landing-feature-icon"><FontAwesomeIcon icon={f.icon} /></div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="landing-pricing" id="tarifs">
-        <h2>Tarifs simples</h2>
-        <p className="landing-pricing-sub">Les élèves utilisent QCM Pro gratuitement. Les formateurs profitent d'un 1er mois offert.</p>
+      <motion.section className="landing-pricing" id="tarifs" {...reveal}>
+        <motion.h2 variants={fadeUp}>Tarifs simples</motion.h2>
+        <motion.p className="landing-pricing-sub" variants={fadeUp}>Les élèves utilisent QCM Pro gratuitement. Les formateurs profitent d'un 1er mois offert.</motion.p>
         <div className="pricing-grid">
-          <div className="pricing-card">
+          <motion.div className="pricing-card" variants={fadeUp} whileHover={{ y: -6 }}>
             <div className="pricing-icon student"><FontAwesomeIcon icon={faUser} /></div>
             <h3>Élève</h3>
             <div className="pricing-price"><span className="pricing-amount">Gratuit</span></div>
@@ -148,9 +190,13 @@ export default function Landing() {
             <Link className="secondary-btn large" to="/register">
               <FontAwesomeIcon icon={faUserPlus} /> Inscription élève
             </Link>
-          </div>
+          </motion.div>
 
-          <div className="pricing-card featured">
+          <motion.div
+            className="pricing-card featured"
+            variants={fadeUp}
+            whileHover={{ y: -8, scale: 1.02 }}
+          >
             <div className="pricing-badge">1er mois offert</div>
             <div className="pricing-icon admin"><FontAwesomeIcon icon={faUserShield} /></div>
             <h3>Formateur</h3>
@@ -169,17 +215,17 @@ export default function Landing() {
             <Link className="primary-btn large" to="/register-admin">
               <FontAwesomeIcon icon={faGift} /> Commencer (1er mois offert)
             </Link>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="landing-faq">
-        <h2>Questions fréquentes</h2>
+      <motion.section className="landing-faq" {...reveal}>
+        <motion.h2 variants={fadeUp}>Questions fréquentes</motion.h2>
         <div className="faq-list">
           {faqs.map((f, i) => {
             const isOpen = openFaq === i;
             return (
-              <div className={`faq-item ${isOpen ? 'open' : ''}`} key={i}>
+              <motion.div className={`faq-item ${isOpen ? 'open' : ''}`} key={i} variants={fadeUp}>
                 <button
                   type="button"
                   className="faq-question"
@@ -194,19 +240,27 @@ export default function Landing() {
                     <p>{f.a}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="landing-final">
+      <motion.section
+        className="landing-final"
+        initial={{ opacity: 0, scale: 0.96 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.6, ease }}
+      >
         <h2>Prêt à lancer votre premier QCM ?</h2>
         <p>Inscrivez-vous comme formateur — le 1er mois est offert, sans engagement.</p>
-        <Link className="primary-btn large" to="/register-admin">
-          Devenir formateur <FontAwesomeIcon icon={faArrowRight} />
-        </Link>
-      </section>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} style={{ display: 'inline-block' }}>
+          <Link className="primary-btn large" to="/register-admin">
+            Devenir formateur <FontAwesomeIcon icon={faArrowRight} />
+          </Link>
+        </motion.div>
+      </motion.section>
 
       <footer className="landing-footer">
         <div className="brand landing-brand">
@@ -215,9 +269,17 @@ export default function Landing() {
         <small>© {new Date().getFullYear()} QCM Pro — Plateforme d'évaluation en ligne</small>
       </footer>
 
-      <a className="whatsapp-fab" href={waLink} target="_blank" rel="noopener noreferrer" aria-label="Contacter sur WhatsApp">
+      <motion.a
+        className="whatsapp-fab" href={waLink} target="_blank" rel="noopener noreferrer"
+        aria-label="Contacter sur WhatsApp"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 1.2, type: 'spring', stiffness: 300, damping: 15 }}
+        whileHover={{ scale: 1.12 }}
+        whileTap={{ scale: 0.92 }}
+      >
         <WhatsAppIcon />
-      </a>
+      </motion.a>
     </div>
   );
 }
