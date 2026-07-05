@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass, faKey, faCopy } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { useDialog } from '../components/DialogProvider.jsx';
 
 export default function ClassManager() {
   const [classes, setClasses] = useState([]);
   const [form, setForm] = useState({ name: '', code: '' });
   const [error, setError] = useState('');
+  const { confirm } = useDialog();
 
   const [selectedClass, setSelectedClass] = useState(null);
   const [students, setStudents] = useState([]);
@@ -58,7 +60,12 @@ export default function ClassManager() {
   }
 
   async function removeClass(id) {
-    if (!confirm('Supprimer cette classe ?')) return;
+    const ok = await confirm({
+      title: 'Supprimer la classe',
+      message: 'Supprimer cette classe ? Les données associées seront perdues.',
+      confirmText: 'Supprimer',
+    });
+    if (!ok) return;
     await api.delete(`/admin/classes/${id}`);
     if (selectedClass?.id === id) {
       setSelectedClass(null);

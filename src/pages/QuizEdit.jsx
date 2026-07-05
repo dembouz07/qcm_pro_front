@@ -9,10 +9,12 @@ import {
   faCalendarDays
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { useDialog } from '../components/DialogProvider.jsx';
 
 export default function QuizEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { confirm } = useDialog();
   const [classes, setClasses] = useState([]);
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -105,8 +107,9 @@ export default function QuizEdit() {
     });
   }
 
-  function removeQuestion(index) {
-    if (!confirm('Supprimer cette question ?')) return;
+  async function removeQuestion(index) {
+    const ok = await confirm({ title: 'Supprimer la question', message: 'Supprimer cette question ?', confirmText: 'Supprimer' });
+    if (!ok) return;
     setQuiz({
       ...quiz,
       questions: quiz.questions.filter((_, i) => i !== index)

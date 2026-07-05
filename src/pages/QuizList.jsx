@@ -13,11 +13,13 @@ import {
   faCircle
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { useDialog } from '../components/DialogProvider.jsx';
 import { formatDateTime } from '../utils/time.js';
 
 export default function QuizList() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { confirm, alert } = useDialog();
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -44,13 +46,18 @@ export default function QuizList() {
   }
 
   async function deleteQuiz(id) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce QCM ?')) return;
-    
+    const ok = await confirm({
+      title: 'Supprimer le QCM',
+      message: 'Êtes-vous sûr de vouloir supprimer ce QCM ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+    });
+    if (!ok) return;
+
     try {
       await api.delete(`/admin/quizzes/${id}`);
       setQuizzes(quizzes.filter(q => q.id !== id));
     } catch (err) {
-      alert(getApiError(err));
+      alert({ title: 'Erreur', message: getApiError(err), variant: 'error' });
     }
   }
 

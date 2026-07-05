@@ -6,6 +6,7 @@ import {
   faBan, faCircleCheck, faArrowLeft, faCrown,
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { useDialog } from '../components/DialogProvider.jsx';
 
 const ROLE_LABELS = {
   superadmin: 'Super-admin',
@@ -20,6 +21,7 @@ export default function SuperAdminUsers() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [busyId, setBusyId] = useState(null);
+  const { confirm } = useDialog();
 
   async function loadUsers() {
     try {
@@ -44,7 +46,14 @@ export default function SuperAdminUsers() {
 
   async function toggleBlock(user) {
     const action = user.is_blocked ? 'unblock' : 'block';
-    if (!user.is_blocked && !window.confirm(`Bloquer ${user.name} ? Ses sessions seront fermées.`)) return;
+    if (!user.is_blocked) {
+      const ok = await confirm({
+        title: 'Bloquer l\'utilisateur',
+        message: `Bloquer ${user.name} ? Ses sessions seront fermées immédiatement.`,
+        confirmText: 'Bloquer',
+      });
+      if (!ok) return;
+    }
     try {
       setBusyId(user.id);
       await api.post(`/superadmin/users/${user.id}/${action}`);

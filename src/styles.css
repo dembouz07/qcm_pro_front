@@ -2196,3 +2196,54 @@ tr:last-child td { border-bottom: 0; }
   .sa-kpis { grid-template-columns: 1fr; gap: 12px; }
   .sa-kpi strong { font-size: 1.9rem; }
 }
+
+/* ─── Modales (confirm / alert) ─────────────────────── */
+.dlg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 12, 24, 0.55);
+  backdrop-filter: blur(4px);
+}
+.dlg-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface-solid);
+  border-radius: 22px;
+  padding: 28px 26px 22px;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
+  text-align: center;
+}
+.dlg-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  font-size: 1.5rem;
+}
+.dlg-icon.info { background: rgba(91, 92, 246, 0.12); color: var(--primary); }
+.dlg-icon.danger { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
+.dlg-title { margin: 0 0 8px; font-size: 1.25rem; letter-spacing: -0.02em; }
+.dlg-msg { margin: 0 0 22px; color: var(--muted); line-height: 1.5; }
+.dlg-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.dlg-actions .primary-btn,
+.dlg-actions .secondary-btn { flex: 1; justify-content: center; max-width: 170px; }
+.primary-btn.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 14px 28px rgba(239, 68, 68, 0.28);
+}
+
+@media (max-width: 480px) {
+  .dlg-actions { flex-direction: column-reverse; }
+  .dlg-actions .primary-btn,
+  .dlg-actions .secondary-btn { max-width: none; width: 100%; }
+}
