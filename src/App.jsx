@@ -28,6 +28,7 @@ import TakeQuiz from './pages/TakeQuiz.jsx';
 import PublicQuiz from './pages/PublicQuiz.jsx';
 import MyResults from './pages/MyResults.jsx';
 import Landing from './pages/Landing.jsx';
+import Account from './pages/Account.jsx';
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
@@ -61,6 +62,8 @@ export default function App() {
           {/* Route publique pour accès au quiz via lien partagé */}
           <Route path="/quiz/:token" element={<PublicQuiz />} />
           <Route path="/mes-notes" element={<MyResults />} />
+
+          <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
 
           <Route path="/admin" element={<ProtectedRoute role="admin" requireSubscription><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/subscription" element={<ProtectedRoute role="admin"><Subscription /></ProtectedRoute>} />

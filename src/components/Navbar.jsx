@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBookOpen, faChartLine, faDoorOpen, faFileImport, faGraduationCap, faLayerGroup, faCirclePlus, faUserShield, faBars, faXmark, faDiagramProject, faCrown, faSackDollar } from '@fortawesome/free-solid-svg-icons';
+import { faBookOpen, faChartLine, faDoorOpen, faFileImport, faGraduationCap, faLayerGroup, faCirclePlus, faUserShield, faBars, faXmark, faDiagramProject, faCrown, faSackDollar, faGear } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../AuthContext.jsx';
 
 export default function Navbar() {
@@ -67,6 +67,7 @@ export default function Navbar() {
               <NavLink to="/student/notes"><FontAwesomeIcon icon={faChartLine} /> Notes</NavLink>
             </>
           )}
+          <NavLink to="/account"><FontAwesomeIcon icon={faGear} /> Mon compte</NavLink>
         </nav>
 
         <button className="logout" onClick={handleLogout}>
