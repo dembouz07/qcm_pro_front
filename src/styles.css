@@ -1686,20 +1686,25 @@ tr:last-child td { border-bottom: 0; }
   }
   .landing-brand { font-size: 1.05rem; flex-shrink: 0; }
   .landing-nav .brand-icon { width: 34px; height: 34px; }
-  .landing-nav .brand-logo { height: 44px; width: auto; }
+  .landing-nav .brand-logo { height: 32px; width: auto; flex-shrink: 0; }
   /* On masque les liens texte secondaires pour garder une nav alignée sur une seule ligne */
   .landing-nav-actions .auth-topbar-link { display: none; }
-  .landing-nav-actions { gap: 8px; flex-wrap: nowrap; align-items: center; }
+  .landing-nav-actions { gap: 6px; flex-wrap: nowrap; align-items: center; flex-shrink: 0; }
   .landing-nav-actions .secondary-btn,
   .landing-nav-actions .primary-btn {
     padding: 8px 12px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     border-radius: 12px;
     white-space: nowrap;
   }
+  /* On retire les icônes des boutons de la nav pour gagner de la place */
+  .landing-nav-actions .secondary-btn svg,
+  .landing-nav-actions .primary-btn svg { display: none; }
 
-  .landing-hero { padding: 28px 18px 10px; gap: 24px; }
-  .landing-hero-visual { min-height: 240px; }
+  /* Hero : le titre d'abord, le visuel ensuite */
+  .landing-hero { padding: 24px 18px 10px; gap: 20px; }
+  .landing-hero-text { order: 0; }
+  .landing-hero-visual { order: 1; min-height: 220px; }
 
   .floating-card { padding: 11px 14px; gap: 9px; }
   .floating-card svg { font-size: 1.1rem; }
