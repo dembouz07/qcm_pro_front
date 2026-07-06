@@ -1807,8 +1807,10 @@ tr:last-child td { border-bottom: 0; }
   .panel { padding: 18px 16px; }
 
   /* Tableaux : lisibles et défilables horizontalement */
-  .table-panel { border-radius: 16px; }
+  .table-panel { border-radius: 16px; max-height: none; overflow-y: visible; }
   .table-panel table { min-width: 540px; }
+  /* Pas d'en-tête collant sur mobile (évite l'effet de ligne au-dessus) et pas de double scroll */
+  .table-panel table thead th { position: static; box-shadow: none; top: auto; }
   th, td { padding: 11px 10px; font-size: 0.9rem; white-space: nowrap; }
 
   /* Le conteneur de tableau (liste QCM) défile aussi horizontalement */
