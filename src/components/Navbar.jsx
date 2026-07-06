@@ -37,6 +37,9 @@ export default function Navbar() {
       </div>
 
       <div className="sidebar-body">
+        <button className="drawer-close" onClick={() => setMenuOpen(false)} aria-label="Fermer le menu">
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
         <div className="user-pill">
           <FontAwesomeIcon icon={user.role === 'superadmin' ? faCrown : user.role === 'admin' ? faUserShield : faBookOpen} />
           <div>

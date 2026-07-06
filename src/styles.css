@@ -133,6 +133,7 @@ a { color: inherit; text-decoration: none; }
 .logout { margin-top: 12px; width: 100%; flex-shrink: 0; }
 
 .sidebar-backdrop { display: none; }
+.drawer-close { display: none; }
 
 .main-content { flex: 1; padding: 34px; }
 .page { max-width: 1220px; margin: 0 auto; }
@@ -480,16 +481,32 @@ tr:last-child td { border-bottom: 0; }
     height: auto;
     flex-direction: row;
     align-items: center;
-    padding: 10px 16px;
-    padding-top: calc(10px + env(safe-area-inset-top));
+    padding: 8px 14px;
+    padding-top: calc(8px + env(safe-area-inset-top));
     gap: 0;
     box-shadow: 0 6px 20px rgba(15, 23, 42, 0.20);
   }
-  .sidebar-header { flex: 1; }
-  .sidebar .brand { font-size: 1.15rem; }
-  .sidebar .brand-icon { width: 38px; height: 38px; }
-  .sidebar .brand-logo { height: 42px; width: auto; }
-  .menu-toggle { display: flex; }
+  .sidebar-header { flex: 1; display: flex; align-items: center; justify-content: space-between; }
+  .sidebar .brand { font-size: 1.15rem; display: flex; align-items: center; }
+  .sidebar .brand-icon { width: 36px; height: 36px; }
+  .sidebar .brand-logo { height: 40px; width: auto; }
+  .menu-toggle { display: flex; flex-shrink: 0; }
+
+  /* Bouton fermeture dans le tiroir */
+  .drawer-close {
+    display: flex;
+    align-self: flex-end;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
 
   /* Tiroir latéral coulissant */
   .sidebar-body {
@@ -497,9 +514,9 @@ tr:last-child td { border-bottom: 0; }
     top: 0;
     left: 0;
     bottom: 0;
-    width: 82%;
+    width: 84%;
     max-width: 320px;
-    padding: 22px 18px calc(28px + env(safe-area-inset-bottom));
+    padding: calc(16px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));
     background: rgba(12, 18, 35, 0.98);
     backdrop-filter: blur(24px);
     box-shadow: 18px 0 50px rgba(8, 12, 24, 0.45);
@@ -510,7 +527,7 @@ tr:last-child td { border-bottom: 0; }
     -webkit-overflow-scrolling: touch;
     display: flex;
     flex: none;
-    gap: 18px;
+    gap: 14px;
     margin-top: 0;
   }
   .sidebar.open .sidebar-body { transform: translateX(0); }
@@ -1781,6 +1798,18 @@ tr:last-child td { border-bottom: 0; }
   .table-panel { border-radius: 16px; }
   .table-panel table { min-width: 540px; }
   th, td { padding: 11px 10px; font-size: 0.9rem; white-space: nowrap; }
+
+  /* Le conteneur de tableau (liste QCM) défile aussi horizontalement */
+  .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .data-table { min-width: 560px; }
+
+  /* Actions de formulaire : boutons pleine largeur, empilés */
+  .builder-actions { flex-direction: column-reverse; }
+  .builder-actions .primary-btn,
+  .builder-actions .secondary-btn { width: 100%; justify-content: center; }
+
+  /* Grilles en une colonne */
+  .info-grid { grid-template-columns: 1fr; }
   .table-panel td .primary-btn,
   .table-panel td .secondary-btn { padding: 7px 10px; font-size: 0.8rem; }
 
