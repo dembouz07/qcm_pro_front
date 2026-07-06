@@ -570,14 +570,18 @@ tr:last-child td { border-bottom: 0; }
   .auth-page { padding: 88px 16px 24px; }
   .auth-hero { display: none; }
   .auth-card { display: block; }
-  .auth-topbar { padding: 12px 16px; flex-wrap: nowrap; gap: 10px; }
+  .auth-topbar { padding: 10px 14px; flex-wrap: nowrap; gap: 8px; }
   .auth-topbar-brand { font-size: 1.02rem; flex-shrink: 0; }
-  .auth-topbar .brand-icon { width: 34px; height: 34px; }
-  .auth-topbar .brand-logo { height: 44px; width: auto; }
-  .auth-topbar-actions { flex-wrap: nowrap; gap: 8px; }
-  .auth-topbar-link { padding: 6px 8px; font-size: 0.86rem; white-space: nowrap; }
+  .auth-topbar .brand-icon { width: 32px; height: 32px; }
+  .auth-topbar .brand-logo { height: 30px; width: auto; flex-shrink: 0; }
+  .auth-topbar-actions { flex-wrap: nowrap; gap: 6px; flex-shrink: 0; align-items: center; }
+  .auth-topbar-link { padding: 6px 6px; font-size: 0.82rem; white-space: nowrap; }
   .auth-topbar-actions .secondary-btn,
-  .auth-topbar-actions .primary-btn { padding: 8px 11px; font-size: 0.82rem; white-space: nowrap; }
+  .auth-topbar-actions .primary-btn { padding: 8px 12px; font-size: 0.8rem; white-space: nowrap; }
+  /* Icônes retirées dans la barre pour éviter le débordement */
+  .auth-topbar-link svg,
+  .auth-topbar-actions .secondary-btn svg,
+  .auth-topbar-actions .primary-btn svg { display: none; }
   .form-card { padding: 22px; }
   .main-content { padding: 16px; }
   .choice-row { grid-template-columns: 42px 1fr; }
