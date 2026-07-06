@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass, faKey, faCopy } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
@@ -15,6 +15,7 @@ export default function ClassManager() {
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [search, setSearch] = useState('');
   const [copied, setCopied] = useState(false);
+  const studentsRef = useRef(null);
 
   async function loadClasses() {
     const response = await api.get('/admin/classes');
@@ -37,6 +38,10 @@ export default function ClassManager() {
     setStudents([]);
     setSearch('');
     setLoadingStudents(true);
+    // Sur mobile, faire défiler vers le panneau des étudiants
+    if (window.innerWidth <= 980) {
+      setTimeout(() => studentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    }
     try {
       const response = await api.get(`/admin/classes/${classe.id}`);
       setStudents(response.data.students || []);
@@ -123,7 +128,7 @@ export default function ClassManager() {
           )}
         </div>
 
-        <div className="panel">
+        <div className="panel" ref={studentsRef} style={{ scrollMarginTop: '80px' }}>
           <h2><FontAwesomeIcon icon={faUserGraduate} /> Étudiants {selectedClass ? `· ${selectedClass.name}` : ''}</h2>
           {!selectedClass ? (
             <div className="empty">Sélectionnez une classe à gauche pour voir ses étudiants.</div>
