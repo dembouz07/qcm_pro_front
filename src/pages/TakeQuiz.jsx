@@ -7,6 +7,27 @@ import { useAntiCheat } from '../useAntiCheat.js';
 import AntiCheatRules from '../components/AntiCheatRules.jsx';
 import CorrectionView from '../components/CorrectionView.jsx';
 
+// Mélange (Fisher-Yates) — l'ordre d'affichage change par élève/tentative.
+// La soumission se fait par id, donc mélanger l'affichage ne modifie pas la correction.
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function shuffleQuiz(quiz) {
+  if (!quiz || !Array.isArray(quiz.questions)) return quiz;
+  return {
+    ...quiz,
+    questions: shuffleArray(quiz.questions).map((q) => ({
+      ...q,
+      choices: Array.isArray(q.choices) ? shuffleArray(q.choices) : q.choices,
+    })),
+  };
+}
+
 export default function TakeQuiz() {
   const { id } = useParams();
   const [quiz, setQuiz] = useState(null);
@@ -41,7 +62,7 @@ export default function TakeQuiz() {
 
   useEffect(() => {
     api.get(`/student/quizzes/${id}`)
-      .then((response) => setQuiz(response.data))
+      .then((response) => setQuiz(shuffleQuiz(response.data)))
       .catch((err) => setError(getApiError(err)));
   }, [id]);
 
