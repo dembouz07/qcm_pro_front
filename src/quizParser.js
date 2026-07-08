@@ -56,7 +56,6 @@ export function parseQuiz(text) {
 
   function pushCurrent() {
     if (current && current.choices.length >= 1) {
-      finalize(current);
       questions.push(current);
     }
     current = null;
