@@ -419,9 +419,12 @@ label { display: flex; flex-direction: column; gap: 8px; font-weight: 800; color
 .question-head h3, .panel h2 { margin: 0; display: flex; gap: 9px; align-items: center; letter-spacing: -0.03em; }
 .points-field { max-width: 140px; margin-top: 14px; }
 .choices { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+.choices-head { font-weight: 800; color: #29344d; }
+.choices-head span { font-weight: 600; color: var(--muted); font-size: 0.88rem; }
 .choice-row { display: grid; grid-template-columns: 44px 1fr 44px; gap: 10px; align-items: center; padding: 10px; border-radius: 14px; background: #fbfcff; border: 1px solid var(--border); }
 .choice-row.correct { border-color: rgba(16, 185, 129, 0.38); background: rgba(16, 185, 129, 0.08); }
-.check-btn { width: 42px; height: 42px; border: 0; border-radius: 14px; background: rgba(16, 185, 129, 0.11); color: #059669; }
+.check-btn { width: 42px; height: 42px; border: 2px solid var(--border); border-radius: 14px; background: #fff; color: #c3c8e0; transition: 0.18s ease; }
+.check-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .builder-actions { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
 
 .upload-zone { position: relative; min-height: 180px; align-items: center; justify-content: center; text-align: center; border: 2px dashed rgba(91, 92, 246, 0.30); border-radius: 24px; background: rgba(91, 92, 246, 0.05); }

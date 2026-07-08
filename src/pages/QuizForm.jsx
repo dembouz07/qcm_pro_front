@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDays, faCheckCircle, faCirclePlus, faCircleQuestion, faFloppyDisk, faPlus, faTrash, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDays, faCheckCircle, faCircle, faCirclePlus, faCircleQuestion, faFloppyDisk, faPlus, faTrash, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 
 const emptyQuestion = () => ({
@@ -175,11 +175,17 @@ export default function QuizForm() {
                 />
               </label>
 
+              <div className="choices-head">Réponses <span>— cliquez sur le rond à gauche pour définir la bonne réponse</span></div>
               <div className="choices">
                 {question.choices.map((choice, choiceIndex) => (
                   <div className={`choice-row ${choice.is_correct ? 'correct' : ''}`} key={choiceIndex}>
-                    <button type="button" className="check-btn" onClick={() => markCorrect(questionIndex, choiceIndex)} title="Marquer comme bonne réponse">
-                      <FontAwesomeIcon icon={faCheckCircle} />
+                    <button
+                      type="button"
+                      className={`check-btn ${choice.is_correct ? 'on' : ''}`}
+                      onClick={() => markCorrect(questionIndex, choiceIndex)}
+                      title="Marquer comme bonne réponse"
+                    >
+                      <FontAwesomeIcon icon={choice.is_correct ? faCheckCircle : faCircle} />
                     </button>
                     <input placeholder={`Choix ${choiceIndex + 1}`} value={choice.body} onChange={(e) => updateChoice(questionIndex, choiceIndex, { body: e.target.value })} required />
                     <button type="button" className="icon-btn danger" onClick={() => removeChoice(questionIndex, choiceIndex)}>
