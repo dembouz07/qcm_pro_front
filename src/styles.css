@@ -1478,6 +1478,25 @@ tr:last-child td { border-bottom: 0; }
   border-color: rgba(91, 92, 246, 0.40);
 }
 
+.create-card.featured {
+  border: 2px solid var(--primary);
+  background: linear-gradient(135deg, rgba(91, 92, 246, 0.06), #ffffff 60%);
+  box-shadow: 0 16px 40px rgba(91, 92, 246, 0.18);
+}
+.create-card.featured::after {
+  content: "Recommandé";
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--primary);
+  background: rgba(91, 92, 246, 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.create-card { position: relative; }
+
 .create-card-icon {
   width: 60px;
   height: 60px;

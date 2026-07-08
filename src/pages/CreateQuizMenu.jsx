@@ -1,8 +1,16 @@
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCirclePlus, faFileImport, faDiagramProject, faArrowRight, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { faCirclePlus, faFileImport, faDiagramProject, faArrowRight, faPenToSquare, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
 
 const options = [
+  {
+    to: '/admin/quizzes/smart',
+    icon: faWandMagicSparkles,
+    title: 'Coller un QCM (IA / tout format)',
+    desc: "Collez un QCM généré par IA ou copié d'ailleurs : il est analysé, affiché pour vérification et modifiable avant enregistrement.",
+    cta: 'Coller et vérifier',
+    featured: true,
+  },
   {
     to: '/admin/quizzes/new',
     icon: faPenToSquare,
@@ -39,7 +47,7 @@ export default function CreateQuizMenu() {
 
       <section className="create-options">
         {options.map((opt) => (
-          <Link className="create-card" to={opt.to} key={opt.to}>
+          <Link className={`create-card ${opt.featured ? 'featured' : ''}`} to={opt.to} key={opt.to}>
             <div className="create-card-icon"><FontAwesomeIcon icon={opt.icon} /></div>
             <h2>{opt.title}</h2>
             <p>{opt.desc}</p>

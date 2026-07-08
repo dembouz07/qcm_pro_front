@@ -18,6 +18,7 @@ import ImportQuiz from './pages/ImportQuiz.jsx';
 import ConvertQuiz from './pages/ConvertQuiz.jsx';
 import ProgressiveQuizForm from './pages/ProgressiveQuizForm.jsx';
 import CreateQuizMenu from './pages/CreateQuizMenu.jsx';
+import SmartCreateQuiz from './pages/SmartCreateQuiz.jsx';
 import Results from './pages/Results.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import StudentResults from './pages/StudentResults.jsx';
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="/admin/classes" element={<ProtectedRoute role="admin" requireSubscription><ClassManager /></ProtectedRoute>} />
           <Route path="/admin/quizzes" element={<ProtectedRoute role="admin" requireSubscription><QuizList /></ProtectedRoute>} />
           <Route path="/admin/quizzes/create" element={<ProtectedRoute role="admin" requireSubscription><CreateQuizMenu /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/smart" element={<ProtectedRoute role="admin" requireSubscription><SmartCreateQuiz /></ProtectedRoute>} />
           <Route path="/admin/quizzes/new" element={<ProtectedRoute role="admin" requireSubscription><QuizForm /></ProtectedRoute>} />
           <Route path="/admin/quizzes/:id" element={<ProtectedRoute role="admin" requireSubscription><QuizView /></ProtectedRoute>} />
           <Route path="/admin/quizzes/:id/edit" element={<ProtectedRoute role="admin" requireSubscription><QuizEdit /></ProtectedRoute>} />
