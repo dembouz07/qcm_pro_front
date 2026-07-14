@@ -2469,7 +2469,9 @@ tr:last-child td { border-bottom: 0; }
   flex: none; width: 26px; height: 26px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
   background: var(--primary); color: #fff; font-size: 0.82rem; font-weight: 900;
 }
-.answers-list { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.answers-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 6px; }
+@media (max-width: 900px) { .answers-list { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .answers-list { grid-template-columns: 1fr; } }
 .answer-quote {
   display: flex; gap: 12px; padding: 14px 16px; border-radius: 14px;
   background: #f7f8fc; border: 1px solid var(--border); color: var(--text); line-height: 1.5;
