@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faClipboardQuestion, faArrowLeft, faPlus, faTrash, faCirclePlus, faFloppyDisk, faCircleQuestion,
@@ -16,11 +16,29 @@ const TYPES = [
 
 export default function SurveyForm() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const editing = !!id;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState([emptyQuestion()]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!editing) return;
+    api.get(`/admin/surveys/${id}`)
+      .then((r) => {
+        setTitle(r.data.title || '');
+        setDescription(r.data.description || '');
+        const qs = (r.data.questions || []).map((q) => ({
+          body: q.body || '',
+          type: q.type || 'text',
+          options: q.type === 'text' ? ['', ''] : (q.options && q.options.length >= 2 ? [...q.options] : ['', '']),
+        }));
+        setQuestions(qs.length ? qs : [emptyQuestion()]);
+      })
+      .catch((e) => setError(getApiError(e)));
+  }, [id, editing]);
 
   const upQ = (i, patch) => setQuestions((qs) => qs.map((q, j) => (j === i ? { ...q, ...patch } : q)));
   const upOpt = (qi, oi, val) => setQuestions((qs) => qs.map((q, j) => j === qi ? { ...q, options: q.options.map((o, k) => (k === oi ? val : o)) } : q));
@@ -51,8 +69,10 @@ export default function SurveyForm() {
           options: q.type === 'text' ? [] : q.options.map((o) => o.trim()).filter(Boolean),
         })),
       };
-      const res = await api.post('/admin/surveys', payload);
-      navigate(`/admin/surveys/${res.data.id}`);
+      const res = editing
+        ? await api.put(`/admin/surveys/${id}`, payload)
+        : await api.post('/admin/surveys', payload);
+      navigate(`/admin/surveys/${editing ? id : res.data.id}`);
     } catch (err) { setError(getApiError(err)); } finally { setLoading(false); }
   }
 
@@ -62,7 +82,7 @@ export default function SurveyForm() {
         <div>
           <Link to="/admin/surveys" className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> Retour aux sondages</Link>
           <span className="eyebrow"><FontAwesomeIcon icon={faClipboardQuestion} /> Sondage anonyme</span>
-          <h1>Nouveau questionnaire</h1>
+          <h1>{editing ? 'Modifier le questionnaire' : 'Nouveau questionnaire'}</h1>
           <p>Créez des questions, partagez le lien : les gens répondent anonymement, sans compte.</p>
         </div>
       </div>
@@ -117,7 +137,7 @@ export default function SurveyForm() {
 
         <div className="builder-actions">
           <button type="button" className="secondary-btn" onClick={addQ}><FontAwesomeIcon icon={faCirclePlus} /> Ajouter une question</button>
-          <button className="primary-btn" disabled={loading}><FontAwesomeIcon icon={faFloppyDisk} /> {loading ? 'Création...' : 'Créer le sondage'}</button>
+          <button className="primary-btn" disabled={loading}><FontAwesomeIcon icon={faFloppyDisk} /> {loading ? 'Enregistrement...' : (editing ? 'Enregistrer les modifications' : 'Créer le sondage')}</button>
         </div>
       </form>
     </div>

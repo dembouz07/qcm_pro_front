@@ -86,6 +86,7 @@ export default function App() {
           <Route path="/admin/results" element={<ProtectedRoute role="admin" requireSubscription><Results /></ProtectedRoute>} />
           <Route path="/admin/surveys" element={<ProtectedRoute role="admin" requireSubscription><SurveyList /></ProtectedRoute>} />
           <Route path="/admin/surveys/new" element={<ProtectedRoute role="admin" requireSubscription><SurveyForm /></ProtectedRoute>} />
+          <Route path="/admin/surveys/:id/edit" element={<ProtectedRoute role="admin" requireSubscription><SurveyForm /></ProtectedRoute>} />
           <Route path="/admin/surveys/:id" element={<ProtectedRoute role="admin" requireSubscription><SurveyResults /></ProtectedRoute>} />
 
           <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />

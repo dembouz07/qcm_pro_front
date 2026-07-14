@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faClipboardQuestion, faArrowLeft, faCopy, faTrash, faLockOpen, faLock, faUsers, faShareNodes,
+  faClipboardQuestion, faArrowLeft, faCopy, faTrash, faLockOpen, faLock, faUsers, faShareNodes, faPen,
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
@@ -53,6 +53,7 @@ export default function SurveyResults() {
           {survey.description && <p>{survey.description}</p>}
         </div>
         <div className="header-actions">
+          <Link className="secondary-btn" to={`/admin/surveys/${id}/edit`}><FontAwesomeIcon icon={faPen} /> Modifier</Link>
           <button className="secondary-btn" onClick={toggle}>
             <FontAwesomeIcon icon={survey.is_open ? faLock : faLockOpen} /> {survey.is_open ? 'Fermer' : 'Rouvrir'}
           </button>
