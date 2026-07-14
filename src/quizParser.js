@@ -1,9 +1,10 @@
-// Parseur de QCM tolérant : accepte la plupart des formats (IA, Word, listes...).
-// Retourne { questions: [{ body, points, explanation, choices:[{body,is_correct}], uncertain }], warnings: [] }
+// Parseur de QCM tolérant : accepte la plupart des formats (IA, Word, PDF, listes...).
+// Deux stratégies sont essayées (blob "A. B. C. D." et ligne par ligne), on garde la meilleure.
+// Retour : { questions: [{ body, points, explanation, choices:[{body,is_correct}], uncertain }], warnings: [] }
 
 function cleanInline(s) {
   return String(s || '')
-    .replace(/\*\*(.+?)\*\*/g, '$1') // gras markdown
+    .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/__(.+?)__/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
@@ -11,151 +12,178 @@ function cleanInline(s) {
 
 // Détecte et retire un marqueur de bonne réponse dans le texte d'un choix
 function stripCorrectMarker(raw) {
-  let body = raw;
+  let body = String(raw || '');
   let correct = false;
-
-  const markers = [
-    /\s*\(\s*(?:bonne\s*r[ée]ponse|correcte?|correct|vrai|true)\s*\)\s*$/i,
-    /\s*\[\s*(?:bonne\s*r[ée]ponse|correcte?|correct|vrai|true)\s*\]\s*$/i,
+  const trailing = [
+    /\s*\(\s*(?:bonne\s*r[ée]ponse|correcte?|correct|vrai|true|juste)\s*\)\s*$/i,
+    /\s*\[\s*(?:bonne\s*r[ée]ponse|correcte?|correct|vrai|true|juste)\s*\]\s*$/i,
     /\s*<-+\s*(?:correct|bonne)?\s*$/i,
-    /\s*=+>\s*$/,
-    /\s*✓\s*$/, /\s*✔\s*$/, /\s*☑\s*$/, /\s*✅\s*$/,
-    /\s*\*\s*$/, // astérisque final
+    /\s*=+>\s*$/, /\s*✓\s*$/, /\s*✔\s*$/, /\s*☑\s*$/, /\s*✅\s*$/, /\s*\*\s*$/,
   ];
-  for (const re of markers) {
-    if (re.test(body)) { correct = true; body = body.replace(re, ''); }
-  }
-  // marqueur en début
-  const lead = [/^✓\s*/, /^✔\s*/, /^☑\s*/, /^✅\s*/, /^\*\s*/];
-  for (const re of lead) {
-    if (re.test(body)) { correct = true; body = body.replace(re, ''); }
-  }
+  for (const re of trailing) if (re.test(body)) { correct = true; body = body.replace(re, ''); }
+  const leading = [/^✓\s*/, /^✔\s*/, /^☑\s*/, /^✅\s*/, /^\*\s*/];
+  for (const re of leading) if (re.test(body)) { correct = true; body = body.replace(re, ''); }
   return { body: body.trim(), correct };
 }
 
-function letterToIndex(token) {
-  const t = token.trim();
-  if (/^\d+$/.test(t)) return parseInt(t, 10) - 1;      // "2" -> index 1
-  if (/^[a-zA-Z]$/.test(t)) return t.toLowerCase().charCodeAt(0) - 97; // "B" -> 1
-  return -1;
+// Découpe un bloc en { body, choices[] } en cherchant des libellés A/B/C/D/E séquentiels.
+function splitChoicesFromChunk(chunk) {
+  const re = /([A-Ea-e])[.)]\s+/g;
+  const marks = [...chunk.matchAll(re)];
+  // ne garder que les libellés séquentiels A,B,C... (évite les faux positifs)
+  const seq = [];
+  let expected = 0;
+  for (const m of marks) {
+    const idx = m[1].toUpperCase().charCodeAt(0) - 65;
+    if (idx === expected) { seq.push(m); expected++; }
+  }
+  if (seq.length < 2) return null;
+  const body = chunk.slice(0, seq[0].index).trim();
+  const choices = [];
+  for (let i = 0; i < seq.length; i++) {
+    const start = seq[i].index + seq[i][0].length;
+    const end = i + 1 < seq.length ? seq[i + 1].index : chunk.length;
+    const b = chunk.slice(start, end).trim();
+    if (b) choices.push(b);
+  }
+  return { body, choices };
 }
 
-export function parseQuiz(text) {
-  const warnings = [];
+function applyAnswerKey(chunk) {
+  const ak = chunk.match(
+    /(?:bonnes?\s*r[ée]ponses?|r[ée]ponses?(?:\s*correctes?)?|correct[e]?s?|answers?|solutions?)\s*[:=]\s*([A-Ea-e](?:\s*(?:,|;|\/|et|ou|and|or|&)\s*[A-Ea-e])*)/i,
+  );
+  if (!ak) return { chunk, letters: [] };
+  const letters = (ak[1].match(/[A-Ea-e]/g) || []).map((x) => x.toUpperCase());
+  return { chunk: chunk.slice(0, ak.index).trim(), letters };
+}
+
+// Stratégie "blob" : tout le texte -> découpe par numéros de question séquentiels.
+function parseCollapsed(text) {
+  const s = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!s) return { questions: [] };
+
+  const numRe = /(\d{1,2})[.)]\s+/g;
+  const all = [...s.matchAll(numRe)];
+  const qmarks = [];
+  let exp = 1;
+  for (const m of all) {
+    if (parseInt(m[1], 10) === exp) { qmarks.push(m); exp++; }
+  }
+  if (qmarks.length === 0) return { questions: [] };
+
+  const questions = [];
+  for (let i = 0; i < qmarks.length; i++) {
+    const start = qmarks[i].index + qmarks[i][0].length;
+    const end = i + 1 < qmarks.length ? qmarks[i + 1].index : s.length;
+    let chunk = s.slice(start, end).trim();
+
+    const ak = applyAnswerKey(chunk);
+    chunk = ak.chunk;
+
+    const parsed = splitChoicesFromChunk(chunk);
+    if (!parsed) {
+      questions.push({ body: cleanInline(chunk), points: 1, explanation: '', choices: [], uncertain: true });
+      continue;
+    }
+    const choices = parsed.choices.map((b) => {
+      const c = stripCorrectMarker(b);
+      return { body: cleanInline(c.body), is_correct: c.correct };
+    });
+    ak.letters.forEach((L) => {
+      const idx = L.charCodeAt(0) - 65;
+      if (idx >= 0 && idx < choices.length) choices[idx].is_correct = true;
+    });
+    questions.push({ body: cleanInline(parsed.body), points: 1, explanation: '', choices, uncertain: false });
+  }
+  return { questions };
+}
+
+// Stratégie "ligne par ligne" : pour les formats [x]/[ ], puces, un choix par ligne, "Réponse: B".
+function parseLineBased(text) {
   const raw = String(text || '').replace(/\r\n?/g, '\n');
-  const lines = raw.split('\n');
+  const lines = raw.split('\n').map((l) => l.replace(/\t/g, ' ').trim()).filter(Boolean);
 
   const questions = [];
   let current = null;
 
-  const RE_QNUM = /^\s*(?:Q(?:uestion)?\s*)?(\d+)\s*[\.\)\:\-–]\s*(.+)$/i;
-  const RE_BRACKET = /^\s*\[\s*([xX*✓☑✔ ]?)\s*\]\s*(.+)$/;
-  const RE_LETTER = /^\s*[\(\[]?\s*([a-zA-Z])\s*[\)\].:\-–]\s+(.+)$/;
-  const RE_BULLET = /^\s*[-*•▪●·◦o]\s+(.+)$/;
-  const RE_ANSWERKEY = /^\s*(?:bonnes?\s*r[ée]ponses?|r[ée]ponses?\s*(?:correctes?)?|correct(?:e|ion)?s?|answers?|solutions?)\s*[:=\-–]\s*(.+)$/i;
+  const RE_QNUM = /^(?:Q(?:uestion)?\s*)?(\d{1,2})\s*[.)\:\-–]\s*(.+)$/i;
+  const RE_ANSWERKEY = /^(?:bonnes?\s*r[ée]ponses?|r[ée]ponses?(?:\s*correctes?)?|correct[e]?s?|answers?|solutions?)\s*[:=\-–]\s*(.+)$/i;
+  const RE_BRACKET = /^\[\s*([xX*✓☑✔ ]?)\s*\]\s*(.+)$/;
+  const RE_ONE_LETTER = /^[\(\[]?\s*([a-zA-Z])\s*[\)\].:\-–]\s+(.+)$/;
+  const RE_BULLET = /^[-*•▪●·◦]\s+(.+)$/;
 
-  function pushCurrent() {
-    if (current && current.choices.length >= 1) {
-      questions.push(current);
-    }
-    current = null;
-  }
-
-  function startQuestion(body) {
-    pushCurrent();
-    current = { body: cleanInline(body), points: 1, explanation: '', choices: [], uncertain: false };
-  }
-
-  function addChoice(body, correct) {
+  const push = () => { if (current && current.body) questions.push(current); current = null; };
+  const startQ = (b) => { push(); current = { body: cleanInline(b), points: 1, explanation: '', choices: [], uncertain: false }; };
+  const addChoice = (b, correct = false) => {
     if (!current) return;
-    const c = stripCorrectMarker(body);
+    const c = stripCorrectMarker(b);
     current.choices.push({ body: cleanInline(c.body), is_correct: correct || c.correct });
-  }
+  };
+  const appendLastChoice = (t) => {
+    const last = current.choices[current.choices.length - 1];
+    last.body = cleanInline(last.body + ' ' + t);
+  };
 
-  function applyAnswerKey(spec) {
-    if (!current || current.choices.length === 0) return;
-    const tokens = spec.match(/[a-zA-Z]+|\d+/g) || [];
-    let applied = false;
-    tokens.forEach((tok) => {
-      // ignorer les mots (ex: "la B") sauf lettres seules
-      if (tok.length === 1 || /^\d+$/.test(tok)) {
-        const idx = letterToIndex(tok);
-        if (idx >= 0 && idx < current.choices.length) {
-          current.choices[idx].is_correct = true;
-          applied = true;
-        }
-      }
-    });
-    return applied;
-  }
-
-  for (let rawLine of lines) {
-    const line = rawLine.replace(/\t/g, ' ').trimEnd();
-    if (!line.trim()) continue;
-
-    // 1) Ligne "Réponse: B"
+  for (const line of lines) {
     const ak = line.match(RE_ANSWERKEY);
-    if (ak && current && current.choices.length > 0) {
-      applyAnswerKey(ak[1]);
+    if (ak && current && current.choices.length) {
+      (ak[1].match(/[A-Ea-e]/g) || []).forEach((L) => {
+        const idx = L.toUpperCase().charCodeAt(0) - 65;
+        if (idx >= 0 && idx < current.choices.length) current.choices[idx].is_correct = true;
+      });
       continue;
     }
-
-    // 2) Choix entre crochets [x]/[ ]
     const mb = line.match(RE_BRACKET);
-    if (mb && current) {
-      const mark = (mb[1] || '').trim();
-      addChoice(mb[2], /[xX*✓☑✔]/.test(mark));
-      continue;
-    }
+    if (mb && current) { addChoice(mb[2], /[xX*✓☑✔]/.test((mb[1] || '').trim())); continue; }
 
-    // 3) Question numérotée "1." / "Q1:" / "Question 2 -"
     const mq = line.match(RE_QNUM);
     if (mq) {
-      startQuestion(mq[2]);
+      startQ(mq[2]);
+      const inline = splitChoicesFromChunk(mq[2]);
+      if (inline) { current.body = cleanInline(inline.body); inline.choices.forEach((c) => addChoice(c)); }
       continue;
     }
 
-    // 4) Choix avec lettre "A)" "a." "(b)"
-    const ml = line.match(RE_LETTER);
-    if (ml && current) {
-      addChoice(ml[2], false);
+    // Ligne avec plusieurs choix "A. x B. y ..."
+    const multi = splitChoicesFromChunk(line);
+    if (multi && current) {
+      if (multi.body) { if (current.choices.length) appendLastChoice(multi.body); else current.body = cleanInline(current.body + ' ' + multi.body); }
+      multi.choices.forEach((c) => addChoice(c));
       continue;
     }
 
-    // 5) Choix à puce "- ..." "• ..."
+    const ml = line.match(RE_ONE_LETTER);
+    if (ml && current) { addChoice(ml[2]); continue; }
     const mbul = line.match(RE_BULLET);
-    if (mbul && current) {
-      addChoice(mbul[1], false);
-      continue;
-    }
+    if (mbul && current) { addChoice(mbul[1]); continue; }
 
-    // 6) Sinon : question (si ça finit par ? ou si pas de question en cours),
-    //    ou continuation de l'énoncé.
-    const looksQuestion = /\?\s*$/.test(line);
     if (!current) {
-      startQuestion(line);
-    } else if (current.choices.length > 0 || looksQuestion) {
-      startQuestion(line);
-    } else {
-      // continuation de l'énoncé
-      current.body = cleanInline(current.body + ' ' + line);
+      if (line.endsWith('?')) startQ(line);
+      continue; // ignore les titres
     }
+    if (current.choices.length) appendLastChoice(line);
+    else current.body = cleanInline(current.body + ' ' + line);
   }
-  pushCurrent();
+  push();
+  return { questions };
+}
 
-  // Nettoyage / garde-fous
-  const cleaned = questions.filter((q) => q.body && q.choices.length >= 1);
+export function parseQuiz(text) {
+  const warnings = [];
+  const a = parseCollapsed(text);
+  const b = parseLineBased(text);
+  const score = (r) => r.questions.filter((q) => q.choices.length >= 2).length;
+  const best = score(a) >= score(b) ? a : b;
+
+  const cleaned = best.questions.filter((q) => q.body && q.choices.length >= 1);
   cleaned.forEach((q, i) => {
-    // dédupliquer une éventuelle bonne réponse multiple non voulue : on garde tout,
-    // mais si aucune bonne réponse -> marquer incertain et cocher la 1re par défaut.
     if (!q.choices.some((c) => c.is_correct)) {
       q.choices[0].is_correct = true;
       q.uncertain = true;
       warnings.push(`Question ${i + 1} : bonne réponse non détectée, à vérifier.`);
     }
-    if (q.choices.length < 2) {
-      warnings.push(`Question ${i + 1} : moins de 2 choix détectés.`);
-    }
+    if (q.choices.length < 2) warnings.push(`Question ${i + 1} : moins de 2 choix détectés.`);
   });
 
   return { questions: cleaned, warnings };
