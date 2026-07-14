@@ -2464,20 +2464,24 @@ tr:last-child td { border-bottom: 0; }
 }
 
 /* ---------- Résultats de sondage ---------- */
-.survey-result h3 { display: flex; align-items: flex-start; gap: 10px; font-size: 1.05rem; line-height: 1.4; }
+.survey-result { padding: 22px 24px; }
+.survey-result h3 { display: flex; align-items: flex-start; gap: 10px; font-size: 1.12rem; line-height: 1.45; margin-bottom: 18px; }
 .qnum-chip {
-  flex: none; width: 26px; height: 26px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--primary); color: #fff; font-size: 0.82rem; font-weight: 900;
+  flex: none; width: 28px; height: 28px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--primary), #8b5cf6); color: #fff; font-size: 0.85rem; font-weight: 900;
 }
-.answers-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 6px; }
-@media (max-width: 900px) { .answers-list { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .answers-list { grid-template-columns: 1fr; } }
+.answers-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 6px; }
 .answer-quote {
-  display: flex; gap: 12px; padding: 14px 16px; border-radius: 14px;
-  background: #f7f8fc; border: 1px solid var(--border); color: var(--text); line-height: 1.5;
+  display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border-radius: 16px;
+  background: #fbfcff; border: 1px solid var(--border); border-left: 4px solid var(--primary);
+  color: var(--text); transition: 0.16s ease;
 }
-.answer-quote .quote-ico { color: var(--primary); opacity: 0.5; font-size: 0.9rem; margin-top: 3px; flex: none; }
-.answer-quote span { flex: 1; }
+.answer-quote:hover { box-shadow: 0 8px 22px rgba(37, 54, 99, 0.08); transform: translateY(-2px); }
+.answer-quote-head {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 0.72rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary);
+}
+.answer-quote p { margin: 0; font-size: 0.98rem; line-height: 1.6; color: #2b3550; }
 .bar-track { height: 12px; border-radius: 7px; background: #eceef6; overflow: hidden; margin-top: 5px; }
 .bar-fill { height: 100%; border-radius: 7px; background: linear-gradient(90deg, var(--primary), #8b5cf6); }
 .print-title { display: none; }

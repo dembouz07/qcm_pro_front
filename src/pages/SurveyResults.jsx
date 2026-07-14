@@ -97,8 +97,10 @@ export default function SurveyResults() {
                   <div className="answers-list">
                     {texts.slice(0, lim).map((t, i) => (
                       <div className="answer-quote" key={i}>
-                        <FontAwesomeIcon icon={faQuoteLeft} className="quote-ico" />
-                        <span>{t}</span>
+                        <div className="answer-quote-head">
+                          <FontAwesomeIcon icon={faQuoteLeft} /> Réponse {i + 1}
+                        </div>
+                        <p>{t}</p>
                       </div>
                     ))}
                   </div>
