@@ -2462,3 +2462,34 @@ tr:last-child td { border-bottom: 0; }
   .seg-count { padding: 1px 6px; font-size: .68rem; }
   .search-box { max-width: none; width: 100%; }
 }
+
+/* ---------- Résultats de sondage ---------- */
+.survey-result h3 { display: flex; align-items: flex-start; gap: 10px; font-size: 1.05rem; line-height: 1.4; }
+.qnum-chip {
+  flex: none; width: 26px; height: 26px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--primary); color: #fff; font-size: 0.82rem; font-weight: 900;
+}
+.answers-list { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.answer-quote {
+  display: flex; gap: 12px; padding: 14px 16px; border-radius: 14px;
+  background: #f7f8fc; border: 1px solid var(--border); color: var(--text); line-height: 1.5;
+}
+.answer-quote .quote-ico { color: var(--primary); opacity: 0.5; font-size: 0.9rem; margin-top: 3px; flex: none; }
+.answer-quote span { flex: 1; }
+.bar-track { height: 12px; border-radius: 7px; background: #eceef6; overflow: hidden; margin-top: 5px; }
+.bar-fill { height: 100%; border-radius: 7px; background: linear-gradient(90deg, var(--primary), #8b5cf6); }
+.print-title { display: none; }
+
+/* ---------- Impression / export PDF ---------- */
+@media print {
+  .sidebar, .menu-toggle, .no-print, .header-actions, .app-topbar { display: none !important; }
+  .app-shell { display: block !important; }
+  main, .app-main { padding: 0 !important; margin: 0 !important; width: 100% !important; }
+  body { background: #fff !important; }
+  .page { padding: 0 !important; max-width: 100% !important; }
+  .page-header h1 { font-size: 1.8rem; }
+  .print-title { display: block; }
+  .panel, .survey-result { box-shadow: none !important; border: 1px solid #e2e6f0 !important; break-inside: avoid; page-break-inside: avoid; }
+  .answer-quote { background: #fff !important; break-inside: avoid; }
+  a[href]:after { content: ''; }
+}

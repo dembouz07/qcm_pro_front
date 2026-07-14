@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faClipboardQuestion, faArrowLeft, faCopy, faTrash, faLockOpen, faLock, faUsers, faShareNodes, faPen,
+  faClipboardQuestion, faArrowLeft, faCopy, faTrash, faLockOpen, faLock, faUsers, faShareNodes, faPen, faQuoteLeft, faFilePdf,
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
@@ -14,6 +14,7 @@ export default function SurveyResults() {
   const [survey, setSurvey] = useState(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [limits, setLimits] = useState({}); // nb de réponses libres visibles par question
 
   const load = () => api.get(`/admin/surveys/${id}`).then((r) => setSurvey(r.data)).catch((e) => setError(getApiError(e)));
   useEffect(() => { load(); }, [id]);
@@ -52,7 +53,8 @@ export default function SurveyResults() {
           <h1>{survey.title}</h1>
           {survey.description && <p>{survey.description}</p>}
         </div>
-        <div className="header-actions">
+        <div className="header-actions no-print">
+          <button className="primary-btn" onClick={() => window.print()}><FontAwesomeIcon icon={faFilePdf} /> Télécharger en PDF</button>
           <Link className="secondary-btn" to={`/admin/surveys/${id}/edit`}><FontAwesomeIcon icon={faPen} /> Modifier</Link>
           <button className="secondary-btn" onClick={toggle}>
             <FontAwesomeIcon icon={survey.is_open ? faLock : faLockOpen} /> {survey.is_open ? 'Fermer' : 'Rouvrir'}
@@ -61,7 +63,7 @@ export default function SurveyResults() {
         </div>
       </div>
 
-      <div className="panel">
+      <div className="panel no-print">
         <h2><FontAwesomeIcon icon={faShareNodes} /> Lien à partager</h2>
         <p className="muted">Envoyez ce lien : les participants répondent anonymement, sans compte.</p>
         <div className="inline-form" style={{ gridTemplateColumns: '1fr auto', marginBottom: 0 }}>
@@ -76,23 +78,54 @@ export default function SurveyResults() {
         <div className="stat-card"><FontAwesomeIcon icon={faClipboardQuestion} /><span>{questions.length}</span><small>Questions</small></div>
       </div>
 
-      <h2 style={{ marginTop: 10 }}>Résultats</h2>
+      <h2 style={{ marginTop: 10 }} className="print-title">Résultats — {survey.title}</h2>
       {responses.length === 0 ? (
         <div className="empty">Aucune réponse pour l'instant.</div>
       ) : (
-        questions.map((q) => (
-          <div className="panel" key={q.id}>
-            <h3 style={{ marginTop: 0 }}>{q.body}</h3>
-            {q.type === 'text' ? (
-              <div className="stats-list">
-                {responses.map((r, i) => {
-                  const v = r.answers?.[q.id];
-                  if (!v) return null;
-                  return <div className="stat-item" key={i} style={{ display: 'block' }}>« {Array.isArray(v) ? v.join(', ') : v} »</div>;
-                })}
-                {responses.every((r) => !r.answers?.[q.id]) && <p className="muted">Aucune réponse.</p>}
-              </div>
-            ) : (
+        questions.map((q, qi) => (
+          <div className="panel survey-result" key={q.id}>
+            <h3 style={{ marginTop: 0 }}><span className="qnum-chip">{qi + 1}</span> {q.body}</h3>
+            {q.type === 'text' ? (() => {
+              const texts = responses
+                .map((r) => r.answers?.[q.id])
+                .filter((v) => v != null && v !== '')
+                .map((v) => (Array.isArray(v) ? v.join(', ') : v));
+              const lim = limits[q.id] || 3;
+              if (texts.length === 0) return <p className="muted">Aucune réponse.</p>;
+              return (
+                <>
+                  <div className="answers-list">
+                    {texts.slice(0, lim).map((t, i) => (
+                      <div className="answer-quote" key={i}>
+                        <FontAwesomeIcon icon={faQuoteLeft} className="quote-ico" />
+                        <span>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {texts.length > lim && (
+                    <button
+                      type="button"
+                      className="secondary-btn small no-print"
+                      style={{ marginTop: 12 }}
+                      onClick={() => setLimits((l) => ({ ...l, [q.id]: lim + 3 }))}
+                    >
+                      Voir plus (+3) — {texts.length - lim} restante(s)
+                    </button>
+                  )}
+                  {lim > 3 && (
+                    <button
+                      type="button"
+                      className="secondary-btn small no-print"
+                      style={{ marginTop: 12, marginLeft: 8 }}
+                      onClick={() => setLimits((l) => ({ ...l, [q.id]: 3 }))}
+                    >
+                      Réduire
+                    </button>
+                  )}
+                  <p className="muted" style={{ marginTop: 10, fontSize: '0.85rem' }}>{texts.length} réponse(s) au total</p>
+                </>
+              );
+            })() : (
               <div className="stats-list">
                 {q.options.map((opt) => {
                   const count = responses.filter((r) => {
@@ -101,12 +134,12 @@ export default function SurveyResults() {
                   }).length;
                   const pct = responses.length ? Math.round((count / responses.length) * 100) : 0;
                   return (
-                    <div key={opt} style={{ marginBottom: 10 }}>
+                    <div key={opt} style={{ marginBottom: 12 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
                         <span>{opt}</span><span>{count} ({pct}%)</span>
                       </div>
-                      <div style={{ height: 10, borderRadius: 6, background: '#eceef6', overflow: 'hidden', marginTop: 4 }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: 'var(--primary)' }} />
+                      <div className="bar-track">
+                        <div className="bar-fill" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );
