@@ -19,6 +19,10 @@ import ConvertQuiz from './pages/ConvertQuiz.jsx';
 import ProgressiveQuizForm from './pages/ProgressiveQuizForm.jsx';
 import CreateQuizMenu from './pages/CreateQuizMenu.jsx';
 import SmartCreateQuiz from './pages/SmartCreateQuiz.jsx';
+import SurveyList from './pages/SurveyList.jsx';
+import SurveyForm from './pages/SurveyForm.jsx';
+import SurveyResults from './pages/SurveyResults.jsx';
+import PublicSurvey from './pages/PublicSurvey.jsx';
 import Results from './pages/Results.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import StudentResults from './pages/StudentResults.jsx';
@@ -62,6 +66,7 @@ export default function App() {
 
           {/* Route publique pour accès au quiz via lien partagé */}
           <Route path="/quiz/:token" element={<PublicQuiz />} />
+          <Route path="/sondage/:token" element={<PublicSurvey />} />
           <Route path="/mes-notes" element={<MyResults />} />
 
           <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
@@ -79,6 +84,9 @@ export default function App() {
           <Route path="/admin/quizzes/progressive" element={<ProtectedRoute role="admin" requireSubscription><ProgressiveQuizForm /></ProtectedRoute>} />
           <Route path="/admin/quizzes/convert" element={<ProtectedRoute role="admin" requireSubscription><ConvertQuiz /></ProtectedRoute>} />
           <Route path="/admin/results" element={<ProtectedRoute role="admin" requireSubscription><Results /></ProtectedRoute>} />
+          <Route path="/admin/surveys" element={<ProtectedRoute role="admin" requireSubscription><SurveyList /></ProtectedRoute>} />
+          <Route path="/admin/surveys/new" element={<ProtectedRoute role="admin" requireSubscription><SurveyForm /></ProtectedRoute>} />
+          <Route path="/admin/surveys/:id" element={<ProtectedRoute role="admin" requireSubscription><SurveyResults /></ProtectedRoute>} />
 
           <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
           <Route path="/student/notes" element={<ProtectedRoute role="student"><StudentResults /></ProtectedRoute>} />
