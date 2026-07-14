@@ -131,10 +131,11 @@ export default function TakeQuiz() {
 
     return {
       auto_submit: auto,
-      answers: Object.entries(currentAnswers).map(([questionId, choiceId]) => ({
-        question_id: Number(questionId),
-        choice_id: Number(choiceId)
-      }))
+      answers: Object.entries(currentAnswers).map(([questionId, val]) => (
+        Array.isArray(val)
+          ? { question_id: Number(questionId), choice_ids: val.map(Number) }
+          : { question_id: Number(questionId), choice_id: Number(val) }
+      ))
     };
   }
 
@@ -142,7 +143,7 @@ export default function TakeQuiz() {
     if (submittingRef.current || result || !quiz) return;
 
     if (!auto) {
-      const answeredCount = Object.keys(answers).length;
+      const answeredCount = Object.values(answers).filter((v) => Array.isArray(v) ? v.length > 0 : v != null).length;
       const totalQuestions = quiz.questions.length;
 
       if (answeredCount !== totalQuestions) {
@@ -175,11 +176,17 @@ export default function TakeQuiz() {
     }
   }
 
-  function choose(questionId, choiceId) {
+  function choose(questionId, choiceId, multiple) {
     if (timeLeft === 0 || loading || autoSubmitting) return;
     setAnswers((current) => {
-      const next = { ...current, [questionId]: choiceId };
-      // Sauvegarde immédiate (ne dépend pas du cycle de rendu)
+      let next;
+      if (multiple) {
+        const arr = Array.isArray(current[questionId]) ? current[questionId] : (current[questionId] != null ? [current[questionId]] : []);
+        const updated = arr.includes(choiceId) ? arr.filter((x) => x !== choiceId) : [...arr, choiceId];
+        next = { ...current, [questionId]: updated };
+      } else {
+        next = { ...current, [questionId]: choiceId };
+      }
       try { localStorage.setItem(`qcm_progress_${id}`, JSON.stringify({ answers: next })); } catch { /* ignore */ }
       return next;
     });
@@ -295,21 +302,26 @@ export default function TakeQuiz() {
 
           return (
             <article className="question-card test-question" key={question.id}>
-              <h2>Question {index + 1}</h2>
+              <h2>Question {index + 1}{question.multiple ? <span className="badge" style={{ marginLeft: 10 }}>Plusieurs réponses</span> : null}</h2>
               <p className="question-text">{question.body}</p>
               <div className={`choice-options ${useSingleColumn ? 'single-column' : ''}`}>
-                {question.choices.map((choice) => (
-                  <label className={`answer-option ${answers[question.id] === choice.id ? 'selected' : ''}`} key={choice.id}>
-                    <input
-                      type="radio"
-                      name={`question-${question.id}`}
-                      checked={answers[question.id] === choice.id}
-                      onChange={() => choose(question.id, choice.id)}
-                      disabled={timeLeft === 0 || loading || autoSubmitting}
-                    />
-                    <span>{choice.body}</span>
-                  </label>
-                ))}
+                {question.choices.map((choice) => {
+                  const isMulti = !!question.multiple;
+                  const val = answers[question.id];
+                  const selected = isMulti ? (Array.isArray(val) && val.includes(choice.id)) : val === choice.id;
+                  return (
+                    <label className={`answer-option ${selected ? 'selected' : ''}`} key={choice.id}>
+                      <input
+                        type={isMulti ? 'checkbox' : 'radio'}
+                        name={`question-${question.id}`}
+                        checked={selected}
+                        onChange={() => choose(question.id, choice.id, isMulti)}
+                        disabled={timeLeft === 0 || loading || autoSubmitting}
+                      />
+                      <span>{choice.body}</span>
+                    </label>
+                  );
+                })}
               </div>
             </article>
           );

@@ -49,7 +49,7 @@ export default function SmartCreateQuiz() {
   // édition
   const upQ = (qi, patch) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, ...patch } : q));
   const upC = (qi, ci, patch) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, choices: q.choices.map((c, j) => j === ci ? { ...c, ...patch } : c) } : q));
-  const markCorrect = (qi, ci) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, uncertain: false, choices: q.choices.map((c, j) => ({ ...c, is_correct: j === ci })) } : q));
+  const markCorrect = (qi, ci) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, uncertain: false, choices: q.choices.map((c, j) => j === ci ? { ...c, is_correct: !c.is_correct } : c) } : q));
   const addChoice = (qi) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, choices: [...q.choices, { body: '', is_correct: false }] } : q));
   const removeChoice = (qi, ci) => setQuestions((qs) => qs.map((q, i) => {
     if (i !== qi || q.choices.length <= 2) return q;
@@ -214,7 +214,7 @@ b. Choix ✓
                 <input type="number" min="1" value={q.points} onChange={(e) => upQ(qi, { points: Number(e.target.value) })} />
               </label>
 
-              <div className="choices-head">Réponses <span>— cliquez sur le rond pour définir la bonne réponse</span></div>
+              <div className="choices-head">Réponses <span>— cliquez sur le rond pour cocher la/les bonne(s) réponse(s) (plusieurs possibles)</span></div>
               <div className="choices">
                 {q.choices.map((c, ci) => (
                   <div className={`choice-row ${c.is_correct ? 'correct' : ''}`} key={ci}>

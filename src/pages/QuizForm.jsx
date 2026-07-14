@@ -49,10 +49,9 @@ export default function QuizForm() {
 
   function markCorrect(questionIndex, choiceIndex) {
     const questions = [...form.questions];
-    questions[questionIndex].choices = questions[questionIndex].choices.map((choice, index) => ({
-      ...choice,
-      is_correct: index === choiceIndex
-    }));
+    questions[questionIndex].choices = questions[questionIndex].choices.map((choice, index) => (
+      index === choiceIndex ? { ...choice, is_correct: !choice.is_correct } : choice
+    ));
     setForm({ ...form, questions });
   }
 
@@ -175,7 +174,7 @@ export default function QuizForm() {
                 />
               </label>
 
-              <div className="choices-head">Réponses <span>— cliquez sur le rond à gauche pour définir la bonne réponse</span></div>
+              <div className="choices-head">Réponses <span>— cliquez sur le rond pour cocher la/les bonne(s) réponse(s) (plusieurs possibles)</span></div>
               <div className="choices">
                 {question.choices.map((choice, choiceIndex) => (
                   <div className={`choice-row ${choice.is_correct ? 'correct' : ''}`} key={choiceIndex}>
