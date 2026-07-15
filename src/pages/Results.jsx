@@ -90,13 +90,15 @@ export default function Results() {
   function applyFilters(data, classId, quizId) {
     let filtered = data;
     if (classId !== '') {
-      filtered = filtered.filter((result) =>
-        result.user?.school_class?.id === parseInt(classId) ||
-        result.quiz?.school_class_id === parseInt(classId)
-      );
+      const cid = parseInt(classId, 10);
+      // On ne garde que les notes dont le QCM appartient à la classe choisie.
+      filtered = filtered.filter((result) => {
+        const quizClassId = result.quiz?.school_class?.id ?? result.quiz?.school_class_id;
+        return Number(quizClassId) === cid;
+      });
     }
     if (quizId !== '') {
-      filtered = filtered.filter((result) => result.quiz?.id === parseInt(quizId));
+      filtered = filtered.filter((result) => result.quiz?.id === parseInt(quizId, 10));
     }
     return filtered;
   }
@@ -131,7 +133,8 @@ export default function Results() {
 
   function handleClassFilter(classId) {
     setSelectedClass(classId);
-    setResults(applyFilters(allResults, classId, selectedQuiz));
+    setSelectedQuiz(''); // réinitialise le filtre QCM (il ne concerne plus la même classe)
+    setResults(applyFilters(allResults, classId, ''));
   }
 
   function handleQuizFilter(quizId) {
@@ -173,9 +176,11 @@ export default function Results() {
             QCM :
             <select value={selectedQuiz} onChange={(e) => handleQuizFilter(e.target.value)}>
               <option value="">Tous les QCM</option>
-              {quizzes.map((quiz) => (
-                <option key={quiz.id} value={quiz.id}>{quiz.title}</option>
-              ))}
+              {quizzes
+                .filter((quiz) => selectedClass === '' || Number(quiz.school_class?.id ?? quiz.school_class_id) === parseInt(selectedClass, 10))
+                .map((quiz) => (
+                  <option key={quiz.id} value={quiz.id}>{quiz.title}</option>
+                ))}
             </select>
           </label>
           <span className="filter-count">
