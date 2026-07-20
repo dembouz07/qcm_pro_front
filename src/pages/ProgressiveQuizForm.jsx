@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faLayerGroup,
@@ -11,6 +11,7 @@ import {
   faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { validateProgressiveQuiz } from '../quizFormValidation.js';
 
 function emptyStage(index) {
   return { name: `Stade ${index + 1}`, questions: [''] };
@@ -18,6 +19,8 @@ function emptyStage(index) {
 
 export default function ProgressiveQuizForm() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = Boolean(id);
   const [classes, setClasses] = useState([]);
   const [form, setForm] = useState({
     title: '',
@@ -25,15 +28,53 @@ export default function ProgressiveQuizForm() {
     school_class_id: '',
     starts_at: '',
     ends_at: '',
-    stage_threshold: 5
+    stage_threshold: 1
   });
   const [stages, setStages] = useState([emptyStage(0), emptyStage(1)]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(isEditing);
 
   useEffect(() => {
-    api.get('/admin/classes').then((response) => setClasses(response.data));
-  }, []);
+    const requests = [api.get('/admin/classes')];
+    if (isEditing) requests.push(api.get(`/admin/quizzes/${id}`));
+
+    Promise.all(requests)
+      .then(([classesResponse, quizResponse]) => {
+        setClasses(classesResponse.data);
+        if (quizResponse) {
+          const quiz = quizResponse.data;
+          if (quiz.type !== 'progressive') {
+            setError("Ce QCM n'est pas un diagnostic progressif.");
+            return;
+          }
+
+          const groupedStages = Object.values((quiz.questions || []).reduce((groups, question) => {
+            const stageNumber = question.stage || 1;
+            if (!groups[stageNumber]) {
+              groups[stageNumber] = {
+                name: question.stage_name || `Stade ${stageNumber}`,
+                questions: [],
+              };
+            }
+            groups[stageNumber].questions.push(question.body || '');
+            return groups;
+          }, {}));
+
+          setForm({
+            title: quiz.title || '',
+            description: quiz.description || '',
+            school_class_id: quiz.school_class_id || '',
+            starts_at: quiz.starts_at?.slice(0, 16) || '',
+            ends_at: quiz.ends_at?.slice(0, 16) || '',
+            stage_threshold: quiz.stage_threshold || 1,
+          });
+          setStages(groupedStages.length ? groupedStages : [emptyStage(0)]);
+        }
+      })
+      .catch((err) => setError(getApiError(err)))
+      .finally(() => setInitialLoading(false));
+  }, [id, isEditing]);
 
   function updateStageName(stageIndex, value) {
     setStages((current) =>
@@ -80,19 +121,30 @@ export default function ProgressiveQuizForm() {
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
-    setLoading(true);
+
+    const validationError = validateProgressiveQuiz(form, stages);
+    if (validationError) {
+      setError(validationError);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
     const payload = {
       ...form,
       stage_threshold: Number(form.stage_threshold),
       stages: stages.map((stage) => ({
-        name: stage.name,
-        questions: stage.questions.filter((q) => q.trim() !== '')
+        name: stage.name.trim(),
+        questions: stage.questions.map((q) => q.trim()).filter(Boolean)
       }))
     };
 
+    setLoading(true);
     try {
-      await api.post('/admin/progressive-quizzes', payload);
+      if (isEditing) {
+        await api.put(`/admin/progressive-quizzes/${id}`, payload);
+      } else {
+        await api.post('/admin/progressive-quizzes', payload);
+      }
       navigate('/admin/quizzes');
     } catch (err) {
       setError(getApiError(err));
@@ -101,13 +153,17 @@ export default function ProgressiveQuizForm() {
     }
   }
 
+  if (initialLoading) {
+    return <div className="page"><div className="panel">Chargement du diagnostic...</div></div>;
+  }
+
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <Link to="/admin/quizzes/create" className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> Retour au choix du format</Link>
+          <Link to={isEditing ? `/admin/quizzes/${id}` : '/admin/quizzes/create'} className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> {isEditing ? 'Retour au QCM' : 'Retour au choix du format'}</Link>
           <span className="eyebrow"><FontAwesomeIcon icon={faDiagramProject} /> Diagnostic progressif</span>
-          <h1>Créer un QCM progressif</h1>
+          <h1>{isEditing ? 'Modifier le QCM progressif' : 'Créer un QCM progressif'}</h1>
           <p>
             Questionnaire par stades avec réponses Oui/Non. Un stade est validé quand le participant
             atteint le seuil de "Oui". Le diagnostic s'arrête au dernier stade validé.
@@ -153,6 +209,7 @@ export default function ProgressiveQuizForm() {
               onChange={(e) => setForm({ ...form, stage_threshold: e.target.value })}
               required
             />
+            <small className="muted">Le seuil doit pouvoir être atteint dans chaque stade.</small>
           </label>
 
           <label>
@@ -174,6 +231,7 @@ export default function ProgressiveQuizForm() {
               <FontAwesomeIcon icon={faCalendarDays} />
               <input
                 type="datetime-local"
+                min={form.starts_at || undefined}
                 value={form.ends_at}
                 onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
               />
@@ -208,6 +266,8 @@ export default function ProgressiveQuizForm() {
                   value={stage.name}
                   onChange={(e) => updateStageName(stageIndex, e.target.value)}
                   placeholder={`Stade ${stageIndex + 1}`}
+                  maxLength="190"
+                  required
                 />
               </label>
 
@@ -219,6 +279,7 @@ export default function ProgressiveQuizForm() {
                       value={question}
                       onChange={(e) => updateQuestion(stageIndex, qIndex, e.target.value)}
                       placeholder="Texte de la question (réponse Oui/Non)"
+                      required
                     />
                     {stage.questions.length > 1 && (
                       <button type="button" className="icon-btn danger" onClick={() => removeQuestion(stageIndex, qIndex)}>
@@ -241,7 +302,7 @@ export default function ProgressiveQuizForm() {
             <FontAwesomeIcon icon={faPlus} /> Ajouter un stade
           </button>
           <button className="primary-btn" disabled={loading}>
-            <FontAwesomeIcon icon={faCircleQuestion} /> {loading ? 'Création...' : 'Créer le diagnostic'}
+            <FontAwesomeIcon icon={faCircleQuestion} /> {loading ? 'Enregistrement...' : (isEditing ? 'Enregistrer les modifications' : 'Créer le diagnostic')}
           </button>
         </div>
       </form>

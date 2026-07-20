@@ -7,6 +7,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { parseQuiz } from '../quizParser.js';
+import { validateStandardQuiz } from '../quizFormValidation.js';
 
 const SAMPLE = `1. Quelle est la capitale du Sénégal ?
 A) Dakar
@@ -29,11 +30,15 @@ export default function SmartCreateQuiz() {
   const [text, setText] = useState('');
   const [questions, setQuestions] = useState(null);
   const [warnings, setWarnings] = useState([]);
-  const [meta, setMeta] = useState({ title: '', school_class_id: '', starts_at: '', ends_at: '', show_corrections: true });
+  const [meta, setMeta] = useState({ title: '', description: '', school_class_id: '', starts_at: '', ends_at: '', show_corrections: true });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { api.get('/admin/classes').then((r) => setClasses(r.data)).catch(() => {}); }, []);
+  useEffect(() => {
+    api.get('/admin/classes')
+      .then((response) => setClasses(response.data))
+      .catch((err) => setError(`Impossible de charger les classes. ${getApiError(err)}`));
+  }, []);
 
   function analyze() {
     setError('');
@@ -49,34 +54,34 @@ export default function SmartCreateQuiz() {
   // édition
   const upQ = (qi, patch) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, ...patch } : q));
   const upC = (qi, ci, patch) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, choices: q.choices.map((c, j) => j === ci ? { ...c, ...patch } : c) } : q));
-  const markCorrect = (qi, ci) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, uncertain: false, choices: q.choices.map((c, j) => j === ci ? { ...c, is_correct: !c.is_correct } : c) } : q));
+  const markCorrect = (qi, ci) => setQuestions((qs) => qs.map((q, i) => {
+    if (i !== qi) return q;
+    const choices = q.choices.map((c, j) => j === ci ? { ...c, is_correct: !c.is_correct } : c);
+    return { ...q, uncertain: !choices.some((choice) => choice.is_correct), choices };
+  }));
   const addChoice = (qi) => setQuestions((qs) => qs.map((q, i) => i === qi ? { ...q, choices: [...q.choices, { body: '', is_correct: false }] } : q));
   const removeChoice = (qi, ci) => setQuestions((qs) => qs.map((q, i) => {
     if (i !== qi || q.choices.length <= 2) return q;
     const choices = q.choices.filter((_, j) => j !== ci);
-    if (!choices.some((c) => c.is_correct)) choices[0].is_correct = true;
-    return { ...q, choices };
+    return { ...q, uncertain: !choices.some((choice) => choice.is_correct), choices };
   }));
-  const addQuestion = () => setQuestions((qs) => [...qs, { body: '', points: 1, explanation: '', choices: [{ body: '', is_correct: true }, { body: '', is_correct: false }] }]);
-  const removeQuestion = (qi) => setQuestions((qs) => qs.filter((_, i) => i !== qi));
+  const addQuestion = () => setQuestions((qs) => [...qs, { body: '', points: 1, explanation: '', choices: [{ body: '', is_correct: false }, { body: '', is_correct: false }], uncertain: true }]);
+  const removeQuestion = (qi) => setQuestions((qs) => qs.length > 1 ? qs.filter((_, i) => i !== qi) : qs);
 
   async function save() {
     setError('');
-    if (!meta.title.trim()) { setError('Donnez un titre au QCM.'); return; }
-    if (!meta.school_class_id) { setError('Choisissez une classe.'); return; }
-    if (!meta.starts_at) { setError("Indiquez une date d'ouverture."); return; }
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
-      if (!q.body.trim()) { setError(`Question ${i + 1} : énoncé vide.`); return; }
-      if (q.choices.length < 2) { setError(`Question ${i + 1} : au moins 2 choix.`); return; }
-      if (q.choices.some((c) => !c.body.trim())) { setError(`Question ${i + 1} : un choix est vide.`); return; }
-      if (!q.choices.some((c) => c.is_correct)) { setError(`Question ${i + 1} : cochez la bonne réponse.`); return; }
+    const validationError = validateStandardQuiz({ ...meta, questions });
+    if (validationError) {
+      setError(validationError);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
+
     setLoading(true);
     try {
       await api.post('/admin/quizzes', {
         title: meta.title,
-        description: '',
+        description: meta.description.trim(),
         school_class_id: Number(meta.school_class_id),
         starts_at: meta.starts_at,
         ends_at: meta.ends_at || null,
@@ -181,14 +186,18 @@ b. Choix ✓
               Fermeture (facultatif)
               <div className="input-icon plain">
                 <FontAwesomeIcon icon={faCalendarDays} />
-                <input type="datetime-local" value={meta.ends_at} onChange={(e) => setMeta({ ...meta, ends_at: e.target.value })} />
+                <input type="datetime-local" min={meta.starts_at || undefined} value={meta.ends_at} onChange={(e) => setMeta({ ...meta, ends_at: e.target.value })} />
               </div>
+            </label>
+            <label className="span-2">
+              Description
+              <textarea value={meta.description} onChange={(e) => setMeta({ ...meta, description: e.target.value })} rows="3" />
             </label>
           </section>
 
-          {warnings.length > 0 && (
+          {warnings.length > 0 && questions.some((q) => q.uncertain) && (
             <div className="alert error" style={{ background: 'rgba(245,158,11,0.12)', color: '#92400e', border: '1px solid rgba(245,158,11,0.3)' }}>
-              <FontAwesomeIcon icon={faTriangleExclamation} /> {questions.filter((q) => q.uncertain).length} question(s) sans bonne réponse détectée : vérifiez les ronds verts.
+              <FontAwesomeIcon icon={faTriangleExclamation} /> {questions.filter((q) => q.uncertain).length} question(s) sans bonne réponse détectée : cochez au moins une réponse avant l'enregistrement.
             </div>
           )}
 
@@ -203,7 +212,7 @@ b. Choix ✓
             <article className={`panel question-card ${q.uncertain ? 'q-uncertain' : ''}`} key={qi}>
               <div className="question-head">
                 <h3>Question {qi + 1} {q.uncertain && <span className="badge" style={{ background: 'rgba(245,158,11,0.15)', color: '#92400e' }}><FontAwesomeIcon icon={faTriangleExclamation} /> à vérifier</span>}</h3>
-                <button type="button" className="icon-btn danger" onClick={() => removeQuestion(qi)}><FontAwesomeIcon icon={faTrash} /></button>
+                <button type="button" className="icon-btn danger" onClick={() => removeQuestion(qi)} disabled={questions.length === 1} title="Supprimer la question" aria-label={`Supprimer la question ${qi + 1}`}><FontAwesomeIcon icon={faTrash} /></button>
               </div>
               <label>
                 Énoncé
@@ -211,7 +220,7 @@ b. Choix ✓
               </label>
               <label className="points-field">
                 Points
-                <input type="number" min="1" value={q.points} onChange={(e) => upQ(qi, { points: Number(e.target.value) })} />
+                <input type="number" min="1" max="100" value={q.points} onChange={(e) => upQ(qi, { points: Number(e.target.value) })} required />
               </label>
 
               <div className="choices-head">Réponses <span>— cliquez sur le rond pour cocher la/les bonne(s) réponse(s) (plusieurs possibles)</span></div>
@@ -222,7 +231,7 @@ b. Choix ✓
                       <FontAwesomeIcon icon={c.is_correct ? faCheckCircle : faCircle} />
                     </button>
                     <input value={c.body} onChange={(e) => upC(qi, ci, { body: e.target.value })} placeholder={`Choix ${ci + 1}`} required />
-                    <button type="button" className="icon-btn danger" onClick={() => removeChoice(qi, ci)}><FontAwesomeIcon icon={faTrash} /></button>
+                    <button type="button" className="icon-btn danger" onClick={() => removeChoice(qi, ci)} disabled={q.choices.length <= 2} title="Supprimer le choix" aria-label={`Supprimer le choix ${ci + 1}`}><FontAwesomeIcon icon={faTrash} /></button>
                   </div>
                 ))}
               </div>

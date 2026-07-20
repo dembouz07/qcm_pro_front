@@ -201,7 +201,7 @@ export default function QuizList() {
                         <FontAwesomeIcon icon={faEye} />
                       </Link>
                       {!quiz.archived_at && (
-                        <Link to={`/admin/quizzes/${quiz.id}/edit`} className="icon-btn" title="Modifier">
+                        <Link to={quiz.type === 'progressive' ? `/admin/quizzes/${quiz.id}/progressive/edit` : `/admin/quizzes/${quiz.id}/edit`} className="icon-btn" title="Modifier">
                           <FontAwesomeIcon icon={faEdit} />
                         </Link>
                       )}

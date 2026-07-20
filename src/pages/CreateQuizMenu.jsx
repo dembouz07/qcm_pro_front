@@ -6,8 +6,8 @@ const options = [
   {
     to: '/admin/quizzes/smart',
     icon: faWandMagicSparkles,
-    title: 'Coller un QCM (IA / tout format)',
-    desc: "Collez un QCM généré par IA ou copié d'ailleurs : il est analysé, affiché pour vérification et modifiable avant enregistrement.",
+    title: 'Coller un QCM (texte)',
+    desc: "Collez un QCM généré par IA ou copié d'ailleurs : les questions sont analysées, puis affichées pour validation avant l'enregistrement.",
     cta: 'Coller et vérifier',
     featured: true,
   },
@@ -22,7 +22,7 @@ const options = [
     to: '/admin/quizzes/import',
     icon: faFileImport,
     title: 'Importer un fichier',
-    desc: 'Générez un QCM à partir d’un fichier CSV, JSON, Word ou PDF.',
+    desc: 'Créez un QCM à partir d’un fichier CSV, JSON, Word ou PDF structuré.',
     cta: 'Importer un fichier'
   },
   {

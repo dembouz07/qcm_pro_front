@@ -420,13 +420,15 @@ export default function PublicQuiz() {
           <p>Merci <strong>{prenom} {nom}</strong>, vos réponses ont été enregistrées.</p>
           <div className="stade-result">
             <small>Stade atteint</small>
-            <div className="final-score">Stade {progressiveResult.stade_atteint}</div>
+            <div className="final-score">
+              {quiz?.stages?.find((stage) => Number(stage.stage) === Number(progressiveResult.stade_atteint))?.name || `Stade ${progressiveResult.stade_atteint}`}
+            </div>
           </div>
           {progressiveResult.stage_scores && (
             <div className="stage-scores">
               {Object.entries(progressiveResult.stage_scores).map(([stage, score]) => (
                 <div className="stage-score-item" key={stage}>
-                  <span>Stade {stage}</span>
+                  <span>{quiz?.stages?.find((item) => Number(item.stage) === Number(stage))?.name || `Stade ${stage}`}</span>
                   <strong>{score} Oui</strong>
                 </div>
               ))}
@@ -645,7 +647,7 @@ export default function PublicQuiz() {
         </div>
 
         <div className="stage-banner">
-          <FontAwesomeIcon icon={faLayerGroup} /> Stade {stage.stage} · {stage.questions.length} questions
+          <FontAwesomeIcon icon={faLayerGroup} /> {stage.name || `Stade ${stage.stage}`} · {stage.questions.length} question(s)
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleNextStage(); }} className="test-form">

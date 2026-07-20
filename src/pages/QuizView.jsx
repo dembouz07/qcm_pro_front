@@ -135,7 +135,7 @@ export default function QuizView() {
           <button onClick={notifyStudents} className="secondary-btn" disabled={notifying}>
             <FontAwesomeIcon icon={faPaperPlane} /> {notifying ? 'Envoi...' : 'Notifier par email'}
           </button>
-          <Link to={`/admin/quizzes/${quiz.id}/edit`} className="primary-btn">
+          <Link to={quiz.type === 'progressive' ? `/admin/quizzes/${quiz.id}/progressive/edit` : `/admin/quizzes/${quiz.id}/edit`} className="primary-btn">
             <FontAwesomeIcon icon={faEdit} /> Modifier
           </Link>
           <button onClick={deleteQuiz} className="danger-btn">

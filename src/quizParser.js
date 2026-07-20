@@ -10,13 +10,18 @@ function cleanInline(s) {
     .trim();
 }
 
+function extractAnswerLetters(value) {
+  return [...String(value || '').matchAll(/(?<![A-Za-zÀ-ÿ])([A-E])(?![A-Za-zÀ-ÿ])/gi)]
+    .map((match) => match[1].toUpperCase());
+}
+
 // Détecte et retire un marqueur de bonne réponse dans le texte d'un choix
 function stripCorrectMarker(raw) {
   let body = String(raw || '');
   let correct = false;
   const trailing = [
-    /\s*\(\s*(?:bonne\s*r[ée]ponse|correcte?|correct|vrai|true|juste)\s*\)\s*$/i,
-    /\s*\[\s*(?:bonne\s*r[ée]ponse|correcte?|correct|vrai|true|juste)\s*\]\s*$/i,
+    /\s*\(\s*(?:bonne(?:\s*r[ée]ponse)?|correcte?|correct|vrai|true|juste)\s*\)\s*$/i,
+    /\s*\[\s*(?:bonne(?:\s*r[ée]ponse)?|correcte?|correct|vrai|true|juste)\s*\]\s*$/i,
     /\s*<-+\s*(?:correct|bonne)?\s*$/i,
     /\s*=+>\s*$/, /\s*✓\s*$/, /\s*✔\s*$/, /\s*☑\s*$/, /\s*✅\s*$/, /\s*\*\s*$/,
   ];
@@ -54,7 +59,7 @@ function applyAnswerKey(chunk) {
     /(?:bonnes?\s*r[ée]ponses?|r[ée]ponses?(?:\s*correctes?)?|correct[e]?s?|answers?|solutions?)\s*[:=]\s*([A-Ea-e](?:\s*(?:,|;|\/|et|ou|and|or|&)\s*[A-Ea-e])*)/i,
   );
   if (!ak) return { chunk, letters: [] };
-  const letters = (ak[1].match(/[A-Ea-e]/g) || []).map((x) => x.toUpperCase());
+  const letters = extractAnswerLetters(ak[1]);
   return { chunk: chunk.slice(0, ak.index).trim(), letters };
 }
 
@@ -128,7 +133,7 @@ function parseLineBased(text) {
   for (const line of lines) {
     const ak = line.match(RE_ANSWERKEY);
     if (ak && current && current.choices.length) {
-      (ak[1].match(/[A-Ea-e]/g) || []).forEach((L) => {
+      extractAnswerLetters(ak[1]).forEach((L) => {
         const idx = L.toUpperCase().charCodeAt(0) - 65;
         if (idx >= 0 && idx < current.choices.length) current.choices[idx].is_correct = true;
       });
@@ -179,7 +184,6 @@ export function parseQuiz(text) {
   const cleaned = best.questions.filter((q) => q.body && q.choices.length >= 1);
   cleaned.forEach((q, i) => {
     if (!q.choices.some((c) => c.is_correct)) {
-      q.choices[0].is_correct = true;
       q.uncertain = true;
       warnings.push(`Question ${i + 1} : bonne réponse non détectée, à vérifier.`);
     }
