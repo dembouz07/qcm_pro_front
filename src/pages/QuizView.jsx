@@ -13,7 +13,8 @@ import {
   faUsers,
   faLink,
   faCopy,
-  faPaperPlane
+  faPaperPlane,
+  faTriangleExclamation
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
@@ -28,9 +29,11 @@ export default function QuizView() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [notifying, setNotifying] = useState(false);
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     loadQuiz();
+    api.get(`/admin/quizzes/${id}/stats`).then((r) => setStats(r.data)).catch(() => {});
   }, [id]);
 
   async function loadQuiz() {
@@ -209,6 +212,31 @@ export default function QuizView() {
           </div>
         </div>
       </div>
+
+      {stats && stats.submissions > 0 && (
+        <div className="panel">
+          <h2><FontAwesomeIcon icon={faTriangleExclamation} /> Questions les plus ratées</h2>
+          <p className="muted">Basé sur {stats.submissions} soumission(s). Utile pour repérer les questions à revoir.</p>
+          <div className="failed-list">
+            {stats.questions.filter((q) => q.total > 0).map((q, i) => (
+              <div className="failed-item" key={q.id}>
+                <div className="failed-rank">{i + 1}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="failed-body">{q.body}</div>
+                  <div className="failed-bar-track">
+                    <div className="failed-bar-fill" style={{ width: `${q.wrong_rate}%` }} />
+                  </div>
+                </div>
+                <div className="failed-stat">
+                  <strong>{q.wrong}</strong> ratée(s)
+                  <small>{q.wrong_rate}% · {q.total} réponse(s)</small>
+                </div>
+              </div>
+            ))}
+            {stats.questions.every((q) => q.total === 0) && <p className="muted">Aucune réponse enregistrée pour l'instant.</p>}
+          </div>
+        </div>
+      )}
 
       <div className="panel">
         <h2>Questions ({quiz.questions?.length || 0})</h2>

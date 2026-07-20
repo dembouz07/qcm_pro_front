@@ -2501,3 +2501,19 @@ tr:last-child td { border-bottom: 0; }
   .answer-quote { background: #fff !important; break-inside: avoid; }
   a[href]:after { content: ''; }
 }
+
+/* ---------- Questions les plus ratées ---------- */
+.failed-list { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.failed-item {
+  display: flex; align-items: center; gap: 14px; padding: 12px 14px;
+  border: 1px solid var(--border); border-radius: 14px; background: #fbfcff;
+}
+.failed-rank {
+  flex: none; width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  background: rgba(239, 68, 68, 0.12); color: #dc2626; font-weight: 900;
+}
+.failed-body { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.failed-bar-track { height: 8px; border-radius: 5px; background: #eceef6; overflow: hidden; }
+.failed-bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #f59e0b, #ef4444); }
+.failed-stat { flex: none; text-align: right; font-size: 0.9rem; color: var(--danger); font-weight: 800; }
+.failed-stat small { display: block; color: var(--muted); font-weight: 600; margin-top: 2px; }

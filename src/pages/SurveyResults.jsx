@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faClipboardQuestion, faArrowLeft, faCopy, faTrash, faLockOpen, faLock, faUsers, faShareNodes, faPen, faQuoteLeft, faFilePdf,
+  faClipboardQuestion, faArrowLeft, faCopy, faTrash, faLockOpen, faLock, faUsers, faShareNodes, faPen, faQuoteLeft, faFilePdf, faFileExcel,
 } from '@fortawesome/free-solid-svg-icons';
+import * as XLSX from 'xlsx';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
 
@@ -31,6 +32,25 @@ export default function SurveyResults() {
     const r = await api.post(`/admin/surveys/${id}/toggle`);
     setSurvey((s) => ({ ...s, is_open: r.data.is_open }));
   }
+  function exportExcel() {
+    const responses = survey.responses || [];
+    const questions = survey.questions || [];
+    if (responses.length === 0) return;
+    const rows = responses.map((r, idx) => {
+      const row = { '#': idx + 1, Date: r.submitted_at ? new Date(r.submitted_at).toLocaleString('fr-FR') : '' };
+      questions.forEach((q, i) => {
+        const v = r.answers?.[q.id];
+        row[`Q${i + 1}. ${q.body}`] = Array.isArray(v) ? v.join(', ') : (v ?? '');
+      });
+      return row;
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{ wch: 5 }, { wch: 20 }, ...questions.map(() => ({ wch: 34 }))];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Réponses');
+    XLSX.writeFile(wb, `sondage-${(survey.title || 'export').replace(/[^\w-]+/g, '_')}.xlsx`);
+  }
+
   async function remove() {
     const ok = await dialog.confirm({ title: 'Supprimer le sondage', message: 'Cette action est irréversible. Continuer ?', confirmText: 'Supprimer', danger: true });
     if (!ok) return;
@@ -54,6 +74,7 @@ export default function SurveyResults() {
           {survey.description && <p>{survey.description}</p>}
         </div>
         <div className="header-actions no-print">
+          <button className="secondary-btn" onClick={exportExcel} disabled={(survey.responses || []).length === 0}><FontAwesomeIcon icon={faFileExcel} /> Excel</button>
           <button className="primary-btn" onClick={() => window.print()}><FontAwesomeIcon icon={faFilePdf} /> Télécharger en PDF</button>
           <Link className="secondary-btn" to={`/admin/surveys/${id}/edit`}><FontAwesomeIcon icon={faPen} /> Modifier</Link>
           <button className="secondary-btn" onClick={toggle}>
