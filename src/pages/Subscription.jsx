@@ -1,19 +1,66 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCreditCard, faCircleCheck, faTriangleExclamation, faCrown, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChartColumn,
+  faCircleCheck,
+  faCreditCard,
+  faCrown,
+  faGift,
+  faSpinner,
+  faTriangleExclamation,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { formatDateTime } from '../utils/time.js';
 
+const FALLBACK_PLANS = [
+  { id: 'free', name: 'Gratuite', price: 0 },
+  { id: 'essential', name: 'Essentielle', price: 3000 },
+  { id: 'premium', name: 'Complète', price: 5000 },
+];
+
+const PLAN_DETAILS = {
+  free: {
+    icon: faGift,
+    tagline: 'Pour créer vos premiers QCM sans payer.',
+    features: ['Création manuelle', 'Import CSV, JSON, Word et PDF', 'QCM progressifs'],
+    excluded: ['Sondages', 'Pourcentages des questions ratées'],
+  },
+  essential: {
+    icon: faChartColumn,
+    tagline: 'Toutes les fonctions essentielles, sans les analyses avancées.',
+    features: ['Tout le socle QCM', 'Création assistée par texte', 'Classes, partage, notes et exports'],
+    excluded: ['Sondages', 'Pourcentages des questions ratées'],
+  },
+  premium: {
+    icon: faCrown,
+    tagline: 'L’expérience QCM Pro complète, sans restriction.',
+    features: ['Toutes les fonctionnalités', 'Sondages anonymes', 'Analyse des questions les plus ratées'],
+    excluded: [],
+  },
+};
+
+const FEATURE_NAMES = {
+  quiz_smart: 'La création assistée est disponible à partir de la formule Essentielle.',
+  surveys: 'Les sondages sont inclus dans la formule Complète.',
+  wrong_question_stats: 'L’analyse des questions ratées est incluse dans la formule Complète.',
+};
+
 export default function Subscription() {
-  const { setUser, user } = useAuth();
+  const { setUser } = useAuth();
   const [params] = useSearchParams();
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState(false);
+  const [payingPlan, setPayingPlan] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+
+  async function refreshUser() {
+    const me = await api.get('/auth/me');
+    setUser(me.data);
+  }
 
   async function loadStatus() {
     try {
@@ -26,95 +73,112 @@ export default function Subscription() {
     }
   }
 
-  // Au retour du paiement, vérifier le statut
   async function verifyAfterPayment() {
     try {
       const response = await api.post('/admin/subscription/verify');
-      setInfo((prev) => ({ ...prev, ...response.data }));
+      setInfo(response.data);
       if (response.data.is_active) {
-        setMessage('Paiement confirmé ! Votre abonnement est actif.');
-        // rafraîchir l'utilisateur global
-        const me = await api.get('/auth/me');
-        setUser(me.data);
+        setMessage('Paiement confirmé : votre nouvelle formule est active.');
+        await refreshUser();
       }
     } catch (err) {
       setError(getApiError(err));
+    } finally {
+      setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadStatus();
-    if (params.get('paid') === '1') {
-      verifyAfterPayment();
-    }
-    if (params.get('canceled') === '1') {
-      setError('Paiement annulé.');
-    }
+    if (params.get('paid') === '1') verifyAfterPayment();
+    else loadStatus();
+    if (params.get('canceled') === '1') setError('Paiement annulé. Aucun changement n’a été appliqué.');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function handlePay() {
-    setPaying(true);
+  async function handlePay(plan) {
+    setPayingPlan(plan);
     setError('');
     try {
-      const response = await api.post('/admin/subscription/checkout');
-      if (response.data.url) {
-        window.location.href = response.data.url; // redirection vers PayTech
-      }
+      const response = await api.post('/admin/subscription/checkout', { plan });
+      if (response.data.url) window.location.href = response.data.url;
     } catch (err) {
       setError(getApiError(err));
-      setPaying(false);
+      setPayingPlan('');
     }
   }
 
   if (loading) return <div className="page"><div className="panel">Chargement...</div></div>;
 
-  const isActive = info?.is_active;
+  const plans = info?.plans?.length ? info.plans : FALLBACK_PLANS;
+  const currentPlan = info?.current_plan || 'free';
+  const upgradeMessage = FEATURE_NAMES[params.get('upgrade')];
 
   return (
-    <div className="page narrow">
+    <div className="page subscription-page">
       <div className="page-header">
         <div>
-          <span className="eyebrow"><FontAwesomeIcon icon={faCrown} /> Abonnement</span>
-          <h1>Mon abonnement formateur</h1>
-          <p>Accédez à toutes les fonctionnalités en activant votre abonnement mensuel.</p>
+          <span className="eyebrow"><FontAwesomeIcon icon={faCrown} /> Formules</span>
+          <h1>Choisissez votre niveau d’accès</h1>
+          <p>Commencez gratuitement, puis activez les fonctions dont vous avez besoin. Les offres payantes sont mensuelles.</p>
         </div>
       </div>
 
       {error && <div className="alert error">{error}</div>}
       {message && <div className="alert success"><FontAwesomeIcon icon={faCircleCheck} /> {message}</div>}
+      {upgradeMessage && (
+        <div className="alert warning"><FontAwesomeIcon icon={faTriangleExclamation} /> {upgradeMessage}</div>
+      )}
 
-      <div className="panel sub-card">
-        <div className={`sub-status ${isActive ? 'active' : 'inactive'}`}>
-          <FontAwesomeIcon icon={isActive ? faCircleCheck : faTriangleExclamation} />
-          <div>
-            <strong>{isActive ? 'Abonnement actif' : 'Abonnement inactif'}</strong>
-            {isActive
-              ? <small>Valable jusqu'au {formatDateTime(info.subscribed_until)}</small>
-              : <small>Activez votre abonnement pour créer des QCM.</small>}
-          </div>
+      <div className="subscription-current">
+        <div>
+          <small>Votre formule actuelle</small>
+          <strong>{plans.find((plan) => plan.id === currentPlan)?.name || 'Gratuite'}</strong>
         </div>
-
-        <div className="sub-price">
-          <span className="sub-amount">{info?.amount ?? 1000}</span>
-          <span className="sub-currency">FCFA / mois</span>
-        </div>
-
-        <ul className="sub-features">
-          <li><FontAwesomeIcon icon={faCircleCheck} /> Classes et élèves illimités</li>
-          <li><FontAwesomeIcon icon={faCircleCheck} /> QCM manuel, import (CSV/Word/PDF), progressif</li>
-          <li><FontAwesomeIcon icon={faCircleCheck} /> Liens publics et suivi des notes</li>
-          <li><FontAwesomeIcon icon={faCircleCheck} /> Export Excel / PDF des résultats</li>
-        </ul>
-
-        <button className="primary-btn large" onClick={handlePay} disabled={paying}>
-          <FontAwesomeIcon icon={paying ? faSpinner : faCreditCard} spin={paying} />{' '}
-          {paying ? 'Redirection...' : isActive ? 'Renouveler (1 mois)' : 'Payer 1000 FCFA'}
-        </button>
-        <p className="muted center" style={{ fontSize: '0.85rem' }}>
-          Paiement sécurisé via PayTech (Wave, Orange Money, carte).
-        </p>
+        {info?.is_active && info?.subscribed_until && (
+          <span>Active jusqu’au {formatDateTime(info.subscribed_until)}</span>
+        )}
       </div>
+
+      <section className="subscription-plans" aria-label="Formules QCM Pro">
+        {plans.map((plan) => {
+          const details = PLAN_DETAILS[plan.id] || PLAN_DETAILS.free;
+          const isCurrent = currentPlan === plan.id;
+          const isPaying = payingPlan === plan.id;
+
+          return (
+            <article className={`subscription-plan-card ${plan.id === 'essential' ? 'recommended' : ''} ${isCurrent ? 'current' : ''}`} key={plan.id}>
+              {plan.id === 'essential' && <span className="subscription-plan-badge">Le bon équilibre</span>}
+              {isCurrent && <span className="subscription-current-badge"><FontAwesomeIcon icon={faCircleCheck} /> Actuelle</span>}
+              <div className={`subscription-plan-icon ${plan.id}`}><FontAwesomeIcon icon={details.icon} /></div>
+              <h2>{plan.name}</h2>
+              <p>{details.tagline}</p>
+              <div className="subscription-plan-price">
+                <strong>{plan.price === 0 ? 'Gratuit' : Number(plan.price).toLocaleString('fr-FR')}</strong>
+                {plan.price > 0 && <span>F CFA / mois</span>}
+              </div>
+              <ul>
+                {details.features.map((feature) => (
+                  <li key={feature}><FontAwesomeIcon icon={faCircleCheck} /> {feature}</li>
+                ))}
+                {details.excluded.map((feature) => (
+                  <li className="excluded" key={feature}><FontAwesomeIcon icon={faXmark} /> {feature}</li>
+                ))}
+              </ul>
+
+              {plan.id === 'free' ? (
+                <button className="secondary-btn large" disabled>{isCurrent ? 'Formule actuelle' : 'Toujours disponible'}</button>
+              ) : (
+                <button className={plan.id === 'essential' ? 'primary-btn large' : 'secondary-btn large'} onClick={() => handlePay(plan.id)} disabled={Boolean(payingPlan)}>
+                  <FontAwesomeIcon icon={isPaying ? faSpinner : faCreditCard} spin={isPaying} />{' '}
+                  {isPaying ? 'Redirection...' : isCurrent ? 'Renouveler pour 1 mois' : `Choisir à ${Number(plan.price).toLocaleString('fr-FR')} F`}
+                </button>
+              )}
+            </article>
+          );
+        })}
+      </section>
+
+      <p className="subscription-secure">Paiement sécurisé via PayTech : Wave, Orange Money ou carte bancaire.</p>
     </div>
   );
 }

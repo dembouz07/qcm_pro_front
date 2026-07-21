@@ -19,8 +19,10 @@ import {
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
 import { formatDateTime } from '../utils/time.js';
+import { useAuth } from '../AuthContext.jsx';
 
 export default function QuizView() {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const { confirm, alert } = useDialog();
@@ -30,11 +32,14 @@ export default function QuizView() {
   const [copied, setCopied] = useState(false);
   const [notifying, setNotifying] = useState(false);
   const [stats, setStats] = useState(null);
+  const canSeeWrongStats = user?.is_super_admin || (user?.plan_features || []).includes('wrong_question_stats');
 
   useEffect(() => {
     loadQuiz();
-    api.get(`/admin/quizzes/${id}/stats`).then((r) => setStats(r.data)).catch(() => {});
-  }, [id]);
+    if (canSeeWrongStats) {
+      api.get(`/admin/quizzes/${id}/stats`).then((r) => setStats(r.data)).catch(() => {});
+    }
+  }, [id, canSeeWrongStats]);
 
   async function loadQuiz() {
     try {

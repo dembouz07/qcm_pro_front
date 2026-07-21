@@ -8,6 +8,7 @@ export default function Navbar() {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const hasFeature = (feature) => user?.is_super_admin || (user?.plan_features || []).includes(feature);
 
   // Verrouille le défilement de la page quand le tiroir est ouvert
   useEffect(() => {
@@ -62,7 +63,7 @@ export default function Navbar() {
               <NavLink to="/admin/quizzes" end><FontAwesomeIcon icon={faLayerGroup} /> Gérer les QCM</NavLink>
               <NavLink to="/admin/quizzes/create"><FontAwesomeIcon icon={faCirclePlus} /> Créer un QCM</NavLink>
               <NavLink to="/admin/results"><FontAwesomeIcon icon={faChartLine} /> Notes</NavLink>
-              <NavLink to="/admin/surveys"><FontAwesomeIcon icon={faClipboardQuestion} /> Sondages</NavLink>
+              {hasFeature('surveys') && <NavLink to="/admin/surveys"><FontAwesomeIcon icon={faClipboardQuestion} /> Sondages</NavLink>}
               <NavLink to="/admin/subscription"><FontAwesomeIcon icon={faCrown} /> Abonnement</NavLink>
             </>
           ) : (

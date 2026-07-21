@@ -79,7 +79,7 @@ export default function SmartCreateQuiz() {
 
     setLoading(true);
     try {
-      await api.post('/admin/quizzes', {
+      await api.post('/admin/quizzes/smart', {
         title: meta.title,
         description: meta.description.trim(),
         school_class_id: Number(meta.school_class_id),

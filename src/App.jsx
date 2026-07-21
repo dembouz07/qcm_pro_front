@@ -76,7 +76,7 @@ export default function App() {
           <Route path="/admin/classes" element={<ProtectedRoute role="admin" requireSubscription><ClassManager /></ProtectedRoute>} />
           <Route path="/admin/quizzes" element={<ProtectedRoute role="admin" requireSubscription><QuizList /></ProtectedRoute>} />
           <Route path="/admin/quizzes/create" element={<ProtectedRoute role="admin" requireSubscription><CreateQuizMenu /></ProtectedRoute>} />
-          <Route path="/admin/quizzes/smart" element={<ProtectedRoute role="admin" requireSubscription><SmartCreateQuiz /></ProtectedRoute>} />
+          <Route path="/admin/quizzes/smart" element={<ProtectedRoute role="admin" requireSubscription requireFeature="quiz_smart"><SmartCreateQuiz /></ProtectedRoute>} />
           <Route path="/admin/quizzes/new" element={<ProtectedRoute role="admin" requireSubscription><QuizForm /></ProtectedRoute>} />
           <Route path="/admin/quizzes/:id" element={<ProtectedRoute role="admin" requireSubscription><QuizView /></ProtectedRoute>} />
           <Route path="/admin/quizzes/:id/edit" element={<ProtectedRoute role="admin" requireSubscription><QuizEdit /></ProtectedRoute>} />
@@ -85,10 +85,10 @@ export default function App() {
           <Route path="/admin/quizzes/:id/progressive/edit" element={<ProtectedRoute role="admin" requireSubscription><ProgressiveQuizForm /></ProtectedRoute>} />
           <Route path="/admin/quizzes/convert" element={<ProtectedRoute role="admin" requireSubscription><ConvertQuiz /></ProtectedRoute>} />
           <Route path="/admin/results" element={<ProtectedRoute role="admin" requireSubscription><Results /></ProtectedRoute>} />
-          <Route path="/admin/surveys" element={<ProtectedRoute role="admin" requireSubscription><SurveyList /></ProtectedRoute>} />
-          <Route path="/admin/surveys/new" element={<ProtectedRoute role="admin" requireSubscription><SurveyForm /></ProtectedRoute>} />
-          <Route path="/admin/surveys/:id/edit" element={<ProtectedRoute role="admin" requireSubscription><SurveyForm /></ProtectedRoute>} />
-          <Route path="/admin/surveys/:id" element={<ProtectedRoute role="admin" requireSubscription><SurveyResults /></ProtectedRoute>} />
+          <Route path="/admin/surveys" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyList /></ProtectedRoute>} />
+          <Route path="/admin/surveys/new" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyForm /></ProtectedRoute>} />
+          <Route path="/admin/surveys/:id/edit" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyForm /></ProtectedRoute>} />
+          <Route path="/admin/surveys/:id" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyResults /></ProtectedRoute>} />
 
           <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
           <Route path="/student/notes" element={<ProtectedRoute role="student"><StudentResults /></ProtectedRoute>} />

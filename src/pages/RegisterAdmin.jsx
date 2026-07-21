@@ -19,7 +19,7 @@ export default function RegisterAdmin() {
     setLoading(true);
     try {
       await registerAdmin(form);
-      navigate('/admin/subscription');
+      navigate('/admin');
     } catch (err) {
       setError(getApiError(err));
     } finally {
@@ -38,7 +38,7 @@ export default function RegisterAdmin() {
           <ul className="auth-hero-list">
             <li><FontAwesomeIcon icon={faCircleCheck} /> Créez des QCM (manuel, import, progressif)</li>
             <li><FontAwesomeIcon icon={faCircleCheck} /> Partagez par lien ou par classe</li>
-            <li><FontAwesomeIcon icon={faCircleCheck} /> Abonnement 1000 FCFA / mois</li>
+            <li><FontAwesomeIcon icon={faCircleCheck} /> Une formule gratuite, sans limite de durée</li>
           </ul>
         </div>
 
