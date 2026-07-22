@@ -1,35 +1,42 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDays, faDownload, faFileCsv, faFileImport, faFileLines, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDays, faDownload, faFileCsv, faFileImport, faFileLines, faUpload, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { validateQuizImport } from '../quizFormValidation.js';
 
 export default function ImportQuiz() {
   const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
-  const [form, setForm] = useState({ title: '', description: '', school_class_id: '', starts_at: '', ends_at: '', file: null });
+  const [form, setForm] = useState({ title: '', description: '', school_class_id: '', starts_at: '', ends_at: '', show_corrections: false, file: null });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    api.get('/admin/classes').then((response) => setClasses(response.data));
+    api.get('/admin/classes')
+      .then((response) => setClasses(response.data))
+      .catch((err) => setError(`Impossible de charger les classes. ${getApiError(err)}`));
   }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
-    setLoading(true);
+
+    const validationError = validateQuizImport(form);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     const payload = new FormData();
     Object.entries(form).forEach(([key, value]) => {
-      if (value !== null && value !== '') payload.append(key, value);
+      if (value !== null && value !== '') payload.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
     });
 
+    setLoading(true);
     try {
-      await api.post('/admin/quizzes/import', payload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      navigate('/admin');
+      await api.post('/admin/quizzes/import', payload);
+      navigate('/admin/quizzes');
     } catch (err) {
       setError(getApiError(err));
     } finally {
@@ -41,9 +48,10 @@ export default function ImportQuiz() {
     <div className="page">
       <div className="page-header">
         <div>
+          <Link to="/admin/quizzes/create" className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> Retour au choix du format</Link>
           <span className="eyebrow"><FontAwesomeIcon icon={faFileImport} /> Import</span>
           <h1>Importer un QCM</h1>
-          <p>Importez un fichier CSV ou JSON, puis choisissez la classe et l'heure d'ouverture.</p>
+          <p>Importez un fichier CSV, JSON, Word ou PDF, puis choisissez la classe et l'heure d'ouverture.</p>
         </div>
       </div>
 
@@ -90,7 +98,7 @@ export default function ImportQuiz() {
             Fermeture facultative
             <div className="input-icon plain">
               <FontAwesomeIcon icon={faCalendarDays} />
-              <input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} />
+              <input type="datetime-local" min={form.starts_at || undefined} value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} />
             </div>
           </label>
 
@@ -99,11 +107,20 @@ export default function ImportQuiz() {
             <textarea rows="3" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </label>
 
+          <label className="span-2 toggle-field">
+            <input
+              type="checkbox"
+              checked={form.show_corrections}
+              onChange={(e) => setForm({ ...form, show_corrections: e.target.checked })}
+            />
+            <span>Afficher la correction aux élèves après soumission</span>
+          </label>
+
           <label className="span-2 upload-zone">
             <FontAwesomeIcon icon={faUpload} />
             <strong>{form.file ? form.file.name : 'Choisir un fichier CSV, JSON, Word ou PDF'}</strong>
             <small>Formats supportés : CSV, JSON, DOCX, DOC, PDF (max 10 Mo)</small>
-            <input type="file" accept=".csv,.txt,.json,.doc,.docx,.pdf" onChange={(e) => setForm({ ...form, file: e.target.files[0] })} required />
+            <input type="file" accept=".csv,.json,.doc,.docx,.pdf" onChange={(e) => setForm({ ...form, file: e.target.files?.[0] || null })} required />
           </label>
 
           <button className="primary-btn span-2" disabled={loading}>
@@ -144,8 +161,9 @@ export default function ImportQuiz() {
 2. Autre question ?
 A) Première option
 B) Deuxième option (bonne)
-C) Troisième option`}</pre>
-          <div className="hint"><FontAwesomeIcon icon={faDownload} /> Marquez les bonnes réponses avec [x] ou indiquez-les dans le titre.</div>
+C) Troisième option
+Réponse : B`}</pre>
+          <div className="hint"><FontAwesomeIcon icon={faDownload} /> Marquez chaque bonne réponse avec [x], « (bonne réponse) » ou une ligne « Réponse : B ».</div>
         </div>
       </section>
     </div>

@@ -12,22 +12,34 @@ import {
   faLayerGroup,
   faUsers,
   faLink,
-  faCopy
+  faCopy,
+  faPaperPlane,
+  faTriangleExclamation
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { useDialog } from '../components/DialogProvider.jsx';
 import { formatDateTime } from '../utils/time.js';
+import { useAuth } from '../AuthContext.jsx';
 
 export default function QuizView() {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { confirm, alert } = useDialog();
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [notifying, setNotifying] = useState(false);
+  const [stats, setStats] = useState(null);
+  const canSeeWrongStats = user?.is_super_admin || (user?.plan_features || []).includes('wrong_question_stats');
 
   useEffect(() => {
     loadQuiz();
-  }, [id]);
+    if (canSeeWrongStats) {
+      api.get(`/admin/quizzes/${id}/stats`).then((r) => setStats(r.data)).catch(() => {});
+    }
+  }, [id, canSeeWrongStats]);
 
   async function loadQuiz() {
     try {
@@ -41,13 +53,37 @@ export default function QuizView() {
   }
 
   async function deleteQuiz() {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce QCM ?')) return;
-    
+    const ok = await confirm({
+      title: 'Supprimer le QCM',
+      message: 'Êtes-vous sûr de vouloir supprimer ce QCM ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+    });
+    if (!ok) return;
+
     try {
       await api.delete(`/admin/quizzes/${id}`);
       navigate('/admin/quizzes');
     } catch (err) {
-      alert(getApiError(err));
+      alert({ title: 'Erreur', message: getApiError(err), variant: 'error' });
+    }
+  }
+
+  async function notifyStudents() {
+    const ok = await confirm({
+      title: 'Notifier les élèves',
+      message: 'Envoyer un email à tous les élèves de la classe pour les informer de ce QCM ?',
+      confirmText: 'Envoyer',
+      danger: false,
+    });
+    if (!ok) return;
+    setNotifying(true);
+    try {
+      const response = await api.post(`/admin/quizzes/${id}/notify`);
+      await alert({ title: 'Notification envoyée', message: response.data.message });
+    } catch (err) {
+      await alert({ title: 'Erreur', message: getApiError(err), variant: 'error' });
+    } finally {
+      setNotifying(false);
     }
   }
 
@@ -101,7 +137,10 @@ export default function QuizView() {
           <p>{quiz.description || 'Aucune description'}</p>
         </div>
         <div className="header-actions">
-          <Link to={`/admin/quizzes/${quiz.id}/edit`} className="primary-btn">
+          <button onClick={notifyStudents} className="secondary-btn" disabled={notifying}>
+            <FontAwesomeIcon icon={faPaperPlane} /> {notifying ? 'Envoi...' : 'Notifier par email'}
+          </button>
+          <Link to={quiz.type === 'progressive' ? `/admin/quizzes/${quiz.id}/progressive/edit` : `/admin/quizzes/${quiz.id}/edit`} className="primary-btn">
             <FontAwesomeIcon icon={faEdit} /> Modifier
           </Link>
           <button onClick={deleteQuiz} className="danger-btn">
@@ -178,6 +217,45 @@ export default function QuizView() {
           </div>
         </div>
       </div>
+
+      {stats && stats.submissions > 0 && (
+        <div className="panel">
+          <h2><FontAwesomeIcon icon={faTriangleExclamation} /> Analyse des réponses par question</h2>
+          <p className="muted">
+            Le taux de réponses fausses est calculé uniquement parmi les réponses données. Les non-réponses sont présentées séparément sur {stats.submissions} soumission(s).
+          </p>
+          <div className="failed-list">
+            {stats.questions.map((q, i) => (
+              <div className="failed-item" key={q.id}>
+                <div className="failed-rank">{i + 1}</div>
+                <div className="failed-analysis">
+                  <div className="failed-body">{q.body}</div>
+                  <div className="failed-metrics">
+                    <div className="failed-metric wrong">
+                      <div className="failed-metric-head">
+                        <span>{q.wrong} fausse(s) sur {q.answered} réponse(s)</span>
+                        <strong>{q.wrong_rate}%</strong>
+                      </div>
+                      <div className="failed-bar-track">
+                        <div className="failed-bar-fill" style={{ width: `${q.wrong_rate}%` }} />
+                      </div>
+                    </div>
+                    <div className="failed-metric unanswered">
+                      <div className="failed-metric-head">
+                        <span>{q.unanswered} non répondue(s) sur {q.total}</span>
+                        <strong>{q.unanswered_rate}%</strong>
+                      </div>
+                      <div className="failed-bar-track">
+                        <div className="failed-bar-fill unanswered" style={{ width: `${q.unanswered_rate}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="panel">
         <h2>Questions ({quiz.questions?.length || 0})</h2>

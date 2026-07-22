@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine, faClock, faCirclePlus, faFileImport, faLayerGroup, faMedal, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faChartLine, faClock, faCirclePlus, faFileImport, faLayerGroup, faMedal, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
 import api from '../api.js';
+import CountUp from '../components/CountUp.jsx';
 import { formatDateTime } from '../utils/time.js';
+
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
+const rise = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+};
 
 export default function AdminDashboard() {
   const [classes, setClasses] = useState([]);
@@ -45,45 +53,49 @@ export default function AdminDashboard() {
           <p>Créez vos QCM, choisissez la classe, programmez l'heure d'accès et suivez les notes.</p>
         </div>
         <div className="header-actions">
-          <Link className="primary-btn" to="/admin/quizzes/new"><FontAwesomeIcon icon={faCirclePlus} /> Nouveau QCM</Link>
-          <Link className="secondary-btn" to="/admin/quizzes/import"><FontAwesomeIcon icon={faFileImport} /> Créer QCM</Link>
+          <Link className="primary-btn" to="/admin/quizzes/create"><FontAwesomeIcon icon={faCirclePlus} /> Créer un QCM</Link>
         </div>
       </div>
 
-      <section className="stats-grid">
-        <div className="stat-card"><FontAwesomeIcon icon={faLayerGroup} /><span>{classes.length}</span><small>Classes</small></div>
-        <div className="stat-card"><FontAwesomeIcon icon={faCirclePlus} /><span>{quizzes.length}</span><small>QCM créés</small></div>
-        <div className="stat-card"><FontAwesomeIcon icon={faUsers} /><span>{classes.reduce((sum, item) => sum + (item.users_count || 0), 0)}</span><small>Élèves</small></div>
-        <div className="stat-card"><FontAwesomeIcon icon={faMedal} /><span>{results.length}</span><small>Notes reçues</small></div>
-      </section>
+      <motion.section className="stats-grid" variants={container} initial="hidden" animate="show">
+        <motion.div className="stat-card" variants={rise} whileHover={{ y: -5 }}><FontAwesomeIcon icon={faLayerGroup} /><span><CountUp value={classes.length} /></span><small>Classes</small></motion.div>
+        <motion.div className="stat-card" variants={rise} whileHover={{ y: -5 }}><FontAwesomeIcon icon={faCirclePlus} /><span><CountUp value={quizzes.length} /></span><small>QCM créés</small></motion.div>
+        <motion.div className="stat-card" variants={rise} whileHover={{ y: -5 }}><FontAwesomeIcon icon={faMedal} /><span><CountUp value={results.length} /></span><small>Notes reçues</small></motion.div>
+      </motion.section>
 
-      <section className="grid-two">
-        <div className="panel">
+      <motion.section className="grid-two" variants={container} initial="hidden" animate="show">
+        <motion.div className="panel" variants={rise}>
           <h2><FontAwesomeIcon icon={faClock} /> Prochains QCM</h2>
-          {quizzes.length === 0 ? <div className="empty">Aucun QCM pour le moment.</div> : quizzes.slice(0, 5).map((quiz) => (
-            <div className="list-item" key={quiz.id}>
+          {quizzes.length === 0 ? <div className="empty">Aucun QCM pour le moment.</div> : quizzes.slice(0, 5).map((quiz, i) => (
+            <motion.div className="list-item" key={quiz.id}
+              initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.25 + i * 0.06 }} whileHover={{ x: 4 }}>
               <div>
                 <strong>{quiz.title}</strong>
                 <small>{quiz.school_class?.name} · {quiz.questions_count} questions</small>
               </div>
               <span className="badge">{formatDateTime(quiz.starts_at)}</span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        <div className="panel">
+        <motion.div className="panel" variants={rise}>
           <h2><FontAwesomeIcon icon={faMedal} /> Dernières notes</h2>
-          {results.length === 0 ? <div className="empty">Aucune note reçue.</div> : results.slice(0, 5).map((result) => (
-            <div className="list-item" key={result.id}>
+          {results.length === 0 ? <div className="empty">Aucune note reçue.</div> : results.slice(0, 5).map((result, i) => (
+            <motion.div className="list-item" key={result.id}
+              initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.25 + i * 0.06 }} whileHover={{ x: 4 }}>
               <div>
-                <strong>{result.user?.name}</strong>
+                <strong>{result.user?.name || [result.participant_prenom, result.participant_nom].filter(Boolean).join(' ') || 'Anonyme'}</strong>
                 <small>{result.quiz?.title}</small>
               </div>
-              <span className="score-badge">{result.note_sur_20}/20</span>
-            </div>
+              <span className="score-badge">
+                {result.quiz?.type === 'progressive' ? `Stade ${result.stade_atteint ?? '-'}` : `${result.note_sur_20}/20`}
+              </span>
+            </motion.div>
           ))}
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
     </div>
   );
 }

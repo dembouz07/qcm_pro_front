@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faCheck, faEye, faMedal, faXmark, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faAward, faCheck, faEye, faMedal, faXmark, faFilter, faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import * as XLSX from 'xlsx';
 import api from '../api.js';
 import { formatDateTime } from '../utils/time.js';
 
@@ -8,30 +9,112 @@ export default function Results() {
   const [results, setResults] = useState([]);
   const [allResults, setAllResults] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
+  const [selectedQuiz, setSelectedQuiz] = useState('');
   const [selected, setSelected] = useState(null);
+
+  // Nom du participant : élève connecté OU participant public (nom/prénom)
+  function participantName(result) {
+    if (result.user?.name) return result.user.name;
+    const full = [result.participant_prenom, result.participant_nom].filter(Boolean).join(' ').trim();
+    return full || 'Anonyme';
+  }
+
+  // Référentiel / classe selon le type de participant
+  function participantContext(result) {
+    if (result.participant_referentiel) return result.participant_referentiel;
+    return result.user?.school_class?.name || result.quiz?.school_class?.name || '-';
+  }
+
+  // Prépare les lignes à exporter (selon le filtre courant)
+  function buildExportRows() {
+    return results.map((r) => ({
+      Participant: participantName(r),
+      'Classe / Référentiel': participantContext(r),
+      QCM: r.quiz?.title || '',
+      Score: `${r.score}/${r.total_points}`,
+      'Résultat': r.quiz?.type === 'progressive'
+        ? `Stade ${r.stade_atteint ?? '-'}`
+        : `${r.note_sur_20}/20`,
+      'Envoyé le': formatDateTime(r.submitted_at)
+    }));
+  }
+
+  // Export Excel (vrai fichier .xlsx)
+  function exportExcel() {
+    const rows = buildExportRows();
+    if (rows.length === 0) return;
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    // Largeur des colonnes
+    worksheet['!cols'] = [
+      { wch: 24 }, { wch: 26 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 20 }
+    ];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Notes');
+    XLSX.writeFile(workbook, `notes-qcm-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  }
+
+  // Export PDF via la fenêtre d'impression (l'utilisateur choisit "Enregistrer en PDF")
+  function exportPdf() {
+    const rows = buildExportRows();
+    if (rows.length === 0) return;
+    const headers = Object.keys(rows[0]);
+    const escapeHtml = (v) => String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+    const thead = `<tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr>`;
+    const tbody = rows.map((row) => `<tr>${headers.map((h) => `<td>${escapeHtml(row[h])}</td>`).join('')}</tr>`).join('');
+
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Notes QCM</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 24px; color: #1a2233; }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        p.sub { color: #6b7280; margin: 0 0 18px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #5b5cf6; color: #fff; text-align: left; padding: 8px; }
+        td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+        tr:nth-child(even) td { background: #f6f7fb; }
+      </style></head>
+      <body>
+        <h1>Notes des participants — QCM Pro</h1>
+        <p class="sub">${rows.length} résultat(s) · Exporté le ${new Date().toLocaleString('fr-FR')}</p>
+        <table><thead>${thead}</thead><tbody>${tbody}</tbody></table>
+        <script>window.onload = function(){ window.print(); }<\/script>
+      </body></html>`);
+    win.document.close();
+  }
+
+  function applyFilters(data, classId, quizId) {
+    let filtered = data;
+    if (classId !== '') {
+      const cid = parseInt(classId, 10);
+      // On ne garde que les notes dont le QCM appartient à la classe choisie.
+      filtered = filtered.filter((result) => {
+        const quizClassId = result.quiz?.school_class?.id ?? result.quiz?.school_class_id;
+        return Number(quizClassId) === cid;
+      });
+    }
+    if (quizId !== '') {
+      filtered = filtered.filter((result) => result.quiz?.id === parseInt(quizId, 10));
+    }
+    return filtered;
+  }
 
   // Fonction pour charger les résultats
   const loadResults = () => {
     Promise.all([
       api.get('/admin/results'),
-      api.get('/admin/classes')
-    ]).then(([resultsResponse, classesResponse]) => {
+      api.get('/admin/classes'),
+      api.get('/admin/quizzes')
+    ]).then(([resultsResponse, classesResponse, quizzesResponse]) => {
       const resultsData = resultsResponse.data;
       setAllResults(resultsData);
-      
-      // Appliquer le filtre actuel si un filtre est sélectionné
-      if (selectedClass === '') {
-        setResults(resultsData);
-      } else {
-        const filtered = resultsData.filter(result => 
-          result.user?.school_class?.id === parseInt(selectedClass) ||
-          result.quiz?.school_class_id === parseInt(selectedClass)
-        );
-        setResults(filtered);
-      }
-      
+      setResults(applyFilters(resultsData, selectedClass, selectedQuiz));
       setClasses(classesResponse.data);
+      setQuizzes(quizzesResponse.data);
     });
   };
 
@@ -46,20 +129,17 @@ export default function Results() {
       loadResults();
     }, 30000); // 30 secondes
     return () => clearInterval(interval);
-  }, [selectedClass]);
+  }, [selectedClass, selectedQuiz]);
 
-  function handleFilterChange(classId) {
+  function handleClassFilter(classId) {
     setSelectedClass(classId);
-    
-    if (classId === '') {
-      setResults(allResults);
-    } else {
-      const filtered = allResults.filter(result => 
-        result.user?.school_class?.id === parseInt(classId) ||
-        result.quiz?.school_class_id === parseInt(classId)
-      );
-      setResults(filtered);
-    }
+    setSelectedQuiz(''); // réinitialise le filtre QCM (il ne concerne plus la même classe)
+    setResults(applyFilters(allResults, classId, ''));
+  }
+
+  function handleQuizFilter(quizId) {
+    setSelectedQuiz(quizId);
+    setResults(applyFilters(allResults, selectedClass, quizId));
   }
 
   return (
@@ -70,18 +150,37 @@ export default function Results() {
           <h1>Résultats des élèves</h1>
           <p>L'administrateur reçoit ici toutes les notes envoyées.</p>
         </div>
+        <div className="header-actions">
+          <button className="secondary-btn" onClick={exportExcel} disabled={results.length === 0}>
+            <FontAwesomeIcon icon={faFileExcel} /> Excel
+          </button>
+          <button className="secondary-btn" onClick={exportPdf} disabled={results.length === 0}>
+            <FontAwesomeIcon icon={faFilePdf} /> PDF
+          </button>
+        </div>
       </div>
 
       <div className="filter-bar">
         <div className="filter-group">
           <FontAwesomeIcon icon={faFilter} />
           <label>
-            Filtrer par classe :
-            <select value={selectedClass} onChange={(e) => handleFilterChange(e.target.value)}>
+            Classe :
+            <select value={selectedClass} onChange={(e) => handleClassFilter(e.target.value)}>
               <option value="">Toutes les classes</option>
               {classes.map((classe) => (
                 <option key={classe.id} value={classe.id}>{classe.name}</option>
               ))}
+            </select>
+          </label>
+          <label>
+            QCM :
+            <select value={selectedQuiz} onChange={(e) => handleQuizFilter(e.target.value)}>
+              <option value="">Tous les QCM</option>
+              {quizzes
+                .filter((quiz) => selectedClass === '' || Number(quiz.school_class?.id ?? quiz.school_class_id) === parseInt(selectedClass, 10))
+                .map((quiz) => (
+                  <option key={quiz.id} value={quiz.id}>{quiz.title}</option>
+                ))}
             </select>
           </label>
           <span className="filter-count">
@@ -95,8 +194,8 @@ export default function Results() {
           <table>
             <thead>
               <tr>
-                <th>Élève</th>
-                <th>Classe</th>
+                <th>Participant</th>
+                <th>Classe / Référentiel</th>
                 <th>QCM</th>
                 <th>Score</th>
                 <th>Note</th>
@@ -107,11 +206,17 @@ export default function Results() {
             <tbody>
               {results.map((result) => (
                 <tr key={result.id}>
-                  <td>{result.user?.name}</td>
-                  <td>{result.user?.school_class?.name || result.quiz?.school_class?.name}</td>
+                  <td><strong>{participantName(result)}</strong></td>
+                  <td>{participantContext(result)}</td>
                   <td>{result.quiz?.title}</td>
                   <td>{result.score}/{result.total_points}</td>
-                  <td><span className="score-badge"><FontAwesomeIcon icon={faAward} /> {result.note_sur_20}/20</span></td>
+                  <td>
+                    {result.quiz?.type === 'progressive' ? (
+                      <span className="score-badge"><FontAwesomeIcon icon={faAward} /> Stade {result.stade_atteint ?? '-'}</span>
+                    ) : (
+                      <span className="score-badge"><FontAwesomeIcon icon={faAward} /> {result.note_sur_20}/20</span>
+                    )}
+                  </td>
                   <td>{formatDateTime(result.submitted_at)}</td>
                   <td><button className="secondary-btn small" onClick={() => setSelected(result)}><FontAwesomeIcon icon={faEye} /> Détails</button></td>
                 </tr>
@@ -125,8 +230,13 @@ export default function Results() {
         <div className="modal-backdrop" onClick={() => setSelected(null)}>
           <div className="modal" onClick={(event) => event.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelected(null)}>×</button>
-            <h2>{selected.user?.name} — {selected.note_sur_20}/20</h2>
+            <h2>
+              {participantName(selected)} — {selected.quiz?.type === 'progressive'
+                ? `Stade ${selected.stade_atteint ?? '-'}`
+                : `${selected.note_sur_20}/20`}
+            </h2>
             <p className="muted">{selected.quiz?.title} · {formatDateTime(selected.submitted_at)}</p>
+            <p className="muted">{participantContext(selected)}</p>
             <div className="answer-list">
               {selected.answers?.map((answer) => (
                 <div className="answer-item" key={answer.id}>

@@ -49,6 +49,14 @@ export function AuthProvider({ children }) {
     return response.data.user;
   }
 
+  async function registerAdmin(payload) {
+    await getCsrfCookie();
+    const response = await api.post('/auth/register-admin', payload);
+    localStorage.setItem('qcm_token', response.data.token);
+    setUser(response.data.user);
+    return response.data.user;
+  }
+
   async function logout() {
     try {
       await api.post('/auth/logout');
@@ -58,7 +66,7 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const value = useMemo(() => ({ user, loading, login, register, logout, setUser }), [user, loading]);
+  const value = useMemo(() => ({ user, loading, login, register, registerAdmin, logout, setUser }), [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -17,6 +17,19 @@ function statusInfo(status) {
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+
+  // Vérifie s'il existe une progression sauvegardée pour ce QCM
+  function hasProgress(quizId) {
+    try {
+      const raw = localStorage.getItem(`qcm_progress_${quizId}`);
+      if (!raw) return false;
+      const saved = JSON.parse(raw);
+      return saved?.answers && Object.keys(saved.answers).length > 0;
+    } catch {
+      return false;
+    }
+  }
+
   const [quizzes, setQuizzes] = useState([]);
   const [studentClass, setStudentClass] = useState(user?.school_class || null);
   const [error, setError] = useState('');
@@ -147,7 +160,9 @@ export default function StudentDashboard() {
               {quiz.status === 'completed' && <div className="result-note"><FontAwesomeIcon icon={faTrophy} /> Note : {quiz.submission?.note_sur_20}/20</div>}
 
               {quiz.status === 'open' ? (
-                <Link className="primary-btn" to={`/student/quizzes/${quiz.id}`}><FontAwesomeIcon icon={faPenToSquare} /> Commencer</Link>
+                <Link className="primary-btn" to={`/student/quizzes/${quiz.id}`}>
+                  <FontAwesomeIcon icon={faPenToSquare} /> {hasProgress(quiz.id) ? 'Continuer' : 'Commencer'}
+                </Link>
               ) : (
                 <button className="secondary-btn" disabled>{info.label}</button>
               )}

@@ -9,10 +9,12 @@ import {
   faCalendarDays
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
+import { useDialog } from '../components/DialogProvider.jsx';
 
 export default function QuizEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { confirm } = useDialog();
   const [classes, setClasses] = useState([]);
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +40,7 @@ export default function QuizEdit() {
           return {
             id: q.id,
             body: q.body || '',
+            explanation: q.explanation || '',
             points: q.points || 1,
             choices: (q.choices || []).map((c, cIndex) => {
               console.log(`  Choice ${cIndex + 1}:`, c);
@@ -105,8 +108,9 @@ export default function QuizEdit() {
     });
   }
 
-  function removeQuestion(index) {
-    if (!confirm('Supprimer cette question ?')) return;
+  async function removeQuestion(index) {
+    const ok = await confirm({ title: 'Supprimer la question', message: 'Supprimer cette question ?', confirmText: 'Supprimer' });
+    if (!ok) return;
     setQuiz({
       ...quiz,
       questions: quiz.questions.filter((_, i) => i !== index)
@@ -210,6 +214,15 @@ export default function QuizEdit() {
           />
         </label>
 
+        <label className="span-2 toggle-field">
+          <input
+            type="checkbox"
+            checked={quiz.show_corrections || false}
+            onChange={(e) => setQuiz({ ...quiz, show_corrections: e.target.checked })}
+          />
+          <span>Afficher la correction aux élèves après soumission (bonnes réponses + explications)</span>
+        </label>
+
         <div className="span-2">
           <h2>Questions ({quiz.questions.length})</h2>
           {quiz.questions.map((question, qIndex) => (
@@ -244,6 +257,16 @@ export default function QuizEdit() {
                   max="100"
                   value={question.points || 1}
                   onChange={(e) => updateQuestion(qIndex, 'points', parseInt(e.target.value))}
+                />
+              </label>
+
+              <label>
+                Explication (affichée dans la correction, optionnel)
+                <textarea
+                  rows="2"
+                  value={question.explanation || ''}
+                  onChange={(e) => updateQuestion(qIndex, 'explanation', e.target.value)}
+                  placeholder="Pourquoi cette réponse est correcte..."
                 />
               </label>
 

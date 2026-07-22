@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faRightToBracket, faWandMagicSparkles, faKey, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../AuthContext.jsx';
 import { getApiError } from '../api.js';
+import AuthTopbar from '../components/AuthTopbar.jsx';
 
 export default function Login() {
   const { login } = useAuth();
@@ -29,6 +30,7 @@ export default function Login() {
 
   return (
     <section className="auth-page">
+      <AuthTopbar active="login" />
       <div className="auth-card">
         <div className="auth-hero">
           <span><FontAwesomeIcon icon={faWandMagicSparkles} /></span>
