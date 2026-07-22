@@ -2336,6 +2336,8 @@ tr:last-child td { border-bottom: 0; }
   color: var(--text);
 }
 .toggle-field input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--primary); }
+.toggle-field-copy { display: flex; flex-direction: column; gap: 3px; }
+.toggle-field-copy small { color: var(--muted); font-weight: 600; line-height: 1.45; }
 
 .correction { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
 .corr-q {

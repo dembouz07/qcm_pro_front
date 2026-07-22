@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseQuiz } from './quizParser.js';
-import { validateProgressiveQuiz, validateQuizImport, validateStandardQuiz } from './quizFormValidation.js';
+import {
+  canAdvanceProgressiveStage,
+  validateProgressiveQuiz,
+  validateQuizImport,
+  validateStandardQuiz,
+} from './quizFormValidation.js';
 
 const metadata = {
   title: 'QCM test',
@@ -64,15 +69,23 @@ test('la validation standard bloque une question sans bonne réponse et les doub
 });
 
 test('la validation progressive garantit que le seuil est atteignable', () => {
+  const { school_class_id: _schoolClassId, ...publicMetadata } = metadata;
+
   assert.match(validateProgressiveQuiz(
-    { ...metadata, stage_threshold: 2 },
+    { ...publicMetadata, stage_threshold: 2 },
     [{ name: 'Stade 1', questions: ['Une question ?'] }],
   ), /dépasse/i);
 
   assert.equal(validateProgressiveQuiz(
-    { ...metadata, stage_threshold: 1 },
+    { ...publicMetadata, stage_threshold: 1 },
     [{ name: 'Stade 1', questions: ['Une question ?'] }],
   ), '');
+});
+
+test('la progression peut autoriser ou bloquer le passage après un échec', () => {
+  assert.equal(canAdvanceProgressiveStage(0, 1, false), true);
+  assert.equal(canAdvanceProgressiveStage(0, 1, true), false);
+  assert.equal(canAdvanceProgressiveStage(1, 1, true), true);
 });
 
 test('la validation d’import contrôle le format, la taille et les dates', () => {

@@ -192,7 +192,7 @@ export default function QuizList() {
                         <small className="text-muted"> {quiz.description.substring(0, 50)}...</small>
                       )}
                     </td>
-                    <td>{quiz.school_class?.name || '-'}</td>
+                    <td>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || '-')}</td>
                     <td>{quiz.questions_count || 0}</td>
                     <td>{quiz.submissions_count || 0}</td>
                     <td>{getStatusBadge(quiz)}</td>
