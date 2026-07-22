@@ -15,7 +15,9 @@ import {
   faCopy,
   faPaperPlane,
   faTriangleExclamation,
-  faFilePdf
+  faFilePdf,
+  faLock,
+  faLockOpen
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
@@ -32,6 +34,7 @@ export default function QuizView() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [notifying, setNotifying] = useState(false);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const canSeeWrongStats = user?.is_super_admin || (user?.plan_features || []).includes('wrong_question_stats');
 
@@ -100,6 +103,30 @@ export default function QuizView() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  }
+
+  async function toggleProgressiveAvailability() {
+    const reopening = Boolean(quiz?.closed_at);
+
+    if (!reopening) {
+      const ok = await confirm({
+        title: 'Fermer le QCM public',
+        message: 'Les participants ne pourront plus commencer ni envoyer ce QCM jusqu’à sa réouverture.',
+        confirmText: 'Fermer',
+      });
+      if (!ok) return;
+    }
+
+    setAvailabilityLoading(true);
+    try {
+      const endpoint = reopening ? 'reopen' : 'close';
+      const response = await api.post(`/admin/quizzes/${id}/${endpoint}`);
+      setQuiz((current) => ({ ...current, closed_at: response.data.closed_at }));
+    } catch (err) {
+      await alert({ title: 'Erreur', message: getApiError(err), variant: 'error' });
+    } finally {
+      setAvailabilityLoading(false);
+    }
   }
 
   function exportStatsPdf() {
@@ -229,6 +256,10 @@ export default function QuizView() {
     if (!quiz.is_published) {
       return <span className="badge badge-draft">Brouillon</span>;
     }
+
+    if (quiz.closed_at) {
+      return <span className="badge badge-closed">Fermé</span>;
+    }
     
     if (now < startsAt) {
       return <span className="badge badge-locked">Verrouillé</span>;
@@ -262,6 +293,12 @@ export default function QuizView() {
               <FontAwesomeIcon icon={faPaperPlane} /> {notifying ? 'Envoi...' : 'Notifier par email'}
             </button>
           )}
+          {quiz.type === 'progressive' && (
+            <button type="button" onClick={toggleProgressiveAvailability} className="secondary-btn" disabled={availabilityLoading}>
+              <FontAwesomeIcon icon={quiz.closed_at ? faLockOpen : faLock} />{' '}
+              {availabilityLoading ? 'Mise à jour...' : (quiz.closed_at ? 'Rouvrir' : 'Fermer')}
+            </button>
+          )}
           <Link to={quiz.type === 'progressive' ? `/admin/quizzes/${quiz.id}/progressive/edit` : `/admin/quizzes/${quiz.id}/edit`} className="primary-btn">
             <FontAwesomeIcon icon={faEdit} /> Modifier
           </Link>
@@ -283,14 +320,23 @@ export default function QuizView() {
               <span className="info-label"><FontAwesomeIcon icon={faLayerGroup} /> {quiz.type === 'progressive' ? 'Accès' : 'Classe'}</span>
               <span>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || '-')}</span>
             </div>
-            <div className="info-item">
-              <span className="info-label"><FontAwesomeIcon icon={faCalendarDays} /> Ouverture</span>
-              <span>{formatDateTime(quiz.starts_at)}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label"><FontAwesomeIcon icon={faCalendarDays} /> Fermeture</span>
-              <span>{quiz.ends_at ? formatDateTime(quiz.ends_at) : 'Pas de limite'}</span>
-            </div>
+            {quiz.type !== 'progressive' ? (
+              <>
+                <div className="info-item">
+                  <span className="info-label"><FontAwesomeIcon icon={faCalendarDays} /> Ouverture</span>
+                  <span>{formatDateTime(quiz.starts_at)}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label"><FontAwesomeIcon icon={faCalendarDays} /> Fermeture</span>
+                  <span>{quiz.ends_at ? formatDateTime(quiz.ends_at) : 'Pas de limite'}</span>
+                </div>
+              </>
+            ) : (
+              <div className="info-item">
+                <span className="info-label"><FontAwesomeIcon icon={faLock} /> Gestion</span>
+                <span>Fermeture manuelle</span>
+              </div>
+            )}
             <div className="info-item">
               <span className="info-label">Questions</span>
               <span>{quiz.questions?.length || 0}</span>

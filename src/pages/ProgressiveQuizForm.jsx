@@ -5,7 +5,6 @@ import {
   faLayerGroup,
   faPlus,
   faTrash,
-  faCalendarDays,
   faDiagramProject,
   faCircleQuestion,
   faArrowLeft
@@ -24,8 +23,6 @@ export default function ProgressiveQuizForm() {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    starts_at: '',
-    ends_at: '',
     stage_threshold: 1,
     require_stage_pass: true,
   });
@@ -60,8 +57,6 @@ export default function ProgressiveQuizForm() {
           setForm({
             title: quiz.title || '',
             description: quiz.description || '',
-            starts_at: quiz.starts_at?.slice(0, 16) || '',
-            ends_at: quiz.ends_at?.slice(0, 16) || '',
             stage_threshold: quiz.stage_threshold || 1,
             require_stage_pass: quiz.require_stage_pass ?? true,
           });
@@ -161,7 +156,7 @@ export default function ProgressiveQuizForm() {
           <h1>{isEditing ? 'Modifier le QCM progressif' : 'Créer un QCM progressif'}</h1>
           <p>
             Questionnaire public par stades avec réponses Oui/Non. Les participants y accèdent par lien
-            et renseignent uniquement leur nom et leur prénom.
+            et renseignent uniquement leur nom et leur prénom. Il reste ouvert jusqu’à sa fermeture manuelle.
           </p>
         </div>
       </div>
@@ -207,32 +202,6 @@ export default function ProgressiveQuizForm() {
               <strong>Exiger la réussite de chaque étape</strong>
               <small>Décochez cette option pour laisser le participant continuer même s’il n’atteint pas le seuil d’un stade.</small>
             </span>
-          </label>
-
-          <label>
-            Ouverture *
-            <div className="input-icon plain">
-              <FontAwesomeIcon icon={faCalendarDays} />
-              <input
-                type="datetime-local"
-                value={form.starts_at}
-                onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
-                required
-              />
-            </div>
-          </label>
-
-          <label>
-            Fermeture facultative
-            <div className="input-icon plain">
-              <FontAwesomeIcon icon={faCalendarDays} />
-              <input
-                type="datetime-local"
-                min={form.starts_at || undefined}
-                value={form.ends_at}
-                onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
-              />
-            </div>
           </label>
 
           <label className="span-2">

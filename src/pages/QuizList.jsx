@@ -80,6 +80,9 @@ export default function QuizList() {
     if (!quiz.is_published) {
       return <span className="badge badge-draft"><FontAwesomeIcon icon={faCircle} /> Brouillon</span>;
     }
+    if (quiz.closed_at) {
+      return <span className="badge badge-closed"><FontAwesomeIcon icon={faTimesCircle} /> Fermé</span>;
+    }
     const now = new Date();
     const startsAt = new Date(quiz.starts_at);
     const endsAt = quiz.ends_at ? new Date(quiz.ends_at) : null;

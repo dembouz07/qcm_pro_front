@@ -10,7 +10,8 @@ import {
   faTriangleExclamation,
   faUser,
   faBookOpen,
-  faClipboardList
+  faClipboardList,
+  faLayerGroup
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { countdownTo, formatDateTime } from '../utils/time.js';
@@ -49,7 +50,7 @@ export default function PublicQuiz() {
   const [terminationReason, setTerminationReason] = useState('');
 
   useAntiCheat({
-    active: (step === 'quiz' || step === 'progressive') && !result && !progressiveResult,
+    active: step === 'quiz' && !result,
     onWarn: (msg) => setWarning(msg),
     onTerminate: (reason) => {
       setTerminationReason(reason);
@@ -478,21 +479,33 @@ export default function PublicQuiz() {
           {quizInfo.description && <p className="quiz-description">{quizInfo.description}</p>}
 
           <div className="quiz-meta-grid">
-            <div className="quiz-meta-item">
-              <FontAwesomeIcon icon={faClock} />
-              <div>
-                <small>Ouverture</small>
-                <strong>{formatDateTime(quizInfo.starts_at)}</strong>
-              </div>
-            </div>
-            {quizInfo.ends_at && (
+            {quizInfo.type === 'progressive' ? (
               <div className="quiz-meta-item">
-                <FontAwesomeIcon icon={faClock} />
+                <FontAwesomeIcon icon={faLayerGroup} />
                 <div>
-                  <small>Fermeture</small>
-                  <strong>{formatDateTime(quizInfo.ends_at)}</strong>
+                  <small>Accès</small>
+                  <strong>Public et immédiat</strong>
                 </div>
               </div>
+            ) : (
+              <>
+                <div className="quiz-meta-item">
+                  <FontAwesomeIcon icon={faClock} />
+                  <div>
+                    <small>Ouverture</small>
+                    <strong>{formatDateTime(quizInfo.starts_at)}</strong>
+                  </div>
+                </div>
+                {quizInfo.ends_at && (
+                  <div className="quiz-meta-item">
+                    <FontAwesomeIcon icon={faClock} />
+                    <div>
+                      <small>Fermeture</small>
+                      <strong>{formatDateTime(quizInfo.ends_at)}</strong>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
             <div className="quiz-meta-item">
               <FontAwesomeIcon icon={faCircleQuestion} />
@@ -523,7 +536,9 @@ export default function PublicQuiz() {
             <h2 className="span-2"><FontAwesomeIcon icon={faUser} /> Identification</h2>
             <p className="span-2 muted">Renseignez vos informations pour accéder au QCM.</p>
 
-            <div className="span-2"><AntiCheatRules /></div>
+            {quizInfo.type !== 'progressive' && (
+              <div className="span-2"><AntiCheatRules /></div>
+            )}
 
             {error && <div className="alert error span-2">{error}</div>}
 
@@ -640,9 +655,6 @@ export default function PublicQuiz() {
             <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Diagnostic en cours</span>
             <h1>{quiz.title}</h1>
             <p className="muted">Participant : {prenom} {nom}</p>
-            <div className="alert warning anticheat-notice">
-              <FontAwesomeIcon icon={faTriangleExclamation} /> Anti-triche actif : quitter la page, copier ou capturer l'écran mettra fin au test.
-            </div>
           </div>
         </div>
 

@@ -74,7 +74,11 @@ export default function AdminDashboard() {
                 <strong>{quiz.title}</strong>
                 <small>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || 'Sans classe')} · {quiz.questions_count} questions</small>
               </div>
-              <span className="badge">{formatDateTime(quiz.starts_at)}</span>
+              <span className="badge">
+                {quiz.type === 'progressive'
+                  ? (quiz.closed_at ? 'Fermé' : 'Ouvert')
+                  : formatDateTime(quiz.starts_at)}
+              </span>
             </motion.div>
           ))}
         </motion.div>

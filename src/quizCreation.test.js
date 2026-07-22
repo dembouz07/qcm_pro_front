@@ -69,7 +69,7 @@ test('la validation standard bloque une question sans bonne réponse et les doub
 });
 
 test('la validation progressive garantit que le seuil est atteignable', () => {
-  const { school_class_id: _schoolClassId, ...publicMetadata } = metadata;
+  const publicMetadata = { title: 'Diagnostic public' };
 
   assert.match(validateProgressiveQuiz(
     { ...publicMetadata, stage_threshold: 2 },
