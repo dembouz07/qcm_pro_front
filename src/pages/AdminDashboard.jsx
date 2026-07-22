@@ -72,7 +72,7 @@ export default function AdminDashboard() {
               transition={{ delay: 0.25 + i * 0.06 }} whileHover={{ x: 4 }}>
               <div>
                 <strong>{quiz.title}</strong>
-                <small>{quiz.school_class?.name} · {quiz.questions_count} questions</small>
+                <small>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || 'Sans classe')} · {quiz.questions_count} questions</small>
               </div>
               <span className="badge">{formatDateTime(quiz.starts_at)}</span>
             </motion.div>

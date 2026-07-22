@@ -187,7 +187,9 @@ export default function QuizView() {
           <header>
             <h1>Analyse des réponses — ${escapeHtml(quiz.title)}</h1>
             <p class="meta">
-              Classe : ${escapeHtml(quiz.school_class?.name || 'Non renseignée')}
+              ${quiz.type === 'progressive'
+                ? 'Accès public'
+                : `Classe : ${escapeHtml(quiz.school_class?.name || 'Non renseignée')}`}
               · ${Number(stats.submissions || 0)} soumission(s)
               · Exporté le ${escapeHtml(new Date().toLocaleString('fr-FR'))}
             </p>
@@ -255,9 +257,11 @@ export default function QuizView() {
           <p>{quiz.description || 'Aucune description'}</p>
         </div>
         <div className="header-actions">
-          <button onClick={notifyStudents} className="secondary-btn" disabled={notifying}>
-            <FontAwesomeIcon icon={faPaperPlane} /> {notifying ? 'Envoi...' : 'Notifier par email'}
-          </button>
+          {quiz.type !== 'progressive' && (
+            <button onClick={notifyStudents} className="secondary-btn" disabled={notifying}>
+              <FontAwesomeIcon icon={faPaperPlane} /> {notifying ? 'Envoi...' : 'Notifier par email'}
+            </button>
+          )}
           <Link to={quiz.type === 'progressive' ? `/admin/quizzes/${quiz.id}/progressive/edit` : `/admin/quizzes/${quiz.id}/edit`} className="primary-btn">
             <FontAwesomeIcon icon={faEdit} /> Modifier
           </Link>
@@ -276,8 +280,8 @@ export default function QuizView() {
               {getStatusBadge(quiz)}
             </div>
             <div className="info-item">
-              <span className="info-label"><FontAwesomeIcon icon={faLayerGroup} /> Classe</span>
-              <span>{quiz.school_class?.name || '-'}</span>
+              <span className="info-label"><FontAwesomeIcon icon={faLayerGroup} /> {quiz.type === 'progressive' ? 'Accès' : 'Classe'}</span>
+              <span>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || '-')}</span>
             </div>
             <div className="info-item">
               <span className="info-label"><FontAwesomeIcon icon={faCalendarDays} /> Ouverture</span>
