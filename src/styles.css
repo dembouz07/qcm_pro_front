@@ -1313,7 +1313,7 @@ tr:last-child td { border-bottom: 0; }
     flex-direction: column;
     align-items: center;
   }
-  
+
   .quiz-meta-item {
     width: 100%;
     justify-content: center;
@@ -2874,18 +2874,29 @@ tr:last-child td { border-bottom: 0; }
 /* ---------- Questions les plus ratées ---------- */
 .failed-list { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
 .failed-item {
-  display: flex; align-items: center; gap: 14px; padding: 12px 14px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 14px; padding: 15px 16px;
   border: 1px solid var(--border); border-radius: 14px; background: #fbfcff;
 }
 .failed-rank {
   flex: none; width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
   background: rgba(239, 68, 68, 0.12); color: #dc2626; font-weight: 900;
 }
-.failed-body { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.failed-analysis { min-width: 0; }
+.failed-body { font-weight: 750; color: var(--text); margin: 4px 0 12px; }
+.failed-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.failed-metric { padding: 10px 12px; border: 1px solid rgba(239, 68, 68, 0.12); border-radius: 11px; background: rgba(239, 68, 68, 0.035); }
+.failed-metric.unanswered { border-color: rgba(100, 116, 139, 0.14); background: rgba(100, 116, 139, 0.045); }
+.failed-metric-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 7px; color: #68748a; font-size: 0.74rem; font-weight: 700; }
+.failed-metric-head strong { flex: none; color: #dc2626; font-size: 0.9rem; }
+.failed-metric.unanswered .failed-metric-head strong { color: #64748b; }
 .failed-bar-track { height: 8px; border-radius: 5px; background: #eceef6; overflow: hidden; }
 .failed-bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #f59e0b, #ef4444); }
-.failed-stat { flex: none; text-align: right; font-size: 0.9rem; color: var(--danger); font-weight: 800; }
-.failed-stat small { display: block; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.failed-bar-fill.unanswered { background: linear-gradient(90deg, #94a3b8, #64748b); }
+
+@media (max-width: 720px) {
+  .failed-metrics { grid-template-columns: 1fr; }
+  .failed-item { padding: 13px; }
+}
 
 /* ---------- Identité visuelle unifiée de l'application ---------- */
 :root {

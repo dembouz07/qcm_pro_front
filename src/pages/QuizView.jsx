@@ -220,25 +220,39 @@ export default function QuizView() {
 
       {stats && stats.submissions > 0 && (
         <div className="panel">
-          <h2><FontAwesomeIcon icon={faTriangleExclamation} /> Questions les plus ratées</h2>
-          <p className="muted">Basé sur {stats.submissions} soumission(s). Utile pour repérer les questions à revoir.</p>
+          <h2><FontAwesomeIcon icon={faTriangleExclamation} /> Analyse des réponses par question</h2>
+          <p className="muted">
+            Le taux de réponses fausses est calculé uniquement parmi les réponses données. Les non-réponses sont présentées séparément sur {stats.submissions} soumission(s).
+          </p>
           <div className="failed-list">
-            {stats.questions.filter((q) => q.total > 0).map((q, i) => (
+            {stats.questions.map((q, i) => (
               <div className="failed-item" key={q.id}>
                 <div className="failed-rank">{i + 1}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="failed-analysis">
                   <div className="failed-body">{q.body}</div>
-                  <div className="failed-bar-track">
-                    <div className="failed-bar-fill" style={{ width: `${q.wrong_rate}%` }} />
+                  <div className="failed-metrics">
+                    <div className="failed-metric wrong">
+                      <div className="failed-metric-head">
+                        <span>{q.wrong} fausse(s) sur {q.answered} réponse(s)</span>
+                        <strong>{q.wrong_rate}%</strong>
+                      </div>
+                      <div className="failed-bar-track">
+                        <div className="failed-bar-fill" style={{ width: `${q.wrong_rate}%` }} />
+                      </div>
+                    </div>
+                    <div className="failed-metric unanswered">
+                      <div className="failed-metric-head">
+                        <span>{q.unanswered} non répondue(s) sur {q.total}</span>
+                        <strong>{q.unanswered_rate}%</strong>
+                      </div>
+                      <div className="failed-bar-track">
+                        <div className="failed-bar-fill unanswered" style={{ width: `${q.unanswered_rate}%` }} />
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="failed-stat">
-                  <strong>{q.wrong}</strong> ratée(s)
-                  <small>{q.wrong_rate}% · {q.total} réponse(s)</small>
                 </div>
               </div>
             ))}
-            {stats.questions.every((q) => q.total === 0) && <p className="muted">Aucune réponse enregistrée pour l'instant.</p>}
           </div>
         </div>
       )}

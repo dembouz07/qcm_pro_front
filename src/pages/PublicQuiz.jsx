@@ -468,7 +468,7 @@ export default function PublicQuiz() {
           <div className="big-icon"><FontAwesomeIcon icon={faBookOpen} /></div>
           <h1>{quizInfo.title}</h1>
           {quizInfo.description && <p className="quiz-description">{quizInfo.description}</p>}
-          
+
           <div className="quiz-meta-grid">
             <div className="quiz-meta-item">
               <FontAwesomeIcon icon={faClock} />

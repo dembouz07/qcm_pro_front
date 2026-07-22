@@ -15,7 +15,7 @@ B) Thiès
 C) Saint-Louis
 Réponse : A
 
-2. Quels sont des langages web ? 
+2. Quels sont des langages web ?
 - HTML *
 - Python
 - CSS *
