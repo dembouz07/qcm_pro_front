@@ -14,7 +14,8 @@ import {
   faLink,
   faCopy,
   faPaperPlane,
-  faTriangleExclamation
+  faTriangleExclamation,
+  faFilePdf
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
@@ -99,6 +100,123 @@ export default function QuizView() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  }
+
+  function exportStatsPdf() {
+    const questions = stats?.questions || [];
+    if (!quiz || questions.length === 0) return;
+
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }[character]));
+
+    const totals = questions.reduce((summary, question) => ({
+      answered: summary.answered + Number(question.answered || 0),
+      wrong: summary.wrong + Number(question.wrong || 0),
+      unanswered: summary.unanswered + Number(question.unanswered || 0),
+      expected: summary.expected + Number(question.total || 0),
+    }), { answered: 0, wrong: 0, unanswered: 0, expected: 0 });
+
+    const globalWrongRate = totals.answered > 0
+      ? Math.round((totals.wrong / totals.answered) * 100)
+      : 0;
+    const globalUnansweredRate = totals.expected > 0
+      ? Math.round((totals.unanswered / totals.expected) * 100)
+      : 0;
+
+    const rows = questions.map((question, index) => `
+      <tr>
+        <td class="rank">${index + 1}</td>
+        <td class="question">${escapeHtml(question.body)}</td>
+        <td>${Number(question.answered || 0)}</td>
+        <td>${Number(question.wrong || 0)}</td>
+        <td class="wrong-rate">${Number(question.wrong_rate || 0)}%</td>
+        <td>${Number(question.unanswered || 0)}</td>
+        <td class="unanswered-rate">${Number(question.unanswered_rate || 0)}%</td>
+      </tr>
+    `).join('');
+
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) {
+      alert({
+        title: 'Export PDF bloqué',
+        message: "Autorisez les fenêtres contextuelles pour télécharger le rapport PDF.",
+        variant: 'error',
+      });
+      return;
+    }
+
+    reportWindow.opener = null;
+    reportWindow.document.write(`<!DOCTYPE html>
+      <html lang="fr">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Analyse QCM - ${escapeHtml(quiz.title)}</title>
+          <style>
+            @page { size: A4 landscape; margin: 12mm; }
+            * { box-sizing: border-box; }
+            body { margin: 0; color: #172033; font-family: Arial, sans-serif; font-size: 11px; }
+            header { border-bottom: 3px solid #5b5cf6; margin-bottom: 16px; padding-bottom: 12px; }
+            h1 { font-size: 21px; margin: 0 0 6px; }
+            .meta { color: #68748a; margin: 0; }
+            .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+            .summary-card { border: 1px solid #dfe4ee; border-radius: 9px; padding: 10px 12px; }
+            .summary-card span { color: #68748a; display: block; font-size: 10px; margin-bottom: 4px; }
+            .summary-card strong { font-size: 18px; }
+            .summary-card.wrong strong { color: #dc2626; }
+            .summary-card.unanswered strong { color: #64748b; }
+            table { border-collapse: collapse; width: 100%; }
+            thead { display: table-header-group; }
+            tr { break-inside: avoid; page-break-inside: avoid; }
+            th { background: #5b5cf6; color: #fff; padding: 8px 7px; text-align: left; }
+            td { border-bottom: 1px solid #dfe4ee; padding: 8px 7px; vertical-align: top; }
+            tbody tr:nth-child(even) { background: #f6f7fb; }
+            .rank { text-align: center; width: 34px; }
+            .question { font-weight: 600; max-width: 390px; white-space: pre-wrap; }
+            .wrong-rate { color: #dc2626; font-weight: 700; }
+            .unanswered-rate { color: #64748b; font-weight: 700; }
+            footer { color: #7b8498; font-size: 9px; margin-top: 12px; text-align: right; }
+          </style>
+        </head>
+        <body>
+          <header>
+            <h1>Analyse des réponses — ${escapeHtml(quiz.title)}</h1>
+            <p class="meta">
+              Classe : ${escapeHtml(quiz.school_class?.name || 'Non renseignée')}
+              · ${Number(stats.submissions || 0)} soumission(s)
+              · Exporté le ${escapeHtml(new Date().toLocaleString('fr-FR'))}
+            </p>
+          </header>
+          <section class="summary">
+            <div class="summary-card"><span>Questions analysées</span><strong>${questions.length}</strong></div>
+            <div class="summary-card"><span>Réponses données</span><strong>${totals.answered}</strong></div>
+            <div class="summary-card wrong"><span>Taux global de réponses fausses</span><strong>${globalWrongRate}%</strong></div>
+            <div class="summary-card unanswered"><span>Taux global de non-réponse</span><strong>${globalUnansweredRate}%</strong></div>
+          </section>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Question</th>
+                <th>Réponses données</th>
+                <th>Fausses</th>
+                <th>% fausses</th>
+                <th>Non répondues</th>
+                <th>% non répondues</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <footer>QCM Pro — Rapport d'analyse des réponses</footer>
+          <script>window.onload = function () { window.print(); };<\/script>
+        </body>
+      </html>`);
+    reportWindow.document.close();
   }
 
   function getStatusBadge(quiz) {
@@ -220,7 +338,12 @@ export default function QuizView() {
 
       {stats && stats.submissions > 0 && (
         <div className="panel">
-          <h2><FontAwesomeIcon icon={faTriangleExclamation} /> Analyse des réponses par question</h2>
+          <div className="question-analysis-header">
+            <h2><FontAwesomeIcon icon={faTriangleExclamation} /> Analyse des réponses par question</h2>
+            <button type="button" className="secondary-btn no-print" onClick={exportStatsPdf}>
+              <FontAwesomeIcon icon={faFilePdf} /> Exporter en PDF
+            </button>
+          </div>
           <p className="muted">
             Le taux de réponses fausses est calculé uniquement parmi les réponses données. Les non-réponses sont présentées séparément sur {stats.submissions} soumission(s).
           </p>
