@@ -80,7 +80,7 @@ export default function Results() {
         tr:nth-child(even) td { background: #f6f7fb; }
       </style></head>
       <body>
-        <h1>Notes des participants — QCM Pro</h1>
+        <h1>Notes des participants — Check Performance</h1>
         <p class="sub">${rows.length} résultat(s) · Exporté le ${new Date().toLocaleString('fr-FR')}</p>
         <table><thead>${thead}</thead><tbody>${tbody}</tbody></table>
         <script>window.onload = function(){ window.print(); }<\/script>

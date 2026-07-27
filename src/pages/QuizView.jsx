@@ -241,7 +241,7 @@ export default function QuizView() {
             </thead>
             <tbody>${rows}</tbody>
           </table>
-          <footer>QCM Pro — Rapport d'analyse des réponses</footer>
+          <footer>Check Performance — Rapport d'analyse des réponses</footer>
           <script>window.onload = function () { window.print(); };<\/script>
         </body>
       </html>`);

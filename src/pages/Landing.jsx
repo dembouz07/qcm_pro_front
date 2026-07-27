@@ -90,17 +90,17 @@ const productTracks = [
 
 const faqs = [
   { q: 'L’offre Élève est-elle payante ?', a: 'Non. Les élèves rejoignent gratuitement leur classe avec le code transmis par leur formateur.' },
-  { q: 'Que comprend le forfait Formateur ?', a: 'Le forfait Formateur à 5 000 F CFA par mois donne accès à toutes les fonctionnalités QCM Pro, sans restriction.' },
+  { q: 'Que comprend le forfait Formateur ?', a: 'Le forfait Formateur à 5 000 F CFA par mois donne accès à toutes les fonctionnalités Check Performance, sans restriction.' },
   { q: 'À quoi sert le forfait Entreprise ?', a: 'Il est dédié aux soft skills : gestion des collaborateurs, entretiens Mindset, comparaison T0/T+6 mois et plans d’action.' },
   { q: 'Les espaces Formateur et Entreprise ont-ils les mêmes menus ?', a: 'Non. Le Formateur dispose de tous les outils QCM, tandis que l’Entreprise possède des menus distincts consacrés aux collaborateurs, aux diagnostics Mindset et au suivi des soft skills.' },
   { q: 'Comment les apprenants accèdent-ils aux QCM ?', a: 'Ils peuvent rejoindre une classe avec un code ou ouvrir directement un lien public, selon votre méthode de diffusion.' },
   { q: 'Quels moyens de paiement sont acceptés ?', a: 'Les paiements passent par PayTech et peuvent être effectués avec Wave, Orange Money ou une carte bancaire.' },
-  { q: 'L’application mobile est-elle déjà téléchargeable ?', a: 'Elle est en préparation. La version mobile sera annoncée prochainement sur QCM Pro.' },
+  { q: 'L’application mobile est-elle déjà téléchargeable ?', a: 'Elle est en préparation. La version mobile sera annoncée prochainement sur Check Performance.' },
 ];
 
 export default function Landing() {
   const [openFaq, setOpenFaq] = useState(null);
-  const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Bonjour, je souhaite des informations sur QCM Pro.')}`;
+  const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Bonjour, je souhaite des informations sur Check Performance.')}`;
   const ease = [0.22, 1, 0.36, 1];
   const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
   const fadeUp = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease } } };
@@ -109,7 +109,7 @@ export default function Landing() {
   return (
     <div className="landing landing-v2">
       <motion.header className="landing-nav" initial={{ y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.45, ease }}>
-        <Link className="brand landing-brand" to="/" aria-label="Accueil QCM Pro">
+        <Link className="brand landing-brand" to="/" aria-label="Accueil Check Performance">
           <img src="/cp.png?v=1" className="brand-logo" alt="Check Performance" />
         </Link>
         <nav className="landing-nav-links" aria-label="Navigation de présentation">
@@ -127,7 +127,7 @@ export default function Landing() {
         <motion.div className="landing-hero-text" initial="hidden" animate="show" variants={stagger}>
           <motion.span className="landing-badge" variants={fadeUp}><FontAwesomeIcon icon={faGift} /> Trois espaces, une plateforme</motion.span>
           <motion.h1 variants={fadeUp}>Évaluez les connaissances. <span>Développez les compétences humaines.</span></motion.h1>
-          <motion.p variants={fadeUp}>QCM Pro réunit un espace gratuit pour les élèves, tous les outils QCM pour les formateurs et un parcours Mindset distinct pour les entreprises.</motion.p>
+          <motion.p variants={fadeUp}>Check Performance réunit un espace gratuit pour les élèves, tous les outils QCM pour les formateurs et un parcours Mindset distinct pour les entreprises.</motion.p>
           <motion.div className="landing-cta" variants={fadeUp}>
             <a className="primary-btn large" href="#solutions">Découvrir mon espace <FontAwesomeIcon icon={faArrowRight} /></a>
             <a className="secondary-btn large" href="#tarifs">Comparer les forfaits</a>
@@ -141,7 +141,7 @@ export default function Landing() {
 
         <motion.div className="landing-hero-visual dashboard-preview" initial={{ opacity: 0, x: 30, scale: 0.96 }} animate={{ opacity: 1, x: 0, scale: 1 }} transition={{ delay: 0.22, duration: 0.7, ease }}>
           <div className="preview-window">
-            <div className="preview-window-bar"><span /><span /><span /><small>app.qcmpro</small></div>
+            <div className="preview-window-bar"><span /><span /><span /><small>app.checkperformance</small></div>
             <div className="preview-layout">
               <aside><div className="preview-logo">Q</div><i className="active" /><i /><i /><i /></aside>
               <div className="preview-content">
@@ -317,11 +317,11 @@ export default function Landing() {
 
       <footer className="landing-footer">
         <div className="brand landing-brand"><img src="/cp.png?v=1" className="brand-logo" alt="Check Performance" /></div>
-        <small>© {new Date().getFullYear()} QCM Pro — Apprendre, évaluer et développer les soft skills.</small>
+        <small>© {new Date().getFullYear()} Check Performance — Apprendre, évaluer et développer les soft skills.</small>
         <div><a href="#solutions">Solutions</a><a href="#tarifs">Tarifs</a><Link to="/login">Connexion</Link></div>
       </footer>
 
-      <motion.a className="whatsapp-fab" href={waLink} target="_blank" rel="noopener noreferrer" aria-label="Contacter QCM Pro sur WhatsApp" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1, type: 'spring' }} whileHover={{ scale: 1.1 }}><WhatsAppIcon /></motion.a>
+      <motion.a className="whatsapp-fab" href={waLink} target="_blank" rel="noopener noreferrer" aria-label="Contacter Check Performance sur WhatsApp" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1, type: 'spring' }} whileHover={{ scale: 1.1 }}><WhatsAppIcon /></motion.a>
     </div>
   );
 }

@@ -35,7 +35,7 @@ const PLAN_DETAILS = {
   },
   premium: {
     icon: faCrown,
-    tagline: 'Toutes les fonctionnalités QCM Pro, sans restriction.',
+    tagline: 'Toutes les fonctionnalités Check Performance, sans restriction.',
     features: ['Création, import, QCM progressifs et création assistée', 'Classes, partage, notes et exports', 'Sondages anonymes et analyse des questions les plus ratées'],
     excluded: [],
   },
@@ -118,7 +118,7 @@ export default function Subscription() {
         <div>
           <span className="eyebrow"><FontAwesomeIcon icon={faCrown} /> Formules</span>
           <h1>Toutes les fonctionnalités pour vos évaluations</h1>
-          <p>Le forfait Formateur rassemble l’ensemble des outils QCM Pro. L’offre est mensuelle.</p>
+          <p>Le forfait Formateur rassemble l’ensemble des outils Check Performance. L’offre est mensuelle.</p>
         </div>
         <div className="header-actions">
           <Link className="secondary-btn" to="/guide"><FontAwesomeIcon icon={faCompass} /> Guide des formules</Link>
@@ -141,7 +141,7 @@ export default function Subscription() {
         )}
       </div>
 
-      <section className="subscription-plans" aria-label="Formules QCM Pro">
+      <section className="subscription-plans" aria-label="Formules Check Performance">
         {plans.map((plan) => {
           const details = PLAN_DETAILS[plan.id] || PLAN_DETAILS.free;
           const isCurrent = currentPlan === plan.id;

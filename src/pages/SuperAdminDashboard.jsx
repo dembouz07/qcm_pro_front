@@ -184,7 +184,7 @@ export default function SuperAdminDashboard() {
       <div className="page-header">
         <div>
           <h1>Bon retour, {user?.name?.split(' ')[0] || 'Admin'}</h1>
-          <p>Voici l'activité de la plateforme QCM Pro aujourd'hui.</p>
+          <p>Voici l'activité de la plateforme Check Performance aujourd'hui.</p>
         </div>
         <div className="header-actions">
           <Link className="secondary-btn" to="/superadmin/revenue"><FontAwesomeIcon icon={faSackDollar} /> Revenus</Link>

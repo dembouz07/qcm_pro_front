@@ -17,7 +17,7 @@ export const PUBLIC_OFFERS = [
     name: 'Formateur',
     price: 5000,
     icon: faUserShield,
-    description: 'Toutes les fonctionnalités QCM Pro dans une offre unique.',
+    description: 'Toutes les fonctionnalités Check Performance dans une offre unique.',
     features: ['Création, import, QCM progressifs et création assistée', 'Classes, partage, notes et exports', 'Sondages et analyses avancées inclus'],
     excluded: [],
     badge: 'Accès complet',

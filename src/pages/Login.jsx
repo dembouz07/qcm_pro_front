@@ -35,7 +35,7 @@ export default function Login() {
       <div className="auth-card">
         <div className="auth-hero">
           <span><FontAwesomeIcon icon={faWandMagicSparkles} /></span>
-          <h1>Bienvenue sur QCM Pro</h1>
+          <h1>Bienvenue sur Check Performance</h1>
           <p>Connectez-vous pour créer, importer ou passer vos QCM à l'heure programmée.</p>
         </div>
 
