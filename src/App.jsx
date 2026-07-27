@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import RegisterAdmin from './pages/RegisterAdmin.jsx';
+import RegisterEnterprise from './pages/RegisterEnterprise.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import Subscription from './pages/Subscription.jsx';
@@ -34,13 +35,22 @@ import PublicQuiz from './pages/PublicQuiz.jsx';
 import MyResults from './pages/MyResults.jsx';
 import Landing from './pages/Landing.jsx';
 import Account from './pages/Account.jsx';
+import EnterpriseDashboard from './pages/enterprise/EnterpriseDashboard.jsx';
+import EnterpriseEmployees from './pages/enterprise/EnterpriseEmployees.jsx';
+import EnterpriseEmployeeForm from './pages/enterprise/EnterpriseEmployeeForm.jsx';
+import EnterpriseAssessments from './pages/enterprise/EnterpriseAssessments.jsx';
+import EnterpriseAssessmentForm from './pages/enterprise/EnterpriseAssessmentForm.jsx';
+import EnterpriseAssessmentView from './pages/enterprise/EnterpriseAssessmentView.jsx';
+import EnterpriseProgress from './pages/enterprise/EnterpriseProgress.jsx';
+import EnterpriseSubscription from './pages/enterprise/EnterpriseSubscription.jsx';
+import { homePathFor } from './utils/homePath.js';
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
   if (loading) return <div className="center-screen">Chargement...</div>;
   if (!user) return <Landing />;
   if (user.role === 'superadmin') return <Navigate to="/superadmin" replace />;
-  return <Navigate to={user.role === 'admin' ? '/admin' : '/student'} replace />;
+  return <Navigate to={homePathFor(user)} replace />;
 }
 
 export default function App() {
@@ -62,6 +72,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/register-admin" element={<RegisterAdmin />} />
+          <Route path="/register-enterprise" element={<RegisterEnterprise />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Route publique pour accès au quiz via lien partagé */}
@@ -89,6 +100,17 @@ export default function App() {
           <Route path="/admin/surveys/new" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyForm /></ProtectedRoute>} />
           <Route path="/admin/surveys/:id/edit" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyForm /></ProtectedRoute>} />
           <Route path="/admin/surveys/:id" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyResults /></ProtectedRoute>} />
+
+          <Route path="/entreprise" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseDashboard /></ProtectedRoute>} />
+          <Route path="/entreprise/abonnement" element={<ProtectedRoute role="enterprise"><EnterpriseSubscription /></ProtectedRoute>} />
+          <Route path="/entreprise/collaborateurs" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseEmployees /></ProtectedRoute>} />
+          <Route path="/entreprise/collaborateurs/nouveau" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseEmployeeForm /></ProtectedRoute>} />
+          <Route path="/entreprise/collaborateurs/:id/modifier" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseEmployeeForm /></ProtectedRoute>} />
+          <Route path="/entreprise/diagnostics" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseAssessments /></ProtectedRoute>} />
+          <Route path="/entreprise/diagnostics/nouveau" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseAssessmentForm /></ProtectedRoute>} />
+          <Route path="/entreprise/diagnostics/:id" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseAssessmentView /></ProtectedRoute>} />
+          <Route path="/entreprise/diagnostics/:id/modifier" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseAssessmentForm /></ProtectedRoute>} />
+          <Route path="/entreprise/suivi" element={<ProtectedRoute role="enterprise" requireSubscription><EnterpriseProgress /></ProtectedRoute>} />
 
           <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
           <Route path="/student/notes" element={<ProtectedRoute role="student"><StudentResults /></ProtectedRoute>} />

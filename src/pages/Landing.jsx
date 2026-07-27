@@ -26,10 +26,10 @@ import {
   faShareNodes,
   faShieldHalved,
   faUserPlus,
-  faUserShield,
   faWandMagicSparkles,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
+import { PUBLIC_OFFERS } from '../config/offers.js';
 
 const WHATSAPP_NUMBER = '221774006235';
 
@@ -48,43 +48,10 @@ const features = [
   { icon: faShareNodes, title: 'Accès sans friction', desc: 'Partagez un lien public ou invitez vos apprenants avec un code de classe.' },
 ];
 
-const plans = [
-  {
-    id: 'free',
-    name: 'Gratuite',
-    price: '0',
-    icon: faGift,
-    description: 'Les outils indispensables pour commencer.',
-    features: ['QCM manuel', 'Import de QCM', 'QCM progressif'],
-    excluded: ['Sondages', 'Analyse des questions ratées'],
-    cta: 'Commencer gratuitement',
-  },
-  {
-    id: 'essential',
-    name: 'Essentielle',
-    price: '3 000',
-    icon: faBolt,
-    description: 'Toutes les fonctions de travail au quotidien.',
-    features: ['Tout le socle QCM', 'Création assistée depuis un texte', 'Classes, partage, notes et exports'],
-    excluded: ['Sondages', 'Analyse des questions ratées'],
-    badge: 'Le bon équilibre',
-    cta: 'Choisir Essentielle',
-  },
-  {
-    id: 'premium',
-    name: 'Complète',
-    price: '5 000',
-    icon: faMedal,
-    description: 'Toute la puissance de QCM Pro, sans limite fonctionnelle.',
-    features: ['Toutes les fonctionnalités', 'Sondages anonymes', 'Pourcentages des questions ratées'],
-    excluded: [],
-    cta: 'Choisir Complète',
-  },
-];
-
 const faqs = [
-  { q: 'La formule gratuite expire-t-elle ?', a: 'Non. Elle reste gratuite et donne accès à la création manuelle, à l’import et aux QCM progressifs.' },
-  { q: 'Quelle est la différence entre 3 000 et 5 000 F CFA ?', a: 'La formule à 3 000 F CFA inclut toutes les fonctionnalités sauf les sondages et l’analyse des questions les plus ratées. Ces deux outils sont inclus à 5 000 F CFA.' },
+  { q: 'L’offre Élève est-elle payante ?', a: 'Non. Les élèves rejoignent gratuitement leur classe avec le code transmis par leur formateur.' },
+  { q: 'Que comprend le forfait Formateur ?', a: 'Le forfait Formateur à 5 000 F CFA par mois donne accès à toutes les fonctionnalités QCM Pro, sans restriction.' },
+  { q: 'À quoi sert le forfait Entreprise ?', a: 'Il est dédié aux soft skills : gestion des collaborateurs, entretiens Mindset, comparaison T0/T+6 mois et plans d’action.' },
   { q: 'Comment les apprenants accèdent-ils aux QCM ?', a: 'Ils peuvent rejoindre une classe avec un code ou ouvrir directement un lien public, selon votre méthode de diffusion.' },
   { q: 'Quels moyens de paiement sont acceptés ?', a: 'Les paiements passent par PayTech et peuvent être effectués avec Wave, Orange Money ou une carte bancaire.' },
   { q: 'L’application mobile est-elle déjà téléchargeable ?', a: 'Elle est en préparation. La version mobile sera annoncée prochainement sur QCM Pro.' },
@@ -226,17 +193,17 @@ export default function Landing() {
       <motion.section className="landing-pricing" id="tarifs" {...reveal}>
         <motion.div className="section-heading" variants={fadeUp}><span>Des tarifs sans surprise</span><h2>Trois formules, selon votre façon de travailler</h2><p>Les apprenants utilisent toujours la plateforme gratuitement.</p></motion.div>
         <div className="pricing-grid pricing-grid-three">
-          {plans.map((plan) => (
-            <motion.article className={`pricing-card ${plan.id === 'essential' ? 'featured' : ''}`} key={plan.id} variants={fadeUp} whileHover={{ y: -7 }}>
+          {PUBLIC_OFFERS.map((plan) => (
+            <motion.article className={`pricing-card ${plan.id === 'trainer' ? 'featured' : ''}`} key={plan.id} variants={fadeUp} whileHover={{ y: -7 }}>
               {plan.badge && <div className="pricing-badge">{plan.badge}</div>}
               <div className={`pricing-icon ${plan.id}`}><FontAwesomeIcon icon={plan.icon} /></div>
               <div><h3>{plan.name}</h3><p className="pricing-description">{plan.description}</p></div>
-              <div className="pricing-price"><span className="pricing-amount">{plan.price === '0' ? 'Gratuit' : plan.price}</span>{plan.price !== '0' && <span className="pricing-unit">F CFA / mois</span>}</div>
+              <div className="pricing-price"><span className="pricing-amount">{plan.price === 0 ? 'Gratuit' : plan.price.toLocaleString('fr-FR')}</span>{plan.price !== 0 && <span className="pricing-unit">F CFA / mois</span>}</div>
               <ul className="pricing-features">
                 {plan.features.map((feature) => <li key={feature}><FontAwesomeIcon icon={faCircleCheck} /> {feature}</li>)}
                 {plan.excluded.map((feature) => <li className="excluded" key={feature}><FontAwesomeIcon icon={faXmark} /> {feature}</li>)}
               </ul>
-              <Link className={plan.id === 'essential' ? 'primary-btn large' : 'secondary-btn large'} to="/register-admin">{plan.cta} <FontAwesomeIcon icon={faArrowRight} /></Link>
+              <Link className={plan.id === 'trainer' ? 'primary-btn large' : 'secondary-btn large'} to={plan.to}>{plan.cta} <FontAwesomeIcon icon={faArrowRight} /></Link>
             </motion.article>
           ))}
         </div>

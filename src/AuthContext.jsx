@@ -57,6 +57,14 @@ export function AuthProvider({ children }) {
     return response.data.user;
   }
 
+  async function registerEnterprise(payload) {
+    await getCsrfCookie();
+    const response = await api.post('/auth/register-enterprise', payload);
+    localStorage.setItem('qcm_token', response.data.token);
+    setUser(response.data.user);
+    return response.data.user;
+  }
+
   async function logout() {
     try {
       await api.post('/auth/logout');
@@ -66,7 +74,7 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const value = useMemo(() => ({ user, loading, login, register, registerAdmin, logout, setUser }), [user, loading]);
+  const value = useMemo(() => ({ user, loading, login, register, registerAdmin, registerEnterprise, logout, setUser }), [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
