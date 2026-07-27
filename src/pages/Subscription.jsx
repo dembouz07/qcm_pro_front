@@ -16,9 +16,7 @@ import { useAuth } from '../AuthContext.jsx';
 import { formatDateTime } from '../utils/time.js';
 
 const FALLBACK_PLANS = [
-  { id: 'free', name: 'Gratuite', price: 0 },
-  { id: 'essential', name: 'Essentielle', price: 3000 },
-  { id: 'premium', name: 'Complète', price: 5000 },
+  { id: 'premium', name: 'Formateur', price: 5000 },
 ];
 
 const PLAN_DETAILS = {
@@ -36,8 +34,8 @@ const PLAN_DETAILS = {
   },
   premium: {
     icon: faCrown,
-    tagline: 'L’expérience QCM Pro complète, sans restriction.',
-    features: ['Toutes les fonctionnalités', 'Sondages anonymes', 'Analyse des questions les plus ratées'],
+    tagline: 'Toutes les fonctionnalités QCM Pro, sans restriction.',
+    features: ['Création, import, QCM progressifs et création assistée', 'Classes, partage, notes et exports', 'Sondages anonymes et analyse des questions les plus ratées'],
     excluded: [],
   },
 };
@@ -118,8 +116,8 @@ export default function Subscription() {
       <div className="page-header">
         <div>
           <span className="eyebrow"><FontAwesomeIcon icon={faCrown} /> Formules</span>
-          <h1>Choisissez votre niveau d’accès</h1>
-          <p>Commencez gratuitement, puis activez les fonctions dont vous avez besoin. Les offres payantes sont mensuelles.</p>
+          <h1>Toutes les fonctionnalités pour vos évaluations</h1>
+          <p>Le forfait Formateur rassemble l’ensemble des outils QCM Pro. L’offre est mensuelle.</p>
         </div>
       </div>
 
@@ -132,7 +130,7 @@ export default function Subscription() {
       <div className="subscription-current">
         <div>
           <small>Votre formule actuelle</small>
-          <strong>{plans.find((plan) => plan.id === currentPlan)?.name || 'Gratuite'}</strong>
+          <strong>{plans.find((plan) => plan.id === currentPlan)?.name || 'Forfait à activer'}</strong>
         </div>
         {info?.is_active && info?.subscribed_until && (
           <span>Active jusqu’au {formatDateTime(info.subscribed_until)}</span>
@@ -146,8 +144,8 @@ export default function Subscription() {
           const isPaying = payingPlan === plan.id;
 
           return (
-            <article className={`subscription-plan-card ${plan.id === 'essential' ? 'recommended' : ''} ${isCurrent ? 'current' : ''}`} key={plan.id}>
-              {plan.id === 'essential' && <span className="subscription-plan-badge">Le bon équilibre</span>}
+            <article className={`subscription-plan-card ${plan.id === 'premium' ? 'recommended' : ''} ${isCurrent ? 'current' : ''}`} key={plan.id}>
+              {plan.id === 'premium' && <span className="subscription-plan-badge">Accès complet</span>}
               {isCurrent && <span className="subscription-current-badge"><FontAwesomeIcon icon={faCircleCheck} /> Actuelle</span>}
               <div className={`subscription-plan-icon ${plan.id}`}><FontAwesomeIcon icon={details.icon} /></div>
               <h2>{plan.name}</h2>
@@ -168,7 +166,7 @@ export default function Subscription() {
               {plan.id === 'free' ? (
                 <button className="secondary-btn large" disabled>{isCurrent ? 'Formule actuelle' : 'Toujours disponible'}</button>
               ) : (
-                <button className={plan.id === 'essential' ? 'primary-btn large' : 'secondary-btn large'} onClick={() => handlePay(plan.id)} disabled={Boolean(payingPlan)}>
+                <button className={plan.id === 'premium' ? 'primary-btn large' : 'secondary-btn large'} onClick={() => handlePay(plan.id)} disabled={Boolean(payingPlan)}>
                   <FontAwesomeIcon icon={isPaying ? faSpinner : faCreditCard} spin={isPaying} />{' '}
                   {isPaying ? 'Redirection...' : isCurrent ? 'Renouveler pour 1 mois' : `Choisir à ${Number(plan.price).toLocaleString('fr-FR')} F`}
                 </button>

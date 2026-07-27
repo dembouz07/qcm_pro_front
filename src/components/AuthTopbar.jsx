@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGraduationCap, faArrowLeft, faRightToBracket, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { faBuilding, faGraduationCap, faArrowLeft, faRightToBracket, faUserPlus, faUserShield } from '@fortawesome/free-solid-svg-icons';
 
 export default function AuthTopbar({ active }) {
   return (
@@ -20,7 +20,17 @@ export default function AuthTopbar({ active }) {
         )}
         {active !== 'register' && (
           <Link className="primary-btn small" to="/register">
-            <FontAwesomeIcon icon={faUserPlus} /> Inscription
+            <FontAwesomeIcon icon={faGraduationCap} /> Élève
+          </Link>
+        )}
+        {active !== 'register-admin' && (
+          <Link className="auth-topbar-link" to="/register-admin">
+            <FontAwesomeIcon icon={faUserShield} /> Formateur
+          </Link>
+        )}
+        {active !== 'register-enterprise' && (
+          <Link className="auth-topbar-link" to="/register-enterprise">
+            <FontAwesomeIcon icon={faBuilding} /> Entreprise
           </Link>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext.jsx';
+import { homePathFor } from '../utils/homePath.js';
 
 export default function ProtectedRoute({ role, children, requireSubscription, requireFeature }) {
   const { user, loading } = useAuth();
@@ -9,13 +10,12 @@ export default function ProtectedRoute({ role, children, requireSubscription, re
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  const homeFor = (r) => (r === 'superadmin' ? '/superadmin' : r === 'admin' ? '/admin' : '/student');
-  if (role && user.role !== role) return <Navigate to={homeFor(user.role)} replace />;
+  if (role && user.role !== role) return <Navigate to={homePathFor(user)} replace />;
 
   // Toutes les formules, y compris la gratuite, sont considérées actives.
-  if (requireSubscription && user.role === 'admin') {
+  if (requireSubscription && ['admin', 'enterprise'].includes(user.role)) {
     const active = user.is_super_admin || user.is_subscription_active;
-    if (!active) return <Navigate to="/admin/subscription" replace />;
+    if (!active) return <Navigate to={user.role === 'enterprise' ? '/entreprise/abonnement' : '/admin/subscription'} replace />;
   }
 
   if (requireFeature && user.role === 'admin' && !user.is_super_admin) {

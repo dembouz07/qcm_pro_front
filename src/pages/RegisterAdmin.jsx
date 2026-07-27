@@ -38,7 +38,7 @@ export default function RegisterAdmin() {
           <ul className="auth-hero-list">
             <li><FontAwesomeIcon icon={faCircleCheck} /> Créez des QCM (manuel, import, progressif)</li>
             <li><FontAwesomeIcon icon={faCircleCheck} /> Partagez par lien ou par classe</li>
-            <li><FontAwesomeIcon icon={faCircleCheck} /> Une formule gratuite, sans limite de durée</li>
+            <li><FontAwesomeIcon icon={faCircleCheck} /> Toutes les fonctionnalités pendant le premier mois</li>
           </ul>
         </div>
 
