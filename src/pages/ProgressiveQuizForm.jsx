@@ -5,7 +5,6 @@ import {
   faLayerGroup,
   faPlus,
   faTrash,
-  faCalendarDays,
   faDiagramProject,
   faCircleQuestion,
   faArrowLeft
@@ -21,14 +20,11 @@ export default function ProgressiveQuizForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
-  const [classes, setClasses] = useState([]);
   const [form, setForm] = useState({
     title: '',
     description: '',
-    school_class_id: '',
-    starts_at: '',
-    ends_at: '',
-    stage_threshold: 1
+    stage_threshold: 1,
+    require_stage_pass: true,
   });
   const [stages, setStages] = useState([emptyStage(0), emptyStage(1)]);
   const [error, setError] = useState('');
@@ -36,14 +32,11 @@ export default function ProgressiveQuizForm() {
   const [initialLoading, setInitialLoading] = useState(isEditing);
 
   useEffect(() => {
-    const requests = [api.get('/admin/classes')];
-    if (isEditing) requests.push(api.get(`/admin/quizzes/${id}`));
+    if (!isEditing) return;
 
-    Promise.all(requests)
-      .then(([classesResponse, quizResponse]) => {
-        setClasses(classesResponse.data);
-        if (quizResponse) {
-          const quiz = quizResponse.data;
+    api.get(`/admin/quizzes/${id}`)
+      .then((response) => {
+          const quiz = response.data;
           if (quiz.type !== 'progressive') {
             setError("Ce QCM n'est pas un diagnostic progressif.");
             return;
@@ -64,13 +57,10 @@ export default function ProgressiveQuizForm() {
           setForm({
             title: quiz.title || '',
             description: quiz.description || '',
-            school_class_id: quiz.school_class_id || '',
-            starts_at: quiz.starts_at?.slice(0, 16) || '',
-            ends_at: quiz.ends_at?.slice(0, 16) || '',
             stage_threshold: quiz.stage_threshold || 1,
+            require_stage_pass: quiz.require_stage_pass ?? true,
           });
           setStages(groupedStages.length ? groupedStages : [emptyStage(0)]);
-        }
       })
       .catch((err) => setError(getApiError(err)))
       .finally(() => setInitialLoading(false));
@@ -165,8 +155,8 @@ export default function ProgressiveQuizForm() {
           <span className="eyebrow"><FontAwesomeIcon icon={faDiagramProject} /> Diagnostic progressif</span>
           <h1>{isEditing ? 'Modifier le QCM progressif' : 'Créer un QCM progressif'}</h1>
           <p>
-            Questionnaire par stades avec réponses Oui/Non. Un stade est validé quand le participant
-            atteint le seuil de "Oui". Le diagnostic s'arrête au dernier stade validé.
+            Questionnaire public par stades avec réponses Oui/Non. Les participants y accèdent par lien
+            et renseignent uniquement leur nom et leur prénom. Il reste ouvert jusqu’à sa fermeture manuelle.
           </p>
         </div>
       </div>
@@ -185,22 +175,12 @@ export default function ProgressiveQuizForm() {
             />
           </label>
 
-          <label>
-            Classe / Direction concernée *
-            <select
-              value={form.school_class_id}
-              onChange={(e) => setForm({ ...form, school_class_id: e.target.value })}
-              required
-            >
-              <option value="">Choisir une classe</option>
-              {classes.map((classe) => (
-                <option key={classe.id} value={classe.id}>{classe.name}</option>
-              ))}
-            </select>
-          </label>
+          <div className="span-2 alert info">
+            Accès public : aucune classe n’est requise. Le participant s’identifie avec son nom et son prénom.
+          </div>
 
-          <label>
-            Seuil de validation par stade (nb de "Oui") *
+          <label className="span-2">
+            Seuil de blocage par stade (nb de "Oui") *
             <input
               type="number"
               min="1"
@@ -209,33 +189,21 @@ export default function ProgressiveQuizForm() {
               onChange={(e) => setForm({ ...form, stage_threshold: e.target.value })}
               required
             />
-            <small className="muted">Le seuil doit pouvoir être atteint dans chaque stade.</small>
+            <small className="muted">
+              Avec le blocage activé, moins de « Oui » permet de continuer ; un score égal ou supérieur maintient le participant à ce stade.
+            </small>
           </label>
 
-          <label>
-            Ouverture *
-            <div className="input-icon plain">
-              <FontAwesomeIcon icon={faCalendarDays} />
-              <input
-                type="datetime-local"
-                value={form.starts_at}
-                onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
-                required
-              />
-            </div>
-          </label>
-
-          <label>
-            Fermeture facultative
-            <div className="input-icon plain">
-              <FontAwesomeIcon icon={faCalendarDays} />
-              <input
-                type="datetime-local"
-                min={form.starts_at || undefined}
-                value={form.ends_at}
-                onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
-              />
-            </div>
+          <label className="span-2 toggle-field">
+            <input
+              type="checkbox"
+              checked={form.require_stage_pass}
+              onChange={(e) => setForm({ ...form, require_stage_pass: e.target.checked })}
+            />
+            <span className="toggle-field-copy">
+              <strong>Bloquer le passage au stade suivant</strong>
+              <small>Coché : le participant reste au stade actuel dès qu’il atteint le seuil de « Oui ».</small>
+            </span>
           </label>
 
           <label className="span-2">

@@ -5,31 +5,28 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowRight,
   faBell,
-  faBolt,
+  faBrain,
+  faBuilding,
   faChartColumn,
   faChartLine,
   faChevronDown,
   faCircleCheck,
-  faClock,
   faClipboardQuestion,
-  faCloudArrowUp,
   faDiagramProject,
   faFileImport,
   faGift,
   faGraduationCap,
-  faMedal,
   faMobileScreenButton,
   faPenToSquare,
   faRankingStar,
   faRightToBracket,
   faRocket,
   faShareNodes,
-  faShieldHalved,
-  faUserPlus,
-  faUserShield,
+  faUsers,
   faWandMagicSparkles,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
+import { PUBLIC_OFFERS } from '../config/offers.js';
 
 const WHATSAPP_NUMBER = '221774006235';
 
@@ -39,52 +36,63 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-const features = [
-  { icon: faWandMagicSparkles, title: '4 façons de créer', desc: 'Manuellement, par import, en progressif ou depuis un texte déjà préparé.' },
-  { icon: faClock, title: 'Programmation précise', desc: 'Définissez l’ouverture, la fermeture et la classe concernée en quelques clics.' },
-  { icon: faChartLine, title: 'Résultats instantanés', desc: 'Les notes sont calculées automatiquement et réunies dans un tableau clair.' },
-  { icon: faClipboardQuestion, title: 'Sondages anonymes', desc: 'Recueillez des avis et analysez chaque réponse avec la formule Complète.' },
-  { icon: faShieldHalved, title: 'Cadre anti-triche', desc: 'Limitez les tentatives et sécurisez le déroulement de chaque évaluation.' },
-  { icon: faShareNodes, title: 'Accès sans friction', desc: 'Partagez un lien public ou invitez vos apprenants avec un code de classe.' },
-];
+const audienceDetails = {
+  student: {
+    kicker: 'Pour apprendre',
+    title: 'Un accès simple pour répondre et progresser.',
+    summary: 'L’élève rejoint sa classe, passe ses QCM et retrouve ses résultats dans un espace clair.',
+    scope: 'Toujours gratuit',
+  },
+  trainer: {
+    kicker: 'Pour transmettre',
+    title: 'Toute la puissance QCM, sans option cachée.',
+    summary: 'Le formateur crée, diffuse, corrige et analyse ses évaluations depuis un seul tableau de bord.',
+    scope: 'Toutes les fonctionnalités QCM',
+  },
+  enterprise: {
+    kicker: 'Pour accompagner',
+    title: 'Un parcours exclusivement dédié aux soft skills.',
+    summary: 'L’entreprise mesure le Mindset, structure les entretiens et suit la progression de ses collaborateurs.',
+    scope: 'Soft skills uniquement',
+  },
+};
 
-const plans = [
+const productTracks = [
   {
-    id: 'free',
-    name: 'Gratuite',
-    price: '0',
-    icon: faGift,
-    description: 'Les outils indispensables pour commencer.',
-    features: ['QCM manuel', 'Import de QCM', 'QCM progressif'],
-    excluded: ['Sondages', 'Analyse des questions ratées'],
-    cta: 'Commencer gratuitement',
+    id: 'trainer',
+    label: 'Espace Formateur',
+    icon: faClipboardQuestion,
+    title: 'Créez et pilotez vos QCM de bout en bout.',
+    description: 'Toutes les fonctionnalités pédagogiques sont incluses dans un forfait unique.',
+    to: '/register-admin',
+    cta: 'Découvrir l’espace Formateur',
+    points: [
+      { icon: faWandMagicSparkles, title: '4 modes de création', desc: 'Manuel, import, progressif ou création assistée depuis un texte.' },
+      { icon: faShareNodes, title: 'Diffusion flexible', desc: 'Classes, codes d’accès, liens publics et programmation précise.' },
+      { icon: faChartLine, title: 'Analyses complètes', desc: 'Notes, statistiques, sondages et exports immédiatement exploitables.' },
+    ],
   },
   {
-    id: 'essential',
-    name: 'Essentielle',
-    price: '3 000',
-    icon: faBolt,
-    description: 'Toutes les fonctions de travail au quotidien.',
-    features: ['Tout le socle QCM', 'Création assistée depuis un texte', 'Classes, partage, notes et exports'],
-    excluded: ['Sondages', 'Analyse des questions ratées'],
-    badge: 'Le bon équilibre',
-    cta: 'Choisir Essentielle',
-  },
-  {
-    id: 'premium',
-    name: 'Complète',
-    price: '5 000',
-    icon: faMedal,
-    description: 'Toute la puissance de QCM Pro, sans limite fonctionnelle.',
-    features: ['Toutes les fonctionnalités', 'Sondages anonymes', 'Pourcentages des questions ratées'],
-    excluded: [],
-    cta: 'Choisir Complète',
+    id: 'enterprise',
+    label: 'Espace Entreprise',
+    icon: faBrain,
+    title: 'Développez les soft skills avec un suivi structuré.',
+    description: 'Des menus distincts du forfait Formateur, centrés sur les collaborateurs et le Mindset.',
+    to: '/register-enterprise',
+    cta: 'Découvrir l’espace Entreprise',
+    points: [
+      { icon: faUsers, title: 'Collaborateurs centralisés', desc: 'Créez les profils et gardez une vision claire de chaque parcours.' },
+      { icon: faBrain, title: 'Diagnostic en 4 piliers', desc: 'Confiance, exécution, innovation et création de valeur.' },
+      { icon: faDiagramProject, title: 'Progression T0 à T+6', desc: 'Comparez les entretiens, formalisez les actions et mesurez l’évolution.' },
+    ],
   },
 ];
 
 const faqs = [
-  { q: 'La formule gratuite expire-t-elle ?', a: 'Non. Elle reste gratuite et donne accès à la création manuelle, à l’import et aux QCM progressifs.' },
-  { q: 'Quelle est la différence entre 3 000 et 5 000 F CFA ?', a: 'La formule à 3 000 F CFA inclut toutes les fonctionnalités sauf les sondages et l’analyse des questions les plus ratées. Ces deux outils sont inclus à 5 000 F CFA.' },
+  { q: 'L’offre Élève est-elle payante ?', a: 'Non. Les élèves rejoignent gratuitement leur classe avec le code transmis par leur formateur.' },
+  { q: 'Que comprend le forfait Formateur ?', a: 'Le forfait Formateur à 5 000 F CFA par mois donne accès à toutes les fonctionnalités QCM Pro, sans restriction.' },
+  { q: 'À quoi sert le forfait Entreprise ?', a: 'Il est dédié aux soft skills : gestion des collaborateurs, entretiens Mindset, comparaison T0/T+6 mois et plans d’action.' },
+  { q: 'Les espaces Formateur et Entreprise ont-ils les mêmes menus ?', a: 'Non. Le Formateur dispose de tous les outils QCM, tandis que l’Entreprise possède des menus distincts consacrés aux collaborateurs, aux diagnostics Mindset et au suivi des soft skills.' },
   { q: 'Comment les apprenants accèdent-ils aux QCM ?', a: 'Ils peuvent rejoindre une classe avec un code ou ouvrir directement un lien public, selon votre méthode de diffusion.' },
   { q: 'Quels moyens de paiement sont acceptés ?', a: 'Les paiements passent par PayTech et peuvent être effectués avec Wave, Orange Money ou une carte bancaire.' },
   { q: 'L’application mobile est-elle déjà téléchargeable ?', a: 'Elle est en préparation. La version mobile sera annoncée prochainement sur QCM Pro.' },
@@ -105,29 +113,29 @@ export default function Landing() {
           <img src="/logo.png" className="brand-logo" alt="QCM Pro" />
         </Link>
         <nav className="landing-nav-links" aria-label="Navigation de présentation">
+          <a href="#solutions">Solutions</a>
           <a href="#fonctionnalites">Fonctionnalités</a>
-          <a href="#mobile">Application</a>
           <a href="#tarifs">Tarifs</a>
         </nav>
         <div className="landing-nav-actions">
           <Link className="secondary-btn" to="/login"><FontAwesomeIcon icon={faRightToBracket} /> Connexion</Link>
-          <Link className="primary-btn" to="/register-admin">Créer mon espace</Link>
+          <a className="primary-btn" href="#tarifs">Choisir mon espace</a>
         </div>
       </motion.header>
 
       <section className="landing-hero">
         <motion.div className="landing-hero-text" initial="hidden" animate="show" variants={stagger}>
-          <motion.span className="landing-badge" variants={fadeUp}><FontAwesomeIcon icon={faGift} /> Une formule gratuite, pour toujours</motion.span>
-          <motion.h1 variants={fadeUp}>Transformez vos questions en <span>évaluations qui font progresser.</span></motion.h1>
-          <motion.p variants={fadeUp}>Créez des QCM soignés, partagez-les en quelques secondes et comprenez les résultats sans tableur compliqué.</motion.p>
+          <motion.span className="landing-badge" variants={fadeUp}><FontAwesomeIcon icon={faGift} /> Trois espaces, une plateforme</motion.span>
+          <motion.h1 variants={fadeUp}>Évaluez les connaissances. <span>Développez les compétences humaines.</span></motion.h1>
+          <motion.p variants={fadeUp}>QCM Pro réunit un espace gratuit pour les élèves, tous les outils QCM pour les formateurs et un parcours Mindset distinct pour les entreprises.</motion.p>
           <motion.div className="landing-cta" variants={fadeUp}>
-            <Link className="primary-btn large" to="/register-admin">Créer un QCM gratuitement <FontAwesomeIcon icon={faArrowRight} /></Link>
-            <a className="secondary-btn large" href="#tarifs">Voir les 3 formules</a>
+            <a className="primary-btn large" href="#solutions">Découvrir mon espace <FontAwesomeIcon icon={faArrowRight} /></a>
+            <a className="secondary-btn large" href="#tarifs">Comparer les forfaits</a>
           </motion.div>
           <motion.div className="hero-proof" variants={fadeUp}>
-            <span><FontAwesomeIcon icon={faCircleCheck} /> Sans carte bancaire</span>
-            <span><FontAwesomeIcon icon={faCircleCheck} /> Mise en route rapide</span>
-            <span><FontAwesomeIcon icon={faCircleCheck} /> Apprenants gratuits</span>
+            <span><FontAwesomeIcon icon={faCircleCheck} /> Élèves gratuits</span>
+            <span><FontAwesomeIcon icon={faCircleCheck} /> Formateurs tout inclus</span>
+            <span><FontAwesomeIcon icon={faCircleCheck} /> Entreprises 100 % soft skills</span>
           </motion.div>
         </motion.div>
 
@@ -137,43 +145,68 @@ export default function Landing() {
             <div className="preview-layout">
               <aside><div className="preview-logo">Q</div><i className="active" /><i /><i /><i /></aside>
               <div className="preview-content">
-                <div className="preview-heading"><div><small>Bonjour Aïcha</small><strong>Votre espace QCM</strong></div><span>+ Nouveau</span></div>
+                <div className="preview-heading"><div><small>Bonjour Aïcha</small><strong>Votre vue d’ensemble</strong></div><span>3 espaces</span></div>
                 <div className="preview-kpis">
-                  <div><FontAwesomeIcon icon={faFileImport} /><span><strong>24</strong><small>QCM créés</small></span></div>
                   <div><FontAwesomeIcon icon={faGraduationCap} /><span><strong>186</strong><small>Participants</small></span></div>
-                  <div><FontAwesomeIcon icon={faRankingStar} /><span><strong>82%</strong><small>Score moyen</small></span></div>
+                  <div><FontAwesomeIcon icon={faFileImport} /><span><strong>24</strong><small>Évaluations</small></span></div>
+                  <div><FontAwesomeIcon icon={faBuilding} /><span><strong>74</strong><small>Collaborateurs</small></span></div>
                 </div>
                 <div className="preview-chart">
-                  <div><strong>Participation</strong><small>7 derniers jours</small></div>
+                  <div><strong>Progression globale</strong><small>6 derniers mois</small></div>
                   <div className="preview-bars">{[42, 65, 48, 78, 60, 91, 74].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}</div>
                 </div>
               </div>
             </div>
           </div>
           <motion.div className="floating-card hero-score" animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4.2, ease: 'easeInOut' }}>
-            <FontAwesomeIcon icon={faChartLine} /><div><strong>+18%</strong><small>de participation</small></div>
+            <FontAwesomeIcon icon={faBrain} /><div><strong>4 piliers</strong><small>Mindset Techco</small></div>
           </motion.div>
           <motion.div className="floating-card hero-live" animate={{ y: [0, 9, 0] }} transition={{ repeat: Infinity, duration: 4.8, ease: 'easeInOut' }}>
-            <span className="live-dot" /><div><strong>QCM en cours</strong><small>32 réponses reçues</small></div>
+            <span className="live-dot" /><div><strong>Suivi T+6</strong><small>Progression consolidée</small></div>
           </motion.div>
           <div className="hero-glow" />
         </motion.div>
       </section>
 
       <section className="landing-trust-strip" aria-label="Points forts">
-        <span><FontAwesomeIcon icon={faPenToSquare} /> Création intuitive</span>
-        <span><FontAwesomeIcon icon={faCloudArrowUp} /> Import Word & PDF</span>
-        <span><FontAwesomeIcon icon={faDiagramProject} /> Diagnostics progressifs</span>
-        <span><FontAwesomeIcon icon={faChartColumn} /> Données lisibles</span>
+        <span><FontAwesomeIcon icon={faGraduationCap} /> Élèves gratuits</span>
+        <span><FontAwesomeIcon icon={faWandMagicSparkles} /> QCM tout inclus</span>
+        <span><FontAwesomeIcon icon={faBrain} /> Diagnostic Mindset</span>
+        <span><FontAwesomeIcon icon={faChartColumn} /> Suivi T0 → T+6</span>
       </section>
 
+      <motion.section className="landing-solutions" id="solutions" {...reveal}>
+        <motion.div className="section-heading" variants={fadeUp}><span>À chacun son espace</span><h2>Un parcours clair pour chaque objectif</h2><p>Chaque profil retrouve uniquement les outils dont il a besoin, avec une navigation et des actions adaptées.</p></motion.div>
+        <div className="solution-grid">
+          {PUBLIC_OFFERS.map((offer) => {
+            const details = audienceDetails[offer.id];
+            return (
+              <motion.article className={`solution-card ${offer.id}`} key={offer.id} variants={fadeUp} whileHover={{ y: -7 }}>
+                <div className="solution-card-head">
+                  <span className="solution-icon"><FontAwesomeIcon icon={offer.icon} /></span>
+                  <span className="solution-scope">{details.scope}</span>
+                </div>
+                <small>{details.kicker}</small>
+                <h3>{offer.name}</h3>
+                <h4>{details.title}</h4>
+                <p>{details.summary}</p>
+                <ul>
+                  {offer.features.map((feature) => <li key={feature}><FontAwesomeIcon icon={faCircleCheck} /> {feature}</li>)}
+                </ul>
+                <Link to={offer.to}>{offer.cta} <FontAwesomeIcon icon={faArrowRight} /></Link>
+              </motion.article>
+            );
+          })}
+        </div>
+      </motion.section>
+
       <motion.section className="landing-steps" {...reveal}>
-        <motion.div className="section-heading" variants={fadeUp}><span>Simple dès le premier QCM</span><h2>De l’idée aux résultats en trois temps</h2></motion.div>
+        <motion.div className="section-heading" variants={fadeUp}><span>Simple dès le premier jour</span><h2>Du besoin à la progression en trois temps</h2></motion.div>
         <div className="steps-grid">
           {[
-            { n: '01', icon: faPenToSquare, title: 'Créez', desc: 'Saisissez, importez ou construisez un diagnostic progressif.' },
-            { n: '02', icon: faShareNodes, title: 'Diffusez', desc: 'Programmez votre test et partagez un lien ou un code de classe.' },
-            { n: '03', icon: faRankingStar, title: 'Analysez', desc: 'Retrouvez les notes et les indicateurs utiles dès la soumission.' },
+            { n: '01', icon: faPenToSquare, title: 'Choisissez', desc: 'Ouvrez l’espace Élève, Formateur ou Entreprise adapté à votre objectif.' },
+            { n: '02', icon: faRocket, title: 'Lancez', desc: 'Rejoignez un QCM, créez une évaluation ou démarrez un diagnostic Mindset.' },
+            { n: '03', icon: faRankingStar, title: 'Progressez', desc: 'Retrouvez les résultats, les indicateurs et les actions utiles au bon endroit.' },
           ].map((step) => (
             <motion.article className="step-card" key={step.n} variants={fadeUp}>
               <span className="step-number">{step.n}</span><div className="step-icon"><FontAwesomeIcon icon={step.icon} /></div><h3>{step.title}</h3><p>{step.desc}</p>
@@ -183,11 +216,25 @@ export default function Landing() {
       </motion.section>
 
       <motion.section className="landing-features" id="fonctionnalites" {...reveal}>
-        <motion.div className="section-heading" variants={fadeUp}><span>Un espace vraiment complet</span><h2>Moins de manipulation, plus de temps pour accompagner</h2><p>Chaque outil est conçu pour rendre la préparation et le suivi plus fluides.</p></motion.div>
-        <div className="landing-feature-grid">
-          {features.map((feature) => (
-            <motion.article className="landing-feature" key={feature.title} variants={fadeUp} whileHover={{ y: -6 }}>
-              <div className="landing-feature-icon"><FontAwesomeIcon icon={feature.icon} /></div><h3>{feature.title}</h3><p>{feature.desc}</p>
+        <motion.div className="section-heading" variants={fadeUp}><span>Deux usages professionnels distincts</span><h2>Le bon outil, dans le bon espace</h2><p>Les fonctionnalités QCM restent réservées aux formateurs. Les entreprises disposent d’un environnement séparé, entièrement consacré aux soft skills.</p></motion.div>
+        <div className="product-track-grid">
+          {productTracks.map((track) => (
+            <motion.article className={`product-track ${track.id}`} key={track.id} variants={fadeUp}>
+              <div className="product-track-intro">
+                <span className="product-track-icon"><FontAwesomeIcon icon={track.icon} /></span>
+                <small>{track.label}</small>
+                <h3>{track.title}</h3>
+                <p>{track.description}</p>
+                <Link className="product-track-link" to={track.to}>{track.cta} <FontAwesomeIcon icon={faArrowRight} /></Link>
+              </div>
+              <div className="product-track-points">
+                {track.points.map((point) => (
+                  <div className="product-track-point" key={point.title}>
+                    <span><FontAwesomeIcon icon={point.icon} /></span>
+                    <div><strong>{point.title}</strong><p>{point.desc}</p></div>
+                  </div>
+                ))}
+              </div>
             </motion.article>
           ))}
         </div>
@@ -211,9 +258,9 @@ export default function Landing() {
           <div className="coming-soon-pill"><FontAwesomeIcon icon={faMobileScreenButton} /> Disponible bientôt</div>
         </motion.div>
         <motion.div className="mobile-copy" variants={fadeUp}>
-          <span className="section-kicker"><FontAwesomeIcon icon={faMobileScreenButton} /> Application mobile</span>
-          <h2>QCM Pro vous accompagnera bientôt partout.</h2>
-          <p>Une expérience mobile pensée pour retrouver ses QCM, recevoir les alertes et consulter ses résultats depuis son téléphone.</p>
+          <span className="section-kicker"><FontAwesomeIcon icon={faMobileScreenButton} /> Pour les élèves et formateurs</span>
+          <h2>L’expérience QCM vous accompagnera bientôt partout.</h2>
+          <p>Une application mobile pensée pour rejoindre ses évaluations, recevoir les alertes et consulter ses résultats depuis son téléphone.</p>
           <ul>
             <li><FontAwesomeIcon icon={faCircleCheck} /><span><strong>Une interface rapide</strong><small>Accès direct aux évaluations à venir.</small></span></li>
             <li><FontAwesomeIcon icon={faCircleCheck} /><span><strong>Des notifications utiles</strong><small>Ne manquez plus l’ouverture d’un QCM.</small></span></li>
@@ -224,19 +271,21 @@ export default function Landing() {
       </motion.section>
 
       <motion.section className="landing-pricing" id="tarifs" {...reveal}>
-        <motion.div className="section-heading" variants={fadeUp}><span>Des tarifs sans surprise</span><h2>Trois formules, selon votre façon de travailler</h2><p>Les apprenants utilisent toujours la plateforme gratuitement.</p></motion.div>
+        <motion.div className="section-heading" variants={fadeUp}><span>Des tarifs sans surprise</span><h2>Un forfait adapté à chaque public</h2><p>Élève gratuit, Formateur tout inclus, Entreprise dédiée aux soft skills : les usages ne sont jamais mélangés.</p></motion.div>
         <div className="pricing-grid pricing-grid-three">
-          {plans.map((plan) => (
-            <motion.article className={`pricing-card ${plan.id === 'essential' ? 'featured' : ''}`} key={plan.id} variants={fadeUp} whileHover={{ y: -7 }}>
+          {PUBLIC_OFFERS.map((plan) => (
+            <motion.article className={`pricing-card ${plan.id === 'trainer' ? 'featured' : ''}`} key={plan.id} variants={fadeUp} whileHover={{ y: -7 }}>
               {plan.badge && <div className="pricing-badge">{plan.badge}</div>}
               <div className={`pricing-icon ${plan.id}`}><FontAwesomeIcon icon={plan.icon} /></div>
+              <span className={`pricing-audience ${plan.id}`}>{audienceDetails[plan.id].kicker}</span>
               <div><h3>{plan.name}</h3><p className="pricing-description">{plan.description}</p></div>
-              <div className="pricing-price"><span className="pricing-amount">{plan.price === '0' ? 'Gratuit' : plan.price}</span>{plan.price !== '0' && <span className="pricing-unit">F CFA / mois</span>}</div>
+              <div className="pricing-price"><span className="pricing-amount">{plan.price === 0 ? 'Gratuit' : plan.price.toLocaleString('fr-FR')}</span>{plan.price !== 0 && <span className="pricing-unit">F CFA / mois</span>}</div>
+              <div className={`pricing-scope ${plan.id}`}><FontAwesomeIcon icon={faCircleCheck} /> {audienceDetails[plan.id].scope}</div>
               <ul className="pricing-features">
                 {plan.features.map((feature) => <li key={feature}><FontAwesomeIcon icon={faCircleCheck} /> {feature}</li>)}
                 {plan.excluded.map((feature) => <li className="excluded" key={feature}><FontAwesomeIcon icon={faXmark} /> {feature}</li>)}
               </ul>
-              <Link className={plan.id === 'essential' ? 'primary-btn large' : 'secondary-btn large'} to="/register-admin">{plan.cta} <FontAwesomeIcon icon={faArrowRight} /></Link>
+              <Link className={plan.id === 'trainer' ? 'primary-btn large' : 'secondary-btn large'} to={plan.to}>{plan.cta} <FontAwesomeIcon icon={faArrowRight} /></Link>
             </motion.article>
           ))}
         </div>
@@ -258,14 +307,18 @@ export default function Landing() {
       </motion.section>
 
       <motion.section className="landing-final" initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, amount: 0.25 }} transition={{ duration: 0.6, ease }}>
-        <span>Votre prochain QCM peut être prêt aujourd’hui.</span><h2>Commencez gratuitement, évoluez quand vous en avez besoin.</h2><p>Aucune carte bancaire n’est demandée pour ouvrir votre espace formateur.</p>
-        <Link className="primary-btn large" to="/register-admin">Créer mon espace gratuit <FontAwesomeIcon icon={faArrowRight} /></Link>
+        <span>Trois publics, trois parcours clairs.</span><h2>Choisissez l’espace qui correspond à votre objectif.</h2><p>Apprendre gratuitement, créer des QCM sans limite fonctionnelle ou développer les soft skills de vos équipes.</p>
+        <div className="landing-final-actions">
+          <Link className="primary-btn large" to="/register-admin">Espace Formateur <FontAwesomeIcon icon={faArrowRight} /></Link>
+          <Link className="secondary-btn large" to="/register-enterprise">Espace Entreprise <FontAwesomeIcon icon={faArrowRight} /></Link>
+        </div>
+        <Link className="landing-final-student" to="/register">Je suis élève — créer mon compte gratuit</Link>
       </motion.section>
 
       <footer className="landing-footer">
         <div className="brand landing-brand"><img src="/logo.png" className="brand-logo" alt="QCM Pro" /></div>
-        <small>© {new Date().getFullYear()} QCM Pro — Évaluez mieux, accompagnez davantage.</small>
-        <div><a href="#fonctionnalites">Fonctionnalités</a><a href="#tarifs">Tarifs</a><Link to="/login">Connexion</Link></div>
+        <small>© {new Date().getFullYear()} QCM Pro — Apprendre, évaluer et développer les soft skills.</small>
+        <div><a href="#solutions">Solutions</a><a href="#tarifs">Tarifs</a><Link to="/login">Connexion</Link></div>
       </footer>
 
       <motion.a className="whatsapp-fab" href={waLink} target="_blank" rel="noopener noreferrer" aria-label="Contacter QCM Pro sur WhatsApp" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1, type: 'spring' }} whileHover={{ scale: 1.1 }}><WhatsAppIcon /></motion.a>

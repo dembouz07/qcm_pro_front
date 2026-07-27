@@ -1,12 +1,13 @@
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const IMPORT_EXTENSIONS = ['csv', 'json', 'doc', 'docx', 'pdf'];
 
-function validateBasics(form, label = 'QCM') {
+function validateBasics(form, label = 'QCM', options = {}) {
+  const { requireClass = true, requireSchedule = true } = options;
   if (!form.title?.trim()) return `Donnez un titre au ${label}.`;
-  if (!form.school_class_id) return 'Choisissez une classe.';
-  if (!form.starts_at) return "Indiquez une date d'ouverture.";
+  if (requireClass && !form.school_class_id) return 'Choisissez une classe.';
+  if (requireSchedule && !form.starts_at) return "Indiquez une date d'ouverture.";
 
-  if (form.ends_at && new Date(form.ends_at).getTime() <= new Date(form.starts_at).getTime()) {
+  if (requireSchedule && form.ends_at && new Date(form.ends_at).getTime() <= new Date(form.starts_at).getTime()) {
     return "La fermeture doit être postérieure à l'ouverture.";
   }
 
@@ -47,7 +48,7 @@ export function validateStandardQuiz(form) {
 }
 
 export function validateProgressiveQuiz(form, stages) {
-  const basicError = validateBasics(form, 'diagnostic');
+  const basicError = validateBasics(form, 'diagnostic', { requireClass: false, requireSchedule: false });
   if (basicError) return basicError;
 
   const threshold = Number(form.stage_threshold);
@@ -72,6 +73,10 @@ export function validateProgressiveQuiz(form, stages) {
   }
 
   return '';
+}
+
+export function canAdvanceProgressiveStage(score, threshold, requireStagePass = true) {
+  return !requireStagePass || Number(score) < Number(threshold);
 }
 
 export function validateQuizImport(form) {

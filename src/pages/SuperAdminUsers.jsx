@@ -11,6 +11,7 @@ import { useDialog } from '../components/DialogProvider.jsx';
 const ROLE_LABELS = {
   superadmin: 'Super-admin',
   admin: 'Formateur',
+  enterprise: 'Entreprise',
   student: 'Élève',
 };
 
@@ -104,6 +105,7 @@ export default function SuperAdminUsers() {
           <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
             <option value="">Tous les rôles</option>
             <option value="admin">Formateurs</option>
+            <option value="enterprise">Entreprises</option>
             <option value="student">Élèves</option>
             <option value="superadmin">Super-admins</option>
           </select>

@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faFloppyDisk, faCircleCheck, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faCompass, faUser, faLock, faFloppyDisk, faCircleCheck, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 
@@ -55,6 +56,20 @@ export default function Account() {
           <p>Modifiez vos informations personnelles et votre mot de passe.</p>
         </div>
       </div>
+
+      <motion.section
+        className="account-guide-panel"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+      >
+        <span><FontAwesomeIcon icon={faCompass} /></span>
+        <div>
+          <h2>Besoin d’un repère ?</h2>
+          <p>Consultez le parcours et les modes d’emploi adaptés à votre formule.</p>
+        </div>
+        <Link className="secondary-btn" to="/guide">Ouvrir le guide <FontAwesomeIcon icon={faArrowRight} /></Link>
+      </motion.section>
 
       <motion.form
         className="panel form-grid"

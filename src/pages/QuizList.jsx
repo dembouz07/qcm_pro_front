@@ -80,6 +80,9 @@ export default function QuizList() {
     if (!quiz.is_published) {
       return <span className="badge badge-draft"><FontAwesomeIcon icon={faCircle} /> Brouillon</span>;
     }
+    if (quiz.closed_at) {
+      return <span className="badge badge-closed"><FontAwesomeIcon icon={faTimesCircle} /> Fermé</span>;
+    }
     const now = new Date();
     const startsAt = new Date(quiz.starts_at);
     const endsAt = quiz.ends_at ? new Date(quiz.ends_at) : null;
@@ -192,7 +195,7 @@ export default function QuizList() {
                         <small className="text-muted"> {quiz.description.substring(0, 50)}...</small>
                       )}
                     </td>
-                    <td>{quiz.school_class?.name || '-'}</td>
+                    <td>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || '-')}</td>
                     <td>{quiz.questions_count || 0}</td>
                     <td>{quiz.submissions_count || 0}</td>
                     <td>{getStatusBadge(quiz)}</td>

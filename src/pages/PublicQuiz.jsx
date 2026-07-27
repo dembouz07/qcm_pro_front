@@ -10,10 +10,12 @@ import {
   faTriangleExclamation,
   faUser,
   faBookOpen,
-  faClipboardList
+  faClipboardList,
+  faLayerGroup
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { countdownTo, formatDateTime } from '../utils/time.js';
+import { canAdvanceProgressiveStage } from '../quizFormValidation.js';
 import { useAntiCheat } from '../useAntiCheat.js';
 import AntiCheatRules from '../components/AntiCheatRules.jsx';
 
@@ -48,7 +50,7 @@ export default function PublicQuiz() {
   const [terminationReason, setTerminationReason] = useState('');
 
   useAntiCheat({
-    active: (step === 'quiz' || step === 'progressive') && !result && !progressiveResult,
+    active: step === 'quiz' && !result,
     onWarn: (msg) => setWarning(msg),
     onTerminate: (reason) => {
       setTerminationReason(reason);
@@ -135,12 +137,16 @@ export default function PublicQuiz() {
     if (stored?.referentiel) setReferentiel(stored.referentiel);
 
     // Reprise d'un quiz en cours (si ouvert et identité connue)
-    if (stored?.inProgress && info.is_open && stored.nom && stored.prenom && stored.referentiel) {
+    const hasRequiredIdentity = stored?.nom
+      && stored?.prenom
+      && (info.type === 'progressive' || stored?.referentiel);
+
+    if (stored?.inProgress && info.is_open && hasRequiredIdentity) {
       try {
         const response = await api.post(`/public/quiz/${token}/start`, {
           nom: stored.nom,
           prenom: stored.prenom,
-          referentiel: stored.referentiel
+          ...(info.type === 'progressive' ? {} : { referentiel: stored.referentiel }),
         });
         setQuiz(response.data);
         setAnswers(stored.answers || {});
@@ -178,7 +184,7 @@ export default function PublicQuiz() {
 
   // Timer pour le quiz ouvert
   useEffect(() => {
-    if (!quiz || !quiz.ends_at || result) return;
+    if (!quiz || !quiz.ends_at || result || progressiveResult) return;
 
     function updateTimer() {
       const endsAt = new Date(quiz.ends_at).getTime();
@@ -188,7 +194,11 @@ export default function PublicQuiz() {
         setTimeLeft(0);
         if (!autoSubmittedRef.current) {
           autoSubmittedRef.current = true;
-          submitAnswers({ auto: true });
+          if (quiz.type === 'progressive') {
+            submitProgressive();
+          } else {
+            submitAnswers({ auto: true });
+          }
         }
         return;
       }
@@ -204,7 +214,7 @@ export default function PublicQuiz() {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [quiz, result]);
+  }, [quiz, result, progressiveResult]);
 
   async function handleStart(event) {
     event.preventDefault();
@@ -215,7 +225,7 @@ export default function PublicQuiz() {
       const response = await api.post(`/public/quiz/${token}/start`, {
         nom,
         prenom,
-        referentiel
+        ...(quizInfo?.type === 'progressive' ? {} : { referentiel }),
       });
       setQuiz(response.data);
       if (response.data.type === 'progressive') {
@@ -258,8 +268,8 @@ export default function PublicQuiz() {
     const score = countOuiForStage(stage);
     const isLastStage = currentStage >= stages.length - 1;
 
-    // Stade validé (score >= seuil) et il reste des stades → on avance
-    if (score >= threshold && !isLastStage) {
+    // Si le blocage est actif, seul un score strictement inférieur au seuil permet d'avancer.
+    if (canAdvanceProgressiveStage(score, threshold, quiz.require_stage_pass !== false) && !isLastStage) {
       setCurrentStage((s) => s + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -278,7 +288,6 @@ export default function PublicQuiz() {
     const payload = {
       nom,
       prenom,
-      referentiel,
       answers: Object.entries(answers).map(([questionId, choiceId]) => ({
         question_id: Number(questionId),
         choice_id: Number(choiceId)
@@ -468,23 +477,35 @@ export default function PublicQuiz() {
           <div className="big-icon"><FontAwesomeIcon icon={faBookOpen} /></div>
           <h1>{quizInfo.title}</h1>
           {quizInfo.description && <p className="quiz-description">{quizInfo.description}</p>}
-          
+
           <div className="quiz-meta-grid">
-            <div className="quiz-meta-item">
-              <FontAwesomeIcon icon={faClock} />
-              <div>
-                <small>Ouverture</small>
-                <strong>{formatDateTime(quizInfo.starts_at)}</strong>
-              </div>
-            </div>
-            {quizInfo.ends_at && (
+            {quizInfo.type === 'progressive' ? (
               <div className="quiz-meta-item">
-                <FontAwesomeIcon icon={faClock} />
+                <FontAwesomeIcon icon={faLayerGroup} />
                 <div>
-                  <small>Fermeture</small>
-                  <strong>{formatDateTime(quizInfo.ends_at)}</strong>
+                  <small>Accès</small>
+                  <strong>Public et immédiat</strong>
                 </div>
               </div>
+            ) : (
+              <>
+                <div className="quiz-meta-item">
+                  <FontAwesomeIcon icon={faClock} />
+                  <div>
+                    <small>Ouverture</small>
+                    <strong>{formatDateTime(quizInfo.starts_at)}</strong>
+                  </div>
+                </div>
+                {quizInfo.ends_at && (
+                  <div className="quiz-meta-item">
+                    <FontAwesomeIcon icon={faClock} />
+                    <div>
+                      <small>Fermeture</small>
+                      <strong>{formatDateTime(quizInfo.ends_at)}</strong>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
             <div className="quiz-meta-item">
               <FontAwesomeIcon icon={faCircleQuestion} />
@@ -515,7 +536,9 @@ export default function PublicQuiz() {
             <h2 className="span-2"><FontAwesomeIcon icon={faUser} /> Identification</h2>
             <p className="span-2 muted">Renseignez vos informations pour accéder au QCM.</p>
 
-            <div className="span-2"><AntiCheatRules /></div>
+            {quizInfo.type !== 'progressive' && (
+              <div className="span-2"><AntiCheatRules /></div>
+            )}
 
             {error && <div className="alert error span-2">{error}</div>}
 
@@ -539,15 +562,17 @@ export default function PublicQuiz() {
               />
             </label>
 
-            <label className="span-2">
-              Référentiel *
-              <input 
-                value={referentiel} 
-                onChange={(e) => setReferentiel(e.target.value)} 
-                placeholder="Votre référentiel (ex: Développement Web, Réseaux...)" 
-                required 
-              />
-            </label>
+            {quizInfo.type !== 'progressive' && (
+              <label className="span-2">
+                Référentiel *
+                <input
+                  value={referentiel}
+                  onChange={(e) => setReferentiel(e.target.value)}
+                  placeholder="Votre référentiel (ex: Développement Web, Réseaux...)"
+                  required
+                />
+              </label>
+            )}
 
             <button className="primary-btn span-2" disabled={loading}>
               <FontAwesomeIcon icon={faCircleQuestion} /> {loading ? 'Chargement...' : 'Accéder au QCM'}
@@ -621,6 +646,7 @@ export default function PublicQuiz() {
     const stages = quiz.stages || [];
     const stage = stages[currentStage];
     const isLastStage = currentStage >= stages.length - 1;
+    const requiresStagePass = quiz.require_stage_pass !== false;
 
     return (
       <div className="page narrow public-quiz-page no-select">
@@ -628,10 +654,7 @@ export default function PublicQuiz() {
           <div>
             <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Diagnostic en cours</span>
             <h1>{quiz.title}</h1>
-            <p className="muted">Participant : {prenom} {nom} · {referentiel}</p>
-            <div className="alert warning anticheat-notice">
-              <FontAwesomeIcon icon={faTriangleExclamation} /> Anti-triche actif : quitter la page, copier ou capturer l'écran mettra fin au test.
-            </div>
+            <p className="muted">Participant : {prenom} {nom}</p>
           </div>
         </div>
 
@@ -649,6 +672,12 @@ export default function PublicQuiz() {
         <div className="stage-banner">
           <FontAwesomeIcon icon={faLayerGroup} /> {stage.name || `Stade ${stage.stage}`} · {stage.questions.length} question(s)
         </div>
+
+        {!requiresStagePass && (
+          <div className="alert info">
+            Le blocage par seuil est désactivé : vous pourrez continuer au stade suivant même si le seuil de « Oui » est atteint.
+          </div>
+        )}
 
         <form onSubmit={(e) => { e.preventDefault(); handleNextStage(); }} className="test-form">
           {error && <div className="alert error">{error}</div>}
@@ -680,7 +709,10 @@ export default function PublicQuiz() {
               {isLastStage ? (
                 <><FontAwesomeIcon icon={faPaperPlane} /> {loading ? 'Envoi...' : 'Terminer le diagnostic'}</>
               ) : (
-                <><FontAwesomeIcon icon={faCircleQuestion} /> {loading ? '...' : 'Valider ce stade'}</>
+                <>
+                  <FontAwesomeIcon icon={faCircleQuestion} />{' '}
+                  {loading ? '...' : (requiresStagePass ? 'Vérifier ce stade' : 'Passer au stade suivant')}
+                </>
               )}
             </button>
           </div>

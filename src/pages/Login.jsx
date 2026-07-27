@@ -5,6 +5,7 @@ import { faEnvelope, faLock, faRightToBracket, faWandMagicSparkles, faKey, faUse
 import { useAuth } from '../AuthContext.jsx';
 import { getApiError } from '../api.js';
 import AuthTopbar from '../components/AuthTopbar.jsx';
+import { homePathFor } from '../utils/homePath.js';
 
 export default function Login() {
   const { login } = useAuth();
@@ -20,7 +21,7 @@ export default function Login() {
 
     try {
       const user = await login(form);
-      navigate(user.role === 'admin' ? '/admin' : '/student');
+      navigate(homePathFor(user));
     } catch (err) {
       setError(getApiError(err));
     } finally {

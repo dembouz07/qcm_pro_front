@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBookOpen, faChartLine, faDoorOpen, faFileImport, faGraduationCap, faLayerGroup, faCirclePlus, faUserShield, faBars, faXmark, faDiagramProject, faCrown, faSackDollar, faGear, faClipboardQuestion } from '@fortawesome/free-solid-svg-icons';
+import { faBookOpen, faBuilding, faChartLine, faClipboardCheck, faClipboardQuestion, faCirclePlus, faCompass, faCrown, faDoorOpen, faGear, faLayerGroup, faSackDollar, faUserShield, faUsers, faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../AuthContext.jsx';
+import { homePathFor } from '../utils/homePath.js';
 
 export default function Navbar() {
   const { user, loading, logout } = useAuth();
@@ -28,7 +29,7 @@ export default function Navbar() {
   return (
     <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
-        <Link className="brand" to={user.role === 'superadmin' ? '/superadmin' : user.role === 'admin' ? '/admin' : '/student'} onClick={() => setMenuOpen(false)}>
+        <Link className="brand" to={homePathFor(user)} onClick={() => setMenuOpen(false)}>
           <img src="/logoSidebar.png" className="brand-logo" alt="QCM Pro" />
         </Link>
 
@@ -42,10 +43,10 @@ export default function Navbar() {
           <FontAwesomeIcon icon={faXmark} />
         </button>
         <div className="user-pill">
-          <FontAwesomeIcon icon={user.role === 'superadmin' ? faCrown : user.role === 'admin' ? faUserShield : faBookOpen} />
+          <FontAwesomeIcon icon={user.role === 'superadmin' ? faCrown : user.role === 'admin' ? faUserShield : user.role === 'enterprise' ? faBuilding : faBookOpen} />
           <div>
             <strong>{user.name}</strong>
-            <small>{user.role === 'superadmin' ? 'Super-administrateur' : user.role === 'admin' ? 'Administrateur' : user.school_class?.name || 'Élève'}</small>
+            <small>{user.role === 'superadmin' ? 'Super-administrateur' : user.role === 'admin' ? 'Formateur' : user.role === 'enterprise' ? user.company?.name || 'Entreprise' : user.school_class?.name || 'Élève'}</small>
           </div>
         </div>
 
@@ -66,12 +67,21 @@ export default function Navbar() {
               {hasFeature('surveys') && <NavLink to="/admin/surveys"><FontAwesomeIcon icon={faClipboardQuestion} /> Sondages</NavLink>}
               <NavLink to="/admin/subscription"><FontAwesomeIcon icon={faCrown} /> Abonnement</NavLink>
             </>
+          ) : user.role === 'enterprise' ? (
+            <>
+              <NavLink to="/entreprise" end><FontAwesomeIcon icon={faChartLine} /> Tableau de bord</NavLink>
+              <NavLink to="/entreprise/collaborateurs"><FontAwesomeIcon icon={faUsers} /> Collaborateurs</NavLink>
+              <NavLink to="/entreprise/diagnostics"><FontAwesomeIcon icon={faClipboardCheck} /> Diagnostics Mindset</NavLink>
+              <NavLink to="/entreprise/suivi"><FontAwesomeIcon icon={faChartLine} /> Suivi de progression</NavLink>
+              <NavLink to="/entreprise/abonnement"><FontAwesomeIcon icon={faCrown} /> Abonnement</NavLink>
+            </>
           ) : (
             <>
               <NavLink to="/student" end><FontAwesomeIcon icon={faBookOpen} /> Mes QCM</NavLink>
               <NavLink to="/student/notes"><FontAwesomeIcon icon={faChartLine} /> Notes</NavLink>
             </>
           )}
+          <NavLink to="/guide"><FontAwesomeIcon icon={faCompass} /> Guide d’utilisation</NavLink>
           <NavLink to="/account"><FontAwesomeIcon icon={faGear} /> Mon compte</NavLink>
         </nav>
 

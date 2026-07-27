@@ -24,6 +24,7 @@ export default function Results() {
   // Référentiel / classe selon le type de participant
   function participantContext(result) {
     if (result.participant_referentiel) return result.participant_referentiel;
+    if (result.quiz?.type === 'progressive') return 'Public';
     return result.user?.school_class?.name || result.quiz?.school_class?.name || '-';
   }
 
