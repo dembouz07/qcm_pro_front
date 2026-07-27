@@ -3463,7 +3463,45 @@ a.panel:hover,
 .section-heading > span, .section-kicker { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 11px; color: #5b5cf6; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }
 .section-heading h2 { margin: 0; color: #1c263b; font-size: clamp(2rem, 4vw, 3.3rem); line-height: 1.08; letter-spacing: -0.055em; }
 .section-heading p { max-width: 640px; margin: 16px auto 0; color: #6c778d; font-size: 1.02rem; line-height: 1.65; }
-.landing-v2 .landing-steps, .landing-v2 .landing-features, .landing-v2 .landing-pricing, .landing-v2 .landing-faq { padding-top: clamp(70px, 8vw, 112px); padding-bottom: clamp(70px, 8vw, 112px); }
+.landing-v2 .landing-solutions, .landing-v2 .landing-steps, .landing-v2 .landing-features, .landing-v2 .landing-pricing, .landing-v2 .landing-faq { padding-top: clamp(70px, 8vw, 112px); padding-bottom: clamp(70px, 8vw, 112px); }
+.landing-v2 .landing-solutions { max-width: 1280px; }
+.solution-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.solution-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 510px;
+  padding: 29px;
+  overflow: hidden;
+  border: 1px solid #e3e7f0;
+  border-radius: 25px;
+  background: #fff;
+  box-shadow: 0 16px 42px rgba(37, 54, 99, 0.075);
+}
+.solution-card::after { content: ''; position: absolute; z-index: 0; top: -90px; right: -80px; width: 220px; height: 220px; border: 42px solid rgba(91, 92, 246, 0.045); border-radius: 50%; pointer-events: none; }
+.solution-card.student { border-color: rgba(16, 167, 119, 0.2); background: linear-gradient(180deg, #fff, #f8fdfb); }
+.solution-card.trainer { border-color: rgba(91, 92, 246, 0.34); background: linear-gradient(180deg, #fff, #faf9ff); box-shadow: 0 22px 54px rgba(91, 92, 246, 0.13); }
+.solution-card.enterprise { border-color: rgba(14, 165, 233, 0.24); background: linear-gradient(180deg, #fff, #f8fcff); }
+.solution-card-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 26px; }
+.solution-icon { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #10a777, #34d399); box-shadow: 0 12px 24px rgba(16, 167, 119, 0.2); }
+.solution-card.trainer .solution-icon { background: linear-gradient(135deg, #5b5cf6, #8b5cf6); box-shadow: 0 12px 24px rgba(91, 92, 246, 0.24); }
+.solution-card.enterprise .solution-icon { background: linear-gradient(135deg, #172033, #0ea5e9); box-shadow: 0 12px 24px rgba(14, 165, 233, 0.2); }
+.solution-scope { padding: 7px 10px; border: 1px solid rgba(16, 167, 119, 0.15); border-radius: 999px; color: #07815d; background: rgba(16, 167, 119, 0.075); font-size: 0.63rem; font-weight: 850; text-align: center; }
+.solution-card.trainer .solution-scope { border-color: rgba(91, 92, 246, 0.17); color: #5052d9; background: rgba(91, 92, 246, 0.075); }
+.solution-card.enterprise .solution-scope { border-color: rgba(14, 165, 233, 0.18); color: #087ba8; background: rgba(14, 165, 233, 0.075); }
+.solution-card > small { position: relative; z-index: 1; color: #7b8599; font-size: 0.66rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+.solution-card h3 { position: relative; z-index: 1; margin: 7px 0 16px; color: #1f2a40; font-size: 1.2rem; }
+.solution-card h4 { position: relative; z-index: 1; margin: 0; color: #202b40; font-size: 1.48rem; line-height: 1.2; letter-spacing: -0.035em; }
+.solution-card > p { position: relative; z-index: 1; margin: 12px 0 20px; color: #6f7a90; font-size: 0.88rem; line-height: 1.58; }
+.solution-card ul { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin: 0 0 25px; padding: 18px 0 0; border-top: 1px solid #e9edf4; list-style: none; }
+.solution-card li { display: flex; align-items: flex-start; gap: 9px; color: #3e4a61; font-size: 0.78rem; font-weight: 650; line-height: 1.42; }
+.solution-card li svg { flex: none; margin-top: 2px; color: #10a777; }
+.solution-card > a { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; margin-top: auto; color: #4f51d8; font-size: 0.8rem; font-weight: 850; }
+.solution-card.enterprise > a { color: #087ba8; }
+.solution-card.student > a { color: #07815d; }
+.solution-card > a svg { transition: transform 0.2s ease; }
+.solution-card > a:hover svg { transform: translateX(4px); }
 .landing-v2 .landing-steps { max-width: 1180px; }
 .landing-v2 .steps-grid { gap: 18px; }
 .landing-v2 .step-card { position: relative; overflow: hidden; min-height: 238px; padding: 31px; text-align: left; }
@@ -3479,6 +3517,29 @@ a.panel:hover,
 .landing-v2 .landing-feature:nth-child(3n + 2) .landing-feature-icon { background: linear-gradient(135deg, #0ea5e9, #5b5cf6); }
 .landing-v2 .landing-feature:nth-child(3n + 3) .landing-feature-icon { background: linear-gradient(135deg, #0ea878, #34d399); }
 .landing-v2 .landing-feature p { line-height: 1.58; }
+.product-track-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.product-track { min-width: 0; overflow: hidden; border: 1px solid rgba(91, 92, 246, 0.2); border-radius: 28px; background: #fff; box-shadow: 0 20px 50px rgba(37, 54, 99, 0.085); }
+.product-track.enterprise { border-color: rgba(14, 165, 233, 0.22); }
+.product-track-intro { position: relative; min-height: 280px; padding: 34px; overflow: hidden; background: linear-gradient(145deg, #f6f5ff, #fcfbff); }
+.product-track-intro::after { content: ''; position: absolute; top: -110px; right: -80px; width: 260px; height: 260px; border: 50px solid rgba(91, 92, 246, 0.05); border-radius: 50%; }
+.product-track.enterprise .product-track-intro { background: linear-gradient(145deg, #f3fbff, #fbfdff); }
+.product-track.enterprise .product-track-intro::after { border-color: rgba(14, 165, 233, 0.055); }
+.product-track-icon { position: relative; z-index: 1; width: 54px; height: 54px; display: grid; place-items: center; margin-bottom: 22px; border-radius: 17px; color: #fff; background: linear-gradient(135deg, #5b5cf6, #8b5cf6); box-shadow: 0 14px 28px rgba(91, 92, 246, 0.22); }
+.product-track.enterprise .product-track-icon { background: linear-gradient(135deg, #172033, #0ea5e9); box-shadow: 0 14px 28px rgba(14, 165, 233, 0.2); }
+.product-track-intro > small { position: relative; z-index: 1; color: #5b5cf6; font-size: 0.67rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+.product-track.enterprise .product-track-intro > small { color: #087ba8; }
+.product-track-intro h3 { position: relative; z-index: 1; max-width: 500px; margin: 9px 0 11px; color: #202a40; font-size: clamp(1.55rem, 2.4vw, 2rem); line-height: 1.16; letter-spacing: -0.04em; }
+.product-track-intro > p { position: relative; z-index: 1; max-width: 520px; margin: 0; color: #6e7990; font-size: 0.9rem; line-height: 1.6; }
+.product-track-link { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; color: #5052d9; font-size: 0.8rem; font-weight: 850; }
+.product-track.enterprise .product-track-link { color: #087ba8; }
+.product-track-link svg { transition: transform 0.2s ease; }
+.product-track-link:hover svg { transform: translateX(4px); }
+.product-track-points { display: flex; flex-direction: column; gap: 11px; padding: 22px; }
+.product-track-point { display: flex; align-items: flex-start; gap: 13px; padding: 17px; border: 1px solid #e8ebf3; border-radius: 17px; background: #fbfcfe; }
+.product-track-point > span { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; color: #5b5cf6; background: rgba(91, 92, 246, 0.09); }
+.product-track.enterprise .product-track-point > span { color: #087ba8; background: rgba(14, 165, 233, 0.09); }
+.product-track-point strong { display: block; color: #303b51; font-size: 0.87rem; }
+.product-track-point p { margin: 4px 0 0; color: #7b8598; font-size: 0.76rem; line-height: 1.45; }
 
 .landing-mobile { position: relative; display: grid; grid-template-columns: minmax(380px, 0.88fr) minmax(0, 1.12fr); align-items: center; gap: clamp(54px, 8vw, 120px); max-width: 1220px; margin: clamp(30px, 5vw, 70px) auto; padding: clamp(54px, 7vw, 92px); overflow: hidden; border: 1px solid rgba(91, 92, 246, 0.13); border-radius: 38px; background: linear-gradient(145deg, #10182d 0%, #151f3a 58%, #252158 100%); box-shadow: 0 35px 90px rgba(20, 29, 57, 0.2); }
 .landing-mobile::after { content: ''; position: absolute; right: -8%; top: -35%; width: 470px; height: 470px; border: 75px solid rgba(139, 92, 246, 0.07); border-radius: 50%; }
@@ -3530,13 +3591,19 @@ a.panel:hover,
 .landing-v2 .pricing-card { min-width: 0; padding: 30px 25px; border-radius: 24px; }
 .landing-v2 .pricing-card.featured { border-color: rgba(91, 92, 246, 0.42); background: linear-gradient(180deg, #fff, #faf9ff); transform: translateY(-8px); }
 .landing-v2 .pricing-card.featured:hover { transform: translateY(-15px); }
-.landing-v2 .pricing-icon.free { background: linear-gradient(135deg, #10b981, #34d399); }
-.landing-v2 .pricing-icon.essential { background: linear-gradient(135deg, #5b5cf6, #8b5cf6); }
-.landing-v2 .pricing-icon.premium { background: linear-gradient(135deg, #172033, #43506a); }
+.landing-v2 .pricing-icon.student { background: linear-gradient(135deg, #10b981, #34d399); }
+.landing-v2 .pricing-icon.trainer { background: linear-gradient(135deg, #5b5cf6, #8b5cf6); }
+.landing-v2 .pricing-icon.enterprise { background: linear-gradient(135deg, #172033, #0ea5e9); }
+.pricing-audience { display: inline-flex; width: fit-content; margin: -7px 0 2px; color: #07815d; font-size: 0.64rem; font-weight: 900; letter-spacing: 0.09em; text-transform: uppercase; }
+.pricing-audience.trainer { color: #5052d9; }
+.pricing-audience.enterprise { color: #087ba8; }
 .pricing-description { min-height: 48px; margin: 7px 0 0; color: #748096; font-size: 0.85rem; line-height: 1.52; }
 .landing-v2 .pricing-price { min-height: 56px; flex-wrap: wrap; }
 .landing-v2 .pricing-amount { font-size: clamp(2.1rem, 3.4vw, 2.8rem); }
 .landing-v2 .pricing-unit { font-size: 0.76rem; }
+.pricing-scope { display: flex; align-items: center; gap: 8px; margin: -5px 0 4px; padding: 10px 12px; border: 1px solid rgba(16, 167, 119, 0.15); border-radius: 12px; color: #07815d; background: rgba(16, 167, 119, 0.06); font-size: 0.72rem; font-weight: 800; }
+.pricing-scope.trainer { border-color: rgba(91, 92, 246, 0.16); color: #5052d9; background: rgba(91, 92, 246, 0.06); }
+.pricing-scope.enterprise { border-color: rgba(14, 165, 233, 0.17); color: #087ba8; background: rgba(14, 165, 233, 0.06); }
 .landing-v2 .pricing-features { gap: 12px; padding-top: 5px; border-top: 1px solid #edf0f5; }
 .landing-v2 .pricing-features li { font-size: 0.82rem; line-height: 1.4; }
 .landing-v2 .pricing-features li.excluded { color: #9da5b4; }
@@ -3549,6 +3616,13 @@ a.panel:hover,
 .landing-v2 .landing-final > span { color: #c4b5fd; font-size: 0.76rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
 .landing-v2 .landing-final h2 { position: relative; z-index: 1; max-width: 780px; margin: 13px auto; font-size: clamp(2.1rem, 4.6vw, 4rem); line-height: 1.05; }
 .landing-v2 .landing-final .primary-btn { position: relative; z-index: 1; border-color: #fff; color: #5052d9; background: #fff; box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18); }
+.landing-final-actions { position: relative; z-index: 1; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 25px; }
+.landing-v2 .landing-final .landing-final-actions .primary-btn,
+.landing-v2 .landing-final .landing-final-actions .secondary-btn { margin-top: 0; }
+.landing-v2 .landing-final .landing-final-actions .secondary-btn { border-color: rgba(255, 255, 255, 0.34); color: #fff; background: rgba(255, 255, 255, 0.08); }
+.landing-v2 .landing-final .landing-final-actions .secondary-btn:hover { border-color: rgba(255, 255, 255, 0.55); background: rgba(255, 255, 255, 0.14); }
+.landing-final-student { position: relative; z-index: 1; display: inline-flex; margin-top: 18px; color: #d9d5ff; font-size: 0.78rem; font-weight: 750; text-decoration: underline; text-decoration-color: rgba(217, 213, 255, 0.42); text-underline-offset: 4px; }
+.landing-final-student:hover { color: #fff; }
 .landing-v2 .landing-footer { background: #fff; }
 .landing-v2 .landing-footer > div:last-child { display: flex; gap: 20px; }
 .landing-v2 .landing-footer a { color: #6d778c; font-size: 0.78rem; font-weight: 750; }
@@ -3600,6 +3674,7 @@ a.panel:hover,
 
 @media (max-width: 820px) {
   .landing-v2 .landing-feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .solution-grid, .product-track-grid { grid-template-columns: 1fr; max-width: 610px; margin-right: auto; margin-left: auto; }
   .landing-trust-strip { grid-template-columns: repeat(2, 1fr); }
   .landing-mobile { grid-template-columns: 1fr; text-align: center; }
   .mobile-showcase { min-height: 585px; }
@@ -3646,7 +3721,10 @@ a.panel:hover,
   .dashboard-preview .floating-card small { font-size: 0.56rem; }
   .landing-trust-strip { grid-template-columns: 1fr 1fr; margin: 0 14px; border-radius: 14px; }
   .landing-trust-strip span { padding: 14px 8px; font-size: 0.65rem; }
-  .landing-v2 .landing-steps, .landing-v2 .landing-features, .landing-v2 .landing-pricing, .landing-v2 .landing-faq { padding: 70px 17px; }
+  .landing-v2 .landing-solutions, .landing-v2 .landing-steps, .landing-v2 .landing-features, .landing-v2 .landing-pricing, .landing-v2 .landing-faq { padding: 70px 17px; }
+  .solution-card { min-height: 0; padding: 24px; }
+  .product-track-intro { min-height: 0; padding: 27px 24px; }
+  .product-track-points { padding: 17px; }
   .landing-v2 .landing-feature-grid { grid-template-columns: 1fr; }
   .section-heading { margin-bottom: 30px; }
   .section-heading h2 { font-size: 2.2rem; }
@@ -3658,6 +3736,9 @@ a.panel:hover,
   .mobile-copy h2 { font-size: 2.45rem; }
   .mobile-copy > p { font-size: 0.94rem; }
   .landing-v2 .landing-final { margin: 20px 13px 42px; border-radius: 27px; }
+  .landing-final-actions { flex-direction: column; }
+  .landing-v2 .landing-final .landing-final-actions .primary-btn,
+  .landing-v2 .landing-final .landing-final-actions .secondary-btn { width: 100%; justify-content: center; }
   .landing-v2 .landing-footer > div:last-child { display: none; }
   .subscription-current { align-items: flex-start; flex-direction: column; }
   .subscription-plan-card { padding: 25px 20px; }
