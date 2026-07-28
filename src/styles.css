@@ -4181,6 +4181,28 @@ a.panel:hover,
 .account-guide-panel p { margin: 0; color: var(--muted); font-size: 0.84rem; }
 .account-guide-panel .secondary-btn { white-space: nowrap; }
 
+/* ---------- Suivi individuel des notes ---------- */
+.gradebook-student-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.gradebook-student-summary > span {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 14px;
+  color: #fff;
+  background: var(--primary);
+  font-size: 1.25rem;
+}
+.gradebook-student-summary h2 { margin: 0 0 4px; font-size: 1.15rem; }
+.gradebook-student-summary p { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+.gradebook-table-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.gradebook-table-actions .secondary-btn { white-space: nowrap; }
+
 @media (max-width: 980px) {
   .usage-guide-overview,
   .usage-guide-content { grid-template-columns: 1fr; }
@@ -4200,4 +4222,5 @@ a.panel:hover,
   .account-guide-panel { grid-template-columns: 44px minmax(0, 1fr); }
   .account-guide-panel > span { width: 44px; height: 44px; }
   .account-guide-panel .secondary-btn { grid-column: 1 / -1; justify-content: center; width: 100%; }
+  .gradebook-table-actions { justify-content: flex-start; }
 }

@@ -25,6 +25,7 @@ import SurveyForm from './pages/SurveyForm.jsx';
 import SurveyResults from './pages/SurveyResults.jsx';
 import PublicSurvey from './pages/PublicSurvey.jsx';
 import Results from './pages/Results.jsx';
+import StudentGradebook from './pages/StudentGradebook.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import StudentResults from './pages/StudentResults.jsx';
 import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
@@ -98,6 +99,7 @@ export default function App() {
           <Route path="/admin/quizzes/:id/progressive/edit" element={<ProtectedRoute role="admin" requireSubscription><ProgressiveQuizForm /></ProtectedRoute>} />
           <Route path="/admin/quizzes/convert" element={<ProtectedRoute role="admin" requireSubscription><ConvertQuiz /></ProtectedRoute>} />
           <Route path="/admin/results" element={<ProtectedRoute role="admin" requireSubscription><Results /></ProtectedRoute>} />
+          <Route path="/admin/students/:id/results" element={<ProtectedRoute role="admin" requireSubscription><StudentGradebook /></ProtectedRoute>} />
           <Route path="/admin/surveys" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyList /></ProtectedRoute>} />
           <Route path="/admin/surveys/new" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyForm /></ProtectedRoute>} />
           <Route path="/admin/surveys/:id/edit" element={<ProtectedRoute role="admin" requireSubscription requireFeature="surveys"><SurveyForm /></ProtectedRoute>} />

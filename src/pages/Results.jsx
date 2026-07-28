@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAward, faCheck, faEye, faMedal, faXmark, faFilter, faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faAward, faChartLine, faCheck, faEye, faMedal, faXmark, faFilter, faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
 import api from '../api.js';
 import { formatDateTime } from '../utils/time.js';
@@ -219,7 +220,18 @@ export default function Results() {
                     )}
                   </td>
                   <td>{formatDateTime(result.submitted_at)}</td>
-                  <td><button className="secondary-btn small" onClick={() => setSelected(result)}><FontAwesomeIcon icon={faEye} /> Détails</button></td>
+                  <td>
+                    <div className="gradebook-table-actions">
+                      {result.user?.id && (
+                        <Link className="secondary-btn small" to={`/admin/students/${result.user.id}/results`}>
+                          <FontAwesomeIcon icon={faChartLine} /> Toutes les notes
+                        </Link>
+                      )}
+                      <button className="secondary-btn small" onClick={() => setSelected(result)}>
+                        <FontAwesomeIcon icon={faEye} /> Détails
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

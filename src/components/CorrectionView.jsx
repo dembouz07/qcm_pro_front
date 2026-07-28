@@ -5,7 +5,7 @@ import { faCheck, faXmark, faLightbulb } from '@fortawesome/free-solid-svg-icons
  * Affiche la correction d'un QCM : chaque question avec la bonne réponse,
  * la réponse de l'élève, et l'explication du formateur.
  */
-export default function CorrectionView({ correction }) {
+export default function CorrectionView({ correction, answerLabel = 'votre réponse' }) {
   if (!correction?.questions?.length) return null;
 
   return (
@@ -31,7 +31,7 @@ export default function CorrectionView({ correction }) {
                     {c.is_correct ? <FontAwesomeIcon icon={faCheck} /> : (c.chosen ? <FontAwesomeIcon icon={faXmark} /> : null)}
                   </span>
                   <span className="corr-body">{c.body}</span>
-                  {c.chosen && <span className="corr-tag">votre réponse</span>}
+                  {c.chosen && <span className="corr-tag">{answerLabel}</span>}
                 </li>
               );
             })}

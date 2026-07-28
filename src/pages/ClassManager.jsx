@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass, faKey, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass, faKey, faCopy, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
 
@@ -182,6 +183,9 @@ export default function ClassManager() {
                                 <strong>{student.name}</strong>
                                 <small><FontAwesomeIcon icon={faEnvelope} /> {student.email}</small>
                               </div>
+                              <Link className="secondary-btn small" to={`/admin/students/${student.id}/results`}>
+                                <FontAwesomeIcon icon={faChartLine} /> Notes
+                              </Link>
                             </div>
                           ))}
                         </div>
