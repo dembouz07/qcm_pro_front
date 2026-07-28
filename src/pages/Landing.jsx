@@ -110,7 +110,7 @@ export default function Landing() {
     <div className="landing landing-v2">
       <motion.header className="landing-nav" initial={{ y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.45, ease }}>
         <Link className="brand landing-brand" to="/" aria-label="Accueil Check Performance">
-          <img src="/cp.png?v=1" className="brand-logo" alt="Check Performance" />
+          <img src="/cp.png?v=2" className="brand-logo" alt="Check Performance" />
         </Link>
         <nav className="landing-nav-links" aria-label="Navigation de présentation">
           <a href="#solutions">Solutions</a>
@@ -316,7 +316,7 @@ export default function Landing() {
       </motion.section>
 
       <footer className="landing-footer">
-        <div className="brand landing-brand"><img src="/cp.png?v=1" className="brand-logo" alt="Check Performance" /></div>
+        <div className="brand landing-brand"><img src="/cp.png?v=2" className="brand-logo" alt="Check Performance" /></div>
         <small>© {new Date().getFullYear()} Check Performance — Apprendre, évaluer et développer les soft skills.</small>
         <div><a href="#solutions">Solutions</a><a href="#tarifs">Tarifs</a><Link to="/login">Connexion</Link></div>
       </footer>

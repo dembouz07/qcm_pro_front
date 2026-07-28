@@ -6,7 +6,7 @@ export default function AuthTopbar({ active }) {
   return (
     <header className="auth-topbar">
       <Link className="brand auth-topbar-brand" to="/">
-        <img src="/cp.png?v=1" className="brand-logo" alt="Check Performance" />
+        <img src="/cp.png?v=2" className="brand-logo" alt="Check Performance" />
       </Link>
 
       <div className="auth-topbar-actions">
