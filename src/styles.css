@@ -498,9 +498,9 @@ tr:last-child td { border-bottom: 0; }
     box-shadow: 0 6px 20px rgba(15, 23, 42, 0.20);
   }
   .sidebar-header { flex: 1; display: flex; align-items: center; justify-content: space-between; }
-  .sidebar .brand { font-size: 1.15rem; display: flex; align-items: center; }
+  .sidebar .brand { min-width: 0; flex: 1; font-size: 1.15rem; display: flex; align-items: center; }
   .sidebar .brand-icon { width: 36px; height: 36px; }
-  .sidebar .brand-logo { height: 60px; width: auto; }
+  .sidebar .brand-logo { width: 100%; max-width: 230px; height: auto; }
   .menu-toggle { display: flex; flex-shrink: 0; }
 
   /* Bouton fermeture dans le tiroir */
@@ -2964,7 +2964,13 @@ body {
 }
 .sidebar-header,
 .sidebar-body { position: relative; z-index: 1; }
-.sidebar .brand-logo { filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.2)); }
+.sidebar .brand-logo {
+  width: 100%;
+  max-width: 230px;
+  height: auto;
+  object-position: left center;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.2));
+}
 .user-pill {
   border-color: rgba(255, 255, 255, 0.09);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.045));
