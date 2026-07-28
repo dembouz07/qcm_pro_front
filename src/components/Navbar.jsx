@@ -30,7 +30,7 @@ export default function Navbar() {
     <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
         <Link className="brand" to={homePathFor(user)} onClick={() => setMenuOpen(false)}>
-          <img src="/cp_sidebar.png?v=3" className="brand-logo" alt="Check Performance" />
+          <img src="/cp_sidebar.png?v=4" className="brand-logo" alt="Check Performance" />
         </Link>
 
         <button className="menu-toggle" onClick={() => setMenuOpen((open) => !open)} aria-label="Menu" aria-expanded={menuOpen}>
