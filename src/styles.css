@@ -309,7 +309,7 @@ label { display: flex; flex-direction: column; gap: 8px; font-weight: 800; color
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 96px 30px 40px; width: 100%; position: relative; }
 
 .auth-topbar {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -1550,8 +1550,11 @@ tr:last-child td { border-bottom: 0; }
   align-items: center;
   justify-content: space-between;
   padding: 10px clamp(20px, 6vw, 80px);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 10;
   background: rgba(248, 251, 255, 0.75);
   backdrop-filter: blur(14px);
@@ -3377,12 +3380,16 @@ a.panel:hover,
 
 /* ---------- Landing 2026 ---------- */
 .landing-v2 {
+  padding-top: 74px;
   color: #172033;
   background:
     radial-gradient(circle at 88% 4%, rgba(91, 92, 246, 0.12), transparent 31rem),
     radial-gradient(circle at 4% 34%, rgba(16, 185, 129, 0.07), transparent 27rem),
     #fbfcff;
 }
+.landing-v2 #solutions,
+.landing-v2 #fonctionnalites,
+.landing-v2 #tarifs { scroll-margin-top: 82px; }
 .landing-v2 .landing-nav {
   min-height: 64px;
   padding-block: 2px;
@@ -3696,6 +3703,7 @@ a.panel:hover,
 }
 
 @media (max-width: 560px) {
+  .landing-v2 { padding-top: 58px; }
   .landing-v2 .landing-nav { min-height: 54px; padding-block: 2px; }
   .landing-v2 .landing-brand .brand-logo { height: 54px; }
   .landing-v2 .landing-nav-actions .secondary-btn { display: none; }
