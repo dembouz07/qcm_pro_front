@@ -24,6 +24,15 @@ import { useDialog } from '../components/DialogProvider.jsx';
 import { formatDateTime } from '../utils/time.js';
 import { useAuth } from '../AuthContext.jsx';
 
+function toNonNegativeNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, number) : 0;
+}
+
+function clampPercentage(value) {
+  return Math.min(100, toNonNegativeNumber(value));
+}
+
 export default function QuizView() {
   const { user } = useAuth();
   const { id } = useParams();
@@ -37,6 +46,7 @@ export default function QuizView() {
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const canSeeWrongStats = user?.is_super_admin || (user?.plan_features || []).includes('wrong_question_stats');
+  const questionStats = Array.isArray(stats?.questions) ? stats.questions : [];
 
   useEffect(() => {
     loadQuiz();
@@ -130,7 +140,7 @@ export default function QuizView() {
   }
 
   function exportStatsPdf() {
-    const questions = stats?.questions || [];
+    const questions = questionStats;
     if (!quiz || questions.length === 0) return;
 
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -142,10 +152,10 @@ export default function QuizView() {
     }[character]));
 
     const totals = questions.reduce((summary, question) => ({
-      answered: summary.answered + Number(question.answered || 0),
-      wrong: summary.wrong + Number(question.wrong || 0),
-      unanswered: summary.unanswered + Number(question.unanswered || 0),
-      expected: summary.expected + Number(question.total || 0),
+      answered: summary.answered + toNonNegativeNumber(question.answered),
+      wrong: summary.wrong + toNonNegativeNumber(question.wrong),
+      unanswered: summary.unanswered + toNonNegativeNumber(question.unanswered),
+      expected: summary.expected + toNonNegativeNumber(question.total),
     }), { answered: 0, wrong: 0, unanswered: 0, expected: 0 });
 
     const globalWrongRate = totals.answered > 0
@@ -159,11 +169,11 @@ export default function QuizView() {
       <tr>
         <td class="rank">${index + 1}</td>
         <td class="question">${escapeHtml(question.body)}</td>
-        <td>${Number(question.answered || 0)}</td>
-        <td>${Number(question.wrong || 0)}</td>
-        <td class="wrong-rate">${Number(question.wrong_rate || 0)}%</td>
-        <td>${Number(question.unanswered || 0)}</td>
-        <td class="unanswered-rate">${Number(question.unanswered_rate || 0)}%</td>
+        <td>${toNonNegativeNumber(question.answered)}</td>
+        <td>${toNonNegativeNumber(question.wrong)}</td>
+        <td class="wrong-rate">${clampPercentage(question.wrong_rate)}%</td>
+        <td>${toNonNegativeNumber(question.unanswered)}</td>
+        <td class="unanswered-rate">${clampPercentage(question.unanswered_rate)}%</td>
       </tr>
     `).join('');
 
@@ -386,48 +396,83 @@ export default function QuizView() {
         </div>
       </div>
 
-      {stats && stats.submissions > 0 && (
-        <div className="panel">
+      {stats && toNonNegativeNumber(stats.submissions) > 0 && (
+        <section className="panel question-analysis-panel" aria-labelledby="question-analysis-title">
           <div className="question-analysis-header">
-            <h2><FontAwesomeIcon icon={faTriangleExclamation} /> Analyse des réponses par question</h2>
-            <button type="button" className="secondary-btn no-print" onClick={exportStatsPdf}>
+            <div className="question-analysis-heading">
+              <span className="question-analysis-icon" aria-hidden="true">
+                <FontAwesomeIcon icon={faTriangleExclamation} />
+              </span>
+              <div className="question-analysis-copy">
+                <h2 id="question-analysis-title">Analyse des réponses par question</h2>
+                <p>
+                  Le taux de réponses fausses est calculé uniquement parmi les réponses données. Les non-réponses sont présentées séparément sur {toNonNegativeNumber(stats.submissions)} soumission(s).
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="secondary-btn question-analysis-export no-print"
+              onClick={exportStatsPdf}
+              disabled={questionStats.length === 0}
+            >
               <FontAwesomeIcon icon={faFilePdf} /> Exporter en PDF
             </button>
           </div>
-          <p className="muted">
-            Le taux de réponses fausses est calculé uniquement parmi les réponses données. Les non-réponses sont présentées séparément sur {stats.submissions} soumission(s).
-          </p>
-          <div className="failed-list">
-            {stats.questions.map((q, i) => (
-              <div className="failed-item" key={q.id}>
-                <div className="failed-rank">{i + 1}</div>
-                <div className="failed-analysis">
-                  <div className="failed-body">{q.body}</div>
-                  <div className="failed-metrics">
-                    <div className="failed-metric wrong">
-                      <div className="failed-metric-head">
-                        <span>{q.wrong} fausse(s) sur {q.answered} réponse(s)</span>
-                        <strong>{q.wrong_rate}%</strong>
-                      </div>
-                      <div className="failed-bar-track">
-                        <div className="failed-bar-fill" style={{ width: `${q.wrong_rate}%` }} />
+          {questionStats.length > 0 ? (
+            <div className="failed-list">
+              {questionStats.map((q, i) => {
+                const wrongRate = clampPercentage(q.wrong_rate);
+                const unansweredRate = clampPercentage(q.unanswered_rate);
+
+                return (
+                  <article className="failed-item" key={q.id ?? i}>
+                    <div className="failed-rank" aria-label={`Question ${i + 1}`}>{i + 1}</div>
+                    <div className="failed-analysis">
+                      <div className="failed-body">{q.body || `Question ${i + 1}`}</div>
+                      <div className="failed-metrics">
+                        <div className="failed-metric wrong">
+                          <div className="failed-metric-head">
+                            <span>{toNonNegativeNumber(q.wrong)} fausse(s) sur {toNonNegativeNumber(q.answered)} réponse(s)</span>
+                            <strong>{wrongRate}%</strong>
+                          </div>
+                          <div
+                            className="failed-bar-track"
+                            role="progressbar"
+                            aria-label={`Taux de réponses fausses pour la question ${i + 1}`}
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow={wrongRate}
+                          >
+                            <div className="failed-bar-fill" style={{ width: `${wrongRate}%` }} />
+                          </div>
+                        </div>
+                        <div className="failed-metric unanswered">
+                          <div className="failed-metric-head">
+                            <span>{toNonNegativeNumber(q.unanswered)} non répondue(s) sur {toNonNegativeNumber(q.total)}</span>
+                            <strong>{unansweredRate}%</strong>
+                          </div>
+                          <div
+                            className="failed-bar-track"
+                            role="progressbar"
+                            aria-label={`Taux de non-réponse pour la question ${i + 1}`}
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow={unansweredRate}
+                          >
+                            <div className="failed-bar-fill unanswered" style={{ width: `${unansweredRate}%` }} />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="failed-metric unanswered">
-                      <div className="failed-metric-head">
-                        <span>{q.unanswered} non répondue(s) sur {q.total}</span>
-                        <strong>{q.unanswered_rate}%</strong>
-                      </div>
-                      <div className="failed-bar-track">
-                        <div className="failed-bar-fill unanswered" style={{ width: `${q.unanswered_rate}%` }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="empty question-analysis-empty">Aucune donnée par question n’est disponible pour le moment.</div>
+          )}
+        </section>
       )}
 
       <div className="panel">
