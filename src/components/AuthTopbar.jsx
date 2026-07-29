@@ -6,11 +6,14 @@ export default function AuthTopbar({ active }) {
   return (
     <header className="auth-topbar">
       <Link className="brand auth-topbar-brand" to="/">
-        <img src="/cp.png?v=2" className="brand-logo" alt="Check Performance" />
+        <picture className="brand-picture">
+          <source media="(max-width: 980px)" srcSet="/cp.svg?v=2" />
+          <img src="/cp.png?v=2" className="brand-logo" alt="Check Performance" />
+        </picture>
       </Link>
 
       <div className="auth-topbar-actions">
-        <Link className="auth-topbar-link" to="/">
+        <Link className="auth-topbar-link auth-home-link" to="/">
           <FontAwesomeIcon icon={faArrowLeft} /> Accueil
         </Link>
         {active !== 'login' && (

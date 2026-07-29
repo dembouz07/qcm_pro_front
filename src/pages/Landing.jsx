@@ -110,7 +110,10 @@ export default function Landing() {
     <div className="landing landing-v2">
       <motion.header className="landing-nav" initial={{ y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.45, ease }}>
         <Link className="brand landing-brand" to="/" aria-label="Accueil Check Performance">
-          <img src="/cp.png?v=2" className="brand-logo" alt="Check Performance" />
+          <picture className="brand-picture">
+            <source media="(max-width: 980px)" srcSet="/cp.svg?v=2" />
+            <img src="/cp.png?v=2" className="brand-logo" alt="Check Performance" />
+          </picture>
         </Link>
         <nav className="landing-nav-links" aria-label="Navigation de présentation">
           <a href="#solutions">Solutions</a>
