@@ -4332,6 +4332,66 @@ a.panel:hover,
   display: block;
 }
 
+/* Tables: one scroll surface, stable headers and predictable column widths */
+.panel.table-panel {
+  padding: 0;
+  overflow: auto;
+  isolation: isolate;
+}
+
+.table-panel > table,
+.table-container > .data-table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-panel > table thead,
+.table-container > .data-table thead {
+  position: static;
+}
+
+.table-panel > table thead th,
+.table-container > .data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: #f8f9fd;
+  box-shadow: 0 1px 0 var(--border), 0 8px 16px -12px rgba(15, 23, 42, 0.3);
+}
+
+.table-panel > table th,
+.table-panel > table td,
+.table-container > .data-table th,
+.table-container > .data-table td {
+  vertical-align: middle;
+}
+
+.table-panel td .primary-btn,
+.table-panel td .secondary-btn,
+.table-container td .primary-btn,
+.table-container td .secondary-btn {
+  white-space: nowrap;
+}
+
+.superadmin-users-table-panel > table {
+  min-width: 980px;
+}
+
+.results-table-panel > table {
+  min-width: 1180px;
+}
+
+.results-table-panel th:last-child,
+.results-table-panel td:last-child {
+  min-width: 260px;
+}
+
+.results-table-panel .gradebook-table-actions {
+  flex-wrap: nowrap;
+}
+
 .main-content,
 .main-content > div,
 .page,
@@ -4509,7 +4569,17 @@ a.panel:hover,
   .table-container {
     width: 100%;
     max-width: 100%;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
     overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-panel > table thead th,
+  .table-container > .data-table thead th {
+    position: static;
+    box-shadow: none;
   }
 
   .modal-backdrop {

@@ -15,6 +15,34 @@ const ROLE_LABELS = {
   student: 'Élève',
 };
 
+function userActivity(user) {
+  if (user.role === 'admin') {
+    const results = user.received_submissions_count ?? 0;
+    const quizzes = user.quizzes_count ?? 0;
+    return {
+      count: results,
+      label: `${quizzes} QCM créé${quizzes === 1 ? '' : 's'}`,
+      title: `${results} résultat${results === 1 ? '' : 's'} reçu${results === 1 ? '' : 's'}`,
+    };
+  }
+
+  if (user.role === 'enterprise') {
+    const diagnostics = user.mindset_assessments_count ?? 0;
+    return {
+      count: diagnostics,
+      label: `diagnostic${diagnostics === 1 ? '' : 's'}`,
+      title: `${diagnostics} diagnostic${diagnostics === 1 ? '' : 's'} réalisé${diagnostics === 1 ? '' : 's'}`,
+    };
+  }
+
+  const tests = user.submissions_count ?? 0;
+  return {
+    count: tests,
+    label: `test${tests === 1 ? '' : 's'} passé${tests === 1 ? '' : 's'}`,
+    title: `${tests} test${tests === 1 ? '' : 's'} passé${tests === 1 ? '' : 's'}`,
+  };
+}
+
 export default function SuperAdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -135,7 +163,7 @@ export default function SuperAdminUsers() {
         </form>
       </div>
 
-      <div className="panel table-panel">
+      <div className="panel table-panel superadmin-users-table-panel">
         {loading ? (
           <div className="empty">Chargement...</div>
         ) : users.length === 0 ? (
@@ -148,60 +176,67 @@ export default function SuperAdminUsers() {
                 <th>Email</th>
                 <th>Rôle</th>
                 <th>Statut</th>
-                <th>Tests</th>
-                <th>Action</th>
+                <th>Activité</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    <strong>{u.name}</strong>
-                    {(u.role === 'superadmin' || u.is_super_admin) && (
-                      <span className="score-badge" style={{ marginLeft: 6 }}>
-                        <FontAwesomeIcon icon={faCrown} />
-                      </span>
-                    )}
-                  </td>
-                  <td>{u.email}</td>
-                  <td>{ROLE_LABELS[u.role] || u.role}</td>
-                  <td>
-                    {u.is_blocked ? (
-                      <span className="score-badge" style={{ background: '#fee2e2', color: '#b91c1c' }}>Bloqué</span>
-                    ) : (
-                      <span className="score-badge" style={{ background: '#dcfce7', color: '#15803d' }}>Actif</span>
-                    )}
-                  </td>
-                  <td>{u.submissions_count ?? 0}</td>
-                  <td>
-                    {(u.role === 'superadmin' || u.is_super_admin) ? (
-                      <span style={{ color: '#94a3b8' }}>—</span>
-                    ) : (
-                      <div className="row-actions">
-                        <button
-                          className={u.is_blocked ? 'primary-btn' : 'secondary-btn'}
-                          type="button"
-                          disabled={busyId === u.id}
-                          onClick={() => toggleBlock(u)}
-                        >
-                          <FontAwesomeIcon icon={u.is_blocked ? faCircleCheck : faBan} />{' '}
-                          {u.is_blocked ? 'Débloquer' : 'Bloquer'}
-                        </button>
-                        <button
-                          className="icon-btn danger"
-                          type="button"
-                          title={`Supprimer ${u.name}`}
-                          aria-label={`Supprimer le compte de ${u.name}`}
-                          disabled={busyId === u.id}
-                          onClick={() => deleteUser(u)}
-                        >
-                          <FontAwesomeIcon icon={faTrashCan} />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {users.map((u) => {
+                const activity = userActivity(u);
+
+                return (
+                  <tr key={u.id}>
+                    <td>
+                      <strong>{u.name}</strong>
+                      {(u.role === 'superadmin' || u.is_super_admin) && (
+                        <span className="score-badge" style={{ marginLeft: 6 }}>
+                          <FontAwesomeIcon icon={faCrown} />
+                        </span>
+                      )}
+                    </td>
+                    <td>{u.email}</td>
+                    <td>{ROLE_LABELS[u.role] || u.role}</td>
+                    <td>
+                      {u.is_blocked ? (
+                        <span className="score-badge" style={{ background: '#fee2e2', color: '#b91c1c' }}>Bloqué</span>
+                      ) : (
+                        <span className="score-badge" style={{ background: '#dcfce7', color: '#15803d' }}>Actif</span>
+                      )}
+                    </td>
+                    <td title={activity.title}>
+                      <strong>{activity.count}</strong>
+                      <small className="table-subline">{activity.label}</small>
+                    </td>
+                    <td>
+                      {(u.role === 'superadmin' || u.is_super_admin) ? (
+                        <span style={{ color: '#94a3b8' }}>—</span>
+                      ) : (
+                        <div className="row-actions">
+                          <button
+                            className={u.is_blocked ? 'primary-btn' : 'secondary-btn'}
+                            type="button"
+                            disabled={busyId === u.id}
+                            onClick={() => toggleBlock(u)}
+                          >
+                            <FontAwesomeIcon icon={u.is_blocked ? faCircleCheck : faBan} />{' '}
+                            {u.is_blocked ? 'Débloquer' : 'Bloquer'}
+                          </button>
+                          <button
+                            className="icon-btn danger"
+                            type="button"
+                            title={`Supprimer ${u.name}`}
+                            aria-label={`Supprimer le compte de ${u.name}`}
+                            disabled={busyId === u.id}
+                            onClick={() => deleteUser(u)}
+                          >
+                            <FontAwesomeIcon icon={faTrashCan} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

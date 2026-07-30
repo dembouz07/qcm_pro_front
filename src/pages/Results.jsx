@@ -191,7 +191,7 @@ export default function Results() {
         </div>
       </div>
 
-      <div className="panel table-panel">
+      <div className="panel table-panel results-table-panel">
         {results.length === 0 ? <div className="empty">Aucune soumission pour le moment.</div> : (
           <table>
             <thead>
