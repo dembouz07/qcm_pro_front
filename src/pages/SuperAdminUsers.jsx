@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUsersGear, faMagnifyingGlass, faRotateRight, faTriangleExclamation,
-  faBan, faCircleCheck, faArrowLeft, faCrown,
+  faBan, faCircleCheck, faArrowLeft, faCrown, faTrashCan,
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
@@ -59,6 +59,26 @@ export default function SuperAdminUsers() {
       setBusyId(user.id);
       await api.post(`/superadmin/users/${user.id}/${action}`);
       setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_blocked: !u.is_blocked } : u)));
+    } catch (err) {
+      setError(getApiError(err));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function deleteUser(user) {
+    const ok = await confirm({
+      title: 'Supprimer le compte',
+      message: `Supprimer définitivement le compte de ${user.name} ? Ses sessions et ses données associées seront supprimées. Cette action est irréversible.`,
+      confirmText: 'Supprimer',
+    });
+    if (!ok) return;
+
+    try {
+      setError('');
+      setBusyId(user.id);
+      await api.delete(`/superadmin/users/${user.id}`);
+      setUsers((prev) => prev.filter((item) => item.id !== user.id));
     } catch (err) {
       setError(getApiError(err));
     } finally {
@@ -137,7 +157,7 @@ export default function SuperAdminUsers() {
                 <tr key={u.id}>
                   <td>
                     <strong>{u.name}</strong>
-                    {u.role === 'superadmin' && (
+                    {(u.role === 'superadmin' || u.is_super_admin) && (
                       <span className="score-badge" style={{ marginLeft: 6 }}>
                         <FontAwesomeIcon icon={faCrown} />
                       </span>
@@ -154,18 +174,30 @@ export default function SuperAdminUsers() {
                   </td>
                   <td>{u.submissions_count ?? 0}</td>
                   <td>
-                    {u.role === 'superadmin' ? (
+                    {(u.role === 'superadmin' || u.is_super_admin) ? (
                       <span style={{ color: '#94a3b8' }}>—</span>
                     ) : (
-                      <button
-                        className={u.is_blocked ? 'primary-btn' : 'secondary-btn'}
-                        type="button"
-                        disabled={busyId === u.id}
-                        onClick={() => toggleBlock(u)}
-                      >
-                        <FontAwesomeIcon icon={u.is_blocked ? faCircleCheck : faBan} />{' '}
-                        {u.is_blocked ? 'Débloquer' : 'Bloquer'}
-                      </button>
+                      <div className="row-actions">
+                        <button
+                          className={u.is_blocked ? 'primary-btn' : 'secondary-btn'}
+                          type="button"
+                          disabled={busyId === u.id}
+                          onClick={() => toggleBlock(u)}
+                        >
+                          <FontAwesomeIcon icon={u.is_blocked ? faCircleCheck : faBan} />{' '}
+                          {u.is_blocked ? 'Débloquer' : 'Bloquer'}
+                        </button>
+                        <button
+                          className="icon-btn danger"
+                          type="button"
+                          title={`Supprimer ${u.name}`}
+                          aria-label={`Supprimer le compte de ${u.name}`}
+                          disabled={busyId === u.id}
+                          onClick={() => deleteUser(u)}
+                        >
+                          <FontAwesomeIcon icon={faTrashCan} />
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
