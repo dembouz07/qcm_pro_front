@@ -1,51 +1,60 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from './AuthContext.jsx';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
-import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';
-import RegisterAdmin from './pages/RegisterAdmin.jsx';
-import RegisterEnterprise from './pages/RegisterEnterprise.jsx';
-import ForgotPassword from './pages/ForgotPassword.jsx';
-import AdminDashboard from './pages/AdminDashboard.jsx';
-import Subscription from './pages/Subscription.jsx';
-import ClassManager from './pages/ClassManager.jsx';
-import QuizForm from './pages/QuizForm.jsx';
-import QuizList from './pages/QuizList.jsx';
-import QuizView from './pages/QuizView.jsx';
-import QuizEdit from './pages/QuizEdit.jsx';
-import ImportQuiz from './pages/ImportQuiz.jsx';
-import ConvertQuiz from './pages/ConvertQuiz.jsx';
-import ProgressiveQuizForm from './pages/ProgressiveQuizForm.jsx';
-import CreateQuizMenu from './pages/CreateQuizMenu.jsx';
-import SmartCreateQuiz from './pages/SmartCreateQuiz.jsx';
-import SurveyList from './pages/SurveyList.jsx';
-import SurveyForm from './pages/SurveyForm.jsx';
-import SurveyResults from './pages/SurveyResults.jsx';
-import PublicSurvey from './pages/PublicSurvey.jsx';
-import Results from './pages/Results.jsx';
-import StudentGradebook from './pages/StudentGradebook.jsx';
-import StudentDashboard from './pages/StudentDashboard.jsx';
-import StudentResults from './pages/StudentResults.jsx';
-import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
-import SuperAdminUsers from './pages/SuperAdminUsers.jsx';
-import SuperAdminRevenue from './pages/SuperAdminRevenue.jsx';
-import TakeQuiz from './pages/TakeQuiz.jsx';
-import PublicQuiz from './pages/PublicQuiz.jsx';
-import MyResults from './pages/MyResults.jsx';
-import Landing from './pages/Landing.jsx';
-import Account from './pages/Account.jsx';
-import UsageGuide from './pages/UsageGuide.jsx';
-import EnterpriseDashboard from './pages/enterprise/EnterpriseDashboard.jsx';
-import EnterpriseEmployees from './pages/enterprise/EnterpriseEmployees.jsx';
-import EnterpriseEmployeeForm from './pages/enterprise/EnterpriseEmployeeForm.jsx';
-import EnterpriseAssessments from './pages/enterprise/EnterpriseAssessments.jsx';
-import EnterpriseAssessmentForm from './pages/enterprise/EnterpriseAssessmentForm.jsx';
-import EnterpriseAssessmentView from './pages/enterprise/EnterpriseAssessmentView.jsx';
-import EnterpriseProgress from './pages/enterprise/EnterpriseProgress.jsx';
-import EnterpriseSubscription from './pages/enterprise/EnterpriseSubscription.jsx';
+import Landing from './pages/LandingImpact.jsx';
 import { homePathFor } from './utils/homePath.js';
+
+const commercialLaunchEnabled = import.meta.env.VITE_COMMERCIAL_LAUNCH_ENABLED === 'true';
+
+const Login = lazy(() => import('./pages/Login.jsx'));
+const Register = lazy(() => import('./pages/Register.jsx'));
+const RegisterAdmin = lazy(() => import('./pages/RegisterAdmin.jsx'));
+const RegisterEnterprise = lazy(() => import('./pages/RegisterEnterprise.jsx'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPasswordSecure.jsx'));
+const DemoQuiz = lazy(() => import('./pages/DemoQuiz.jsx'));
+const Resources = lazy(() => import('./pages/Resources.jsx'));
+const LegalPage = lazy(() => import('./pages/LegalPage.jsx'));
+const KnowledgeAssessment = lazy(() => import('./pages/ProfessionalSolutions.jsx').then((module) => ({ default: module.KnowledgeAssessment })));
+const SoftSkillsDevelopment = lazy(() => import('./pages/ProfessionalSolutions.jsx').then((module) => ({ default: module.SoftSkillsDevelopment })));
+const Account = lazy(() => import('./pages/Account.jsx'));
+const UsageGuide = lazy(() => import('./pages/UsageGuide.jsx'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'));
+const Subscription = lazy(() => import('./pages/Subscription.jsx'));
+const ClassManager = lazy(() => import('./pages/ClassManager.jsx'));
+const QuizForm = lazy(() => import('./pages/QuizForm.jsx'));
+const QuizList = lazy(() => import('./pages/QuizList.jsx'));
+const QuizView = lazy(() => import('./pages/QuizView.jsx'));
+const QuizEdit = lazy(() => import('./pages/QuizEdit.jsx'));
+const ImportQuiz = lazy(() => import('./pages/ImportQuiz.jsx'));
+const ConvertQuiz = lazy(() => import('./pages/ConvertQuiz.jsx'));
+const ProgressiveQuizForm = lazy(() => import('./pages/ProgressiveQuizForm.jsx'));
+const CreateQuizMenu = lazy(() => import('./pages/CreateQuizMenu.jsx'));
+const SmartCreateQuiz = lazy(() => import('./pages/SmartCreateQuiz.jsx'));
+const SurveyList = lazy(() => import('./pages/SurveyList.jsx'));
+const SurveyForm = lazy(() => import('./pages/SurveyForm.jsx'));
+const SurveyResults = lazy(() => import('./pages/SurveyResults.jsx'));
+const PublicSurvey = lazy(() => import('./pages/PublicSurvey.jsx'));
+const Results = lazy(() => import('./pages/Results.jsx'));
+const StudentGradebook = lazy(() => import('./pages/StudentGradebook.jsx'));
+const StudentDashboard = lazy(() => import('./pages/StudentDashboard.jsx'));
+const StudentResults = lazy(() => import('./pages/StudentResults.jsx'));
+const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard.jsx'));
+const SuperAdminUsers = lazy(() => import('./pages/SuperAdminUsers.jsx'));
+const SuperAdminRevenue = lazy(() => import('./pages/SuperAdminRevenue.jsx'));
+const TakeQuiz = lazy(() => import('./pages/TakeQuiz.jsx'));
+const PublicQuiz = lazy(() => import('./pages/PublicQuiz.jsx'));
+const MyResults = lazy(() => import('./pages/MyResults.jsx'));
+const EnterpriseDashboard = lazy(() => import('./pages/enterprise/EnterpriseDashboard.jsx'));
+const EnterpriseEmployees = lazy(() => import('./pages/enterprise/EnterpriseEmployees.jsx'));
+const EnterpriseEmployeeForm = lazy(() => import('./pages/enterprise/EnterpriseEmployeeForm.jsx'));
+const EnterpriseAssessments = lazy(() => import('./pages/enterprise/EnterpriseAssessments.jsx'));
+const EnterpriseAssessmentForm = lazy(() => import('./pages/enterprise/EnterpriseAssessmentForm.jsx'));
+const EnterpriseAssessmentView = lazy(() => import('./pages/enterprise/EnterpriseAssessmentView.jsx'));
+const EnterpriseProgress = lazy(() => import('./pages/enterprise/EnterpriseProgress.jsx'));
+const EnterpriseSubscription = lazy(() => import('./pages/enterprise/EnterpriseSubscriptionV2.jsx'));
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
@@ -69,12 +78,21 @@ export default function App() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
+            <Suspense fallback={<div className="center-screen">Chargement...</div>}>
             <Routes location={location}>
               <Route path="/" element={<HomeRedirect />} />
+          <Route path="/demo-qcm" element={<DemoQuiz />} />
+          <Route path="/evaluation-des-acquis" element={<KnowledgeAssessment />} />
+          <Route path="/developpement-soft-skills" element={<SoftSkillsDevelopment />} />
+          <Route path="/ressources" element={<Resources />} />
+          <Route path="/confidentialite" element={<LegalPage document="privacy" />} />
+          <Route path="/cgu" element={<LegalPage document="terms" />} />
+          <Route path="/cgv" element={<LegalPage document="sales" />} />
+          <Route path="/mentions-legales" element={<LegalPage document="notices" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/register-admin" element={<RegisterAdmin />} />
-          <Route path="/register-enterprise" element={<RegisterEnterprise />} />
+          <Route path="/register-admin" element={commercialLaunchEnabled ? <RegisterAdmin /> : <Navigate to="/" replace />} />
+          <Route path="/register-enterprise" element={commercialLaunchEnabled ? <RegisterEnterprise /> : <Navigate to="/" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Route publique pour accès au quiz via lien partagé */}
@@ -124,6 +142,7 @@ export default function App() {
           <Route path="/superadmin/revenue" element={<ProtectedRoute role="superadmin"><SuperAdminRevenue /></ProtectedRoute>} />
           <Route path="/superadmin/users" element={<ProtectedRoute role="superadmin"><SuperAdminUsers /></ProtectedRoute>} />
             </Routes>
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>

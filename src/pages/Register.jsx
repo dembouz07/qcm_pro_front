@@ -96,6 +96,8 @@ export default function Register() {
             </label>
           </div>
 
+          <p className="muted collection-notice">Consultez l’<Link to="/confidentialite#informations-par-public">information pour les apprenants et responsables légaux</Link> ainsi que les <Link to="/cgu">règles d’utilisation</Link> avant de créer le compte.</p>
+
           <button className="primary-btn" disabled={loading}>
             <FontAwesomeIcon icon={faUserPlus} /> {loading ? 'Création...' : 'Créer mon compte'}
           </button>

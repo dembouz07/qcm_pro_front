@@ -52,6 +52,14 @@ export default function Results() {
     }));
   }
 
+  function trackReportExport(format) {
+    void api.post('/events', {
+      event: 'report_exported',
+      subject_id: selectedQuiz ? Number(selectedQuiz) : undefined,
+      format,
+    }).catch(() => {});
+  }
+
   // Export Excel (vrai fichier .xlsx)
   function exportExcel() {
     const rows = buildExportRows();
@@ -65,6 +73,7 @@ export default function Results() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Notes');
     XLSX.writeFile(workbook, `notes-qcm-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    trackReportExport('xlsx');
   }
 
   // Export PDF via la fenêtre d'impression (l'utilisateur choisit "Enregistrer en PDF")
@@ -96,6 +105,7 @@ export default function Results() {
         <script>window.onload = function(){ window.print(); }<\/script>
       </body></html>`);
     win.document.close();
+    trackReportExport('pdf');
   }
 
   // Fonction pour charger les résultats

@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRight, faCompass, faUser, faLock, faFloppyDisk, faCircleCheck, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faCompass, faUser, faLock, faFloppyDisk, faCircleCheck, faTriangleExclamation, faDownload, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 
 export default function Account() {
   const { user, setUser } = useAuth();
 
-  const [profile, setProfile] = useState({ name: user?.name || '', email: user?.email || '' });
+  const [profile, setProfile] = useState({ name: user?.name || '', email: user?.email || '', current_password: '' });
   const [profileMsg, setProfileMsg] = useState('');
   const [profileErr, setProfileErr] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
@@ -18,6 +18,9 @@ export default function Account() {
   const [pwdMsg, setPwdMsg] = useState('');
   const [pwdErr, setPwdErr] = useState('');
   const [savingPwd, setSavingPwd] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [dataErr, setDataErr] = useState('');
+  const [exportPassword, setExportPassword] = useState('');
 
   async function saveProfile(e) {
     e.preventDefault();
@@ -25,6 +28,7 @@ export default function Account() {
     try {
       const res = await api.put('/auth/profile', profile);
       setUser(res.data.user);
+      setProfile((current) => ({ ...current, current_password: '' }));
       setProfileMsg('Profil mis à jour avec succès.');
     } catch (err) {
       setProfileErr(getApiError(err));
@@ -44,6 +48,28 @@ export default function Account() {
       setPwdErr(getApiError(err));
     } finally {
       setSavingPwd(false);
+    }
+  }
+
+  async function exportData() {
+    setDataErr('');
+    setExporting(true);
+    try {
+      const response = await api.post('/auth/export', { current_password: exportPassword });
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `check-performance-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setExportPassword('');
+    } catch (err) {
+      setDataErr(getApiError(err));
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -87,6 +113,10 @@ export default function Account() {
           Adresse email
           <input type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} required />
         </label>
+        <label className="span-2">
+          Mot de passe actuel <small className="muted">(requis uniquement pour changer l’email)</small>
+          <input type="password" value={profile.current_password} onChange={(e) => setProfile({ ...profile, current_password: e.target.value })} autoComplete="current-password" />
+        </label>
         <div className="span-2">
           <button className="primary-btn" disabled={savingProfile}>
             <FontAwesomeIcon icon={faFloppyDisk} /> {savingProfile ? 'Enregistrement...' : 'Enregistrer'}
@@ -121,6 +151,19 @@ export default function Account() {
           </button>
         </div>
       </motion.form>
+
+      <motion.section
+        className="panel account-data-panel"
+        initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.16 }}
+      >
+        <div><span className="eyebrow"><FontAwesomeIcon icon={faShieldHalved} /> Mes données</span><h2>Export, correction et suppression</h2><p>Téléchargez une copie structurée des données liées à votre compte. Pour une suppression ou une opposition, suivez la procédure adaptée à votre rôle.</p></div>
+        {dataErr && <div className="alert error"><FontAwesomeIcon icon={faTriangleExclamation} /> {dataErr}</div>}
+        <label className="account-export-password">Confirmez votre mot de passe pour générer l’export<input type="password" value={exportPassword} onChange={(event) => setExportPassword(event.target.value)} autoComplete="current-password" required /></label>
+        <div className="account-data-actions">
+          <button className="primary-btn" type="button" onClick={exportData} disabled={exporting || !exportPassword}><FontAwesomeIcon icon={faDownload} /> {exporting ? 'Préparation...' : 'Exporter mes données'}</button>
+          <Link className="secondary-btn" to="/confidentialite#exercer-vos-droits">Procédure de suppression <FontAwesomeIcon icon={faArrowRight} /></Link>
+        </div>
+      </motion.section>
     </div>
   );
 }

@@ -110,6 +110,9 @@ export default function EnterpriseEmployeeForm() {
           Ancienneté dans l’organisation <span className="muted">(en mois, optionnel)</span>
           <input type="number" min="0" max="720" value={form.seniority_months} onChange={(event) => update('seniority_months', event.target.value)} placeholder="Ex. 18" />
         </label>
+        <p className="span-2 muted collection-notice">
+          Avant l’ajout, informez le collaborateur de l’objectif du suivi, des destinataires et des conditions de conservation. Le score ne peut fonder seul aucune décision RH. <Link to="/confidentialite#informations-par-public">Lire l’information salariés</Link>.
+        </p>
         <div className="span-2">
           <button className="primary-btn" disabled={saving}><FontAwesomeIcon icon={editing ? faFloppyDisk : faUserPlus} /> {saving ? 'Enregistrement...' : editing ? 'Enregistrer les modifications' : 'Ajouter le collaborateur'}</button>
         </div>

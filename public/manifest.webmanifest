@@ -1,0 +1,27 @@
+{
+  "name": "Check Performance",
+  "short_name": "Check Performance",
+  "description": "Mesurez les acquis et documentez la progression, du diagnostic initial au suivi à six mois.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fc",
+  "theme_color": "#0c1223",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "QCM de démonstration",
+      "short_name": "Démo QCM",
+      "url": "/demo-qcm",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

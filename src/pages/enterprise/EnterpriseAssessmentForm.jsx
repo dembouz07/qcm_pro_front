@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCircleCheck, faClipboardCheck, faFloppyDisk, faLightbulb, faUserTie } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../../api.js';
-import { ASSESSMENT_TYPE_LABELS, todayInputValue } from '../../utils/enterprise.js';
+import { addMonthsToDateValue, ASSESSMENT_TYPE_LABELS, todayInputValue } from '../../utils/enterprise.js';
 
 function createResponseState(template, storedResponses = []) {
   const storedByKey = Object.fromEntries(storedResponses.map((response) => [response.question_key, response]));
@@ -33,18 +33,20 @@ export default function EnterpriseAssessmentForm() {
   const navigate = useNavigate();
   const [template, setTemplate] = useState(null);
   const [employees, setEmployees] = useState([]);
+  const today = todayInputValue();
   const [form, setForm] = useState({
     company_employee_id: params.get('employee') || '',
     type: 'initial',
-    assessed_at: todayInputValue(),
+    assessed_at: today,
     action_items: ['', '', ''],
     support_needs: '',
-    next_review_at: '',
+    next_review_at: addMonthsToDateValue(today, 6),
   });
   const [responses, setResponses] = useState({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const assessmentStartedRef = useRef(false);
 
   useEffect(() => {
     const requests = [api.get('/enterprise/mindset-template'), api.get('/enterprise/employees')];
@@ -52,7 +54,7 @@ export default function EnterpriseAssessmentForm() {
 
     Promise.all(requests)
       .then((result) => {
-        const nextTemplate = result[0].data;
+        const nextTemplate = editing ? result[2].data.template : result[0].data;
         setTemplate(nextTemplate);
         setEmployees(result[1].data);
 
@@ -79,10 +81,22 @@ export default function EnterpriseAssessmentForm() {
   const interpretation = template?.interpretations?.find((item) => totalScore >= item.min && totalScore <= item.max);
 
   function updateForm(field, value) {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+      ...(field === 'assessed_at' && current.type === 'initial' ? { next_review_at: addMonthsToDateValue(value, 6) } : {}),
+    }));
   }
 
   function updateResponse(questionKey, field, value) {
+    if (!editing && !assessmentStartedRef.current && form.company_employee_id) {
+      assessmentStartedRef.current = true;
+      void api.post('/events', {
+        event: 'assessment_started',
+        subject_id: Number(form.company_employee_id),
+      }).catch(() => {});
+    }
+
     setResponses((current) => ({
       ...current,
       [questionKey]: { ...current[questionKey], [field]: value },
@@ -148,7 +162,7 @@ export default function EnterpriseAssessmentForm() {
           <Link className="back-link" to="/entreprise/diagnostics"><FontAwesomeIcon icon={faArrowLeft} /> Retour aux diagnostics</Link>
           <span className="eyebrow"><FontAwesomeIcon icon={faClipboardCheck} /> Grille d’entretien individuel</span>
           <h1>{editing ? 'Modifier le diagnostic Mindset' : 'Nouveau diagnostic Mindset'}</h1>
-          <p>La même grille est utilisée au diagnostic initial T0 puis au suivi T+6 mois pour mesurer la progression.</p>
+          <p>La version de grille utilisée au T0 est conservée pour comparer un suivi visé autour de six mois.</p>
         </div>
       </div>
 

@@ -100,6 +100,8 @@ export default function RegisterEnterprise() {
             </label>
           </div>
 
+          <p className="muted collection-notice">En créant cet espace, vous confirmez avoir lu les <Link to="/cgu">CGU</Link>, les <Link to="/cgv">CGV</Link> et la <Link to="/confidentialite">politique de confidentialité</Link>.</p>
+
           <button className="primary-btn" disabled={loading}>
             <FontAwesomeIcon icon={faBuilding} /> {loading ? 'Création...' : 'Créer mon espace entreprise'}
           </button>

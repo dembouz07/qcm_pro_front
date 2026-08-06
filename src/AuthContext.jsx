@@ -8,17 +8,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   async function loadUser() {
-    const token = localStorage.getItem('qcm_token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await api.get('/auth/me');
       setUser(response.data);
     } catch {
-      localStorage.removeItem('qcm_token');
       setUser(null);
     } finally {
       setLoading(false);
@@ -26,6 +19,8 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
+    // Nettoyage unique de l'ancien jeton navigateur après migration vers la session HttpOnly.
+    localStorage.removeItem('qcm_token');
     loadUser();
   }, []);
 
@@ -34,7 +29,6 @@ export function AuthProvider({ children }) {
     await getCsrfCookie();
     
     const response = await api.post('/auth/login', payload);
-    localStorage.setItem('qcm_token', response.data.token);
     setUser(response.data.user);
     return response.data.user;
   }
@@ -44,7 +38,6 @@ export function AuthProvider({ children }) {
     await getCsrfCookie();
     
     const response = await api.post('/auth/register', payload);
-    localStorage.setItem('qcm_token', response.data.token);
     setUser(response.data.user);
     return response.data.user;
   }
@@ -52,7 +45,6 @@ export function AuthProvider({ children }) {
   async function registerAdmin(payload) {
     await getCsrfCookie();
     const response = await api.post('/auth/register-admin', payload);
-    localStorage.setItem('qcm_token', response.data.token);
     setUser(response.data.user);
     return response.data.user;
   }
@@ -60,7 +52,6 @@ export function AuthProvider({ children }) {
   async function registerEnterprise(payload) {
     await getCsrfCookie();
     const response = await api.post('/auth/register-enterprise', payload);
-    localStorage.setItem('qcm_token', response.data.token);
     setUser(response.data.user);
     return response.data.user;
   }
@@ -68,10 +59,12 @@ export function AuthProvider({ children }) {
   async function logout() {
     try {
       await api.post('/auth/logout');
-    } finally {
-      localStorage.removeItem('qcm_token');
-      setUser(null);
+    } catch (error) {
+      if (error?.response?.status !== 419) throw error;
+      await getCsrfCookie();
+      await api.post('/auth/logout');
     }
+    setUser(null);
   }
 
   const value = useMemo(() => ({ user, loading, login, register, registerAdmin, registerEnterprise, logout, setUser }), [user, loading]);

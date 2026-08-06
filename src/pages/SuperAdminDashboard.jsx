@@ -159,6 +159,7 @@ const rise = {
 export default function SuperAdminDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
+  const [validation, setValidation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -166,8 +167,12 @@ export default function SuperAdminDashboard() {
     try {
       setError('');
       setLoading(true);
-      const response = await api.get('/superadmin/stats');
+      const [response, validationResponse] = await Promise.all([
+        api.get('/superadmin/stats'),
+        api.get('/superadmin/validation-metrics').catch(() => null),
+      ]);
       setStats(response.data);
+      setValidation(validationResponse?.data || null);
     } catch (err) {
       setError(getApiError(err));
     } finally {
@@ -178,6 +183,12 @@ export default function SuperAdminDashboard() {
   useEffect(() => { loadStats(); }, []);
 
   const k = stats?.kpis;
+  const activation = validation?.activation?.created_and_published_within_7_days;
+  const timeToValue = validation?.activation?.registration_to_first_publication_minutes;
+  const completion = validation?.public_quiz_completion;
+  const retention = validation?.retention;
+  const displayPercent = (value) => value == null ? '—' : `${value}%`;
+  const displayMinutes = (value) => value == null ? '—' : `${value} min`;
 
   return (
     <div className="page sa-dashboard">
@@ -223,6 +234,43 @@ export default function SuperAdminDashboard() {
               <Trend value={k.avg_score_change} />
             </motion.div>
           </motion.section>
+
+          {validation && (
+            <motion.section className="panel validation-scorecard" variants={rise}>
+              <div className="sa-panel-head">
+                <div>
+                  <h3>Test de validation — 90 jours</h3>
+                  <p className="muted">Données de production pseudonymisées · version {validation.metric_version}</p>
+                </div>
+                <span className="badge">{validation.scope.period_start.slice(0, 10)} → {validation.scope.period_end.slice(0, 10)}</span>
+              </div>
+              <div className="validation-metric-grid">
+                <article>
+                  <small>Activation J7</small>
+                  <strong>{displayPercent(activation?.rate_percent)}</strong>
+                  <span>{activation?.numerator ?? 0}/{activation?.denominator ?? 0} · objectif &gt; 50 %</span>
+                </article>
+                <article>
+                  <small>Délai médian</small>
+                  <strong>{displayMinutes(timeToValue?.median)}</strong>
+                  <span>n={timeToValue?.sample_size ?? 0} · objectif &lt; 10 min</span>
+                </article>
+                <article>
+                  <small>Complétion publique</small>
+                  <strong>{displayPercent(completion?.rate_percent)}</strong>
+                  <span>{completion?.numerator ?? 0}/{completion?.denominator ?? 0} · objectif &gt; 70 %</span>
+                </article>
+                <article>
+                  <small>Rétention J30</small>
+                  <strong>{displayPercent(retention?.rate_percent)}</strong>
+                  <span>{retention?.numerator ?? 0}/{retention?.denominator ?? 0} · objectif &gt; 40 %</span>
+                </article>
+              </div>
+              <p className="validation-note">
+                Les entretiens, démonstrations commerciales, pilotes payants et contrats annuels restent à renseigner dans le suivi commercial hebdomadaire.
+              </p>
+            </motion.section>
+          )}
 
           <motion.section className="sa-grid" variants={container}>
             <motion.div className="panel sa-perf" variants={rise}>

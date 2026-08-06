@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test src/quizCreation.test.js src/offers.test.js src/usageGuides.test.js src/utils/academicYear.test.js src/utils/resultFilters.test.js"
+    "test": "node --test --test-concurrency=1 src/quizCreation.test.js src/offers.test.js src/usageGuides.test.js src/utils/academicYear.test.js src/utils/enterprise.test.js src/utils/resultFilters.test.js src/authSecurity.test.js src/publicPositioning.test.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",

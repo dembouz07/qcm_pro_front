@@ -79,6 +79,8 @@ export default function RegisterAdmin() {
             </label>
           </div>
 
+          <p className="muted collection-notice">En créant ce compte, vous confirmez avoir lu les <Link to="/cgu">CGU</Link> et la <Link to="/confidentialite">politique de confidentialité</Link>.</p>
+
           <button className="primary-btn" disabled={loading}>
             <FontAwesomeIcon icon={faUserShield} /> {loading ? 'Création...' : 'Créer mon compte formateur'}
           </button>

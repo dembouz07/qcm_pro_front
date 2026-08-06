@@ -30,7 +30,7 @@ export default function EnterpriseAssessmentView() {
           <Link className="back-link" to="/entreprise/diagnostics"><FontAwesomeIcon icon={faArrowLeft} /> Retour aux diagnostics</Link>
           <span className="eyebrow"><FontAwesomeIcon icon={faClipboardCheck} /> {formatAssessmentType(assessment.type)}</span>
           <h1>{assessment.employee?.full_name}</h1>
-          <p>{[assessment.employee?.job_title, assessment.employee?.department].filter(Boolean).join(' · ') || 'Fonction et service non renseignés'} · Entretien mené par {assessment.evaluator?.name || '—'}.</p>
+          <p>{[assessment.employee?.job_title, assessment.employee?.department].filter(Boolean).join(' · ') || 'Fonction et service non renseignés'} · Entretien mené par {assessment.evaluator?.name || '—'} · Méthode v{assessment.methodology_version || template.version || '—'}.</p>
         </div>
         <div className="header-actions"><Link className="primary-btn" to={`/entreprise/diagnostics/${assessment.id}/modifier`}><FontAwesomeIcon icon={faPenToSquare} /> Modifier</Link></div>
       </div>
@@ -44,13 +44,13 @@ export default function EnterpriseAssessmentView() {
       {comparison && (
         <section className="panel mindset-comparison">
           <div className="panel-heading">
-            <div><h2><FontAwesomeIcon icon={faArrowTrendUp} /> Progression T0 / T+6 mois</h2><p>Comparaison avec le diagnostic initial du {formatDate(comparison.baseline.assessed_at)}.</p></div>
+            <div><h2><FontAwesomeIcon icon={faArrowTrendUp} /> Progression T0 / suivi</h2><p>Comparaison avec le diagnostic initial du {formatDate(comparison.baseline.assessed_at)}, soit {comparison.elapsed_days} jours avant ce suivi.</p></div>
             <strong className={comparison.delta >= 0 ? 'delta positive' : 'delta negative'}>{signedScore(comparison.delta)} / 100</strong>
           </div>
           <div className="comparison-score-row">
             <span><small>Score T0</small><strong>{comparison.baseline.total_score}/100</strong></span>
             <FontAwesomeIcon icon={faArrowTrendUp} />
-            <span><small>Score T+6</small><strong>{comparison.follow_up.total_score}/100</strong></span>
+            <span><small>Score de suivi</small><strong>{comparison.follow_up.total_score}/100</strong></span>
           </div>
           <div className="comparison-pillars">
             {comparison.pillars.map((pillar) => <div key={pillar.key}><strong>{pillar.label}</strong><span>{pillar.baseline_score}/25 → {pillar.score}/25</span><b className={pillar.delta >= 0 ? 'positive' : 'negative'}>{signedScore(pillar.delta)}</b></div>)}

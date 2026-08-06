@@ -15,9 +15,10 @@ import {
 import api, { getApiError } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { formatDateTime } from '../utils/time.js';
+import { PRICE_CATALOG } from '../config/offers.js';
 
 const FALLBACK_PLANS = [
-  { id: 'premium', name: 'Formateur', price: 5000 },
+  { id: 'premium', name: 'Formateur', price: PRICE_CATALOG.trainer.monthly, annual_price: PRICE_CATALOG.trainer.annual },
 ];
 
 const PLAN_DETAILS = {
@@ -94,11 +95,12 @@ export default function Subscription() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function handlePay(plan) {
-    setPayingPlan(plan);
+  async function handlePay(plan, billingPeriod = 'monthly') {
+    const paymentKey = `${plan}:${billingPeriod}`;
+    setPayingPlan(paymentKey);
     setError('');
     try {
-      const response = await api.post('/admin/subscription/checkout', { plan });
+      const response = await api.post('/admin/subscription/checkout', { plan, billing_period: billingPeriod });
       if (response.data.url) window.location.href = response.data.url;
     } catch (err) {
       setError(getApiError(err));
@@ -118,7 +120,7 @@ export default function Subscription() {
         <div>
           <span className="eyebrow"><FontAwesomeIcon icon={faCrown} /> Formules</span>
           <h1>Toutes les fonctionnalités pour vos évaluations</h1>
-          <p>Le forfait Formateur rassemble l’ensemble des outils Check Performance. L’offre est mensuelle.</p>
+          <p>Le forfait Formateur rassemble l’ensemble des outils Check Performance : 5 000 F CFA par mois ou 50 000 F CFA par an.</p>
         </div>
         <div className="header-actions">
           <Link className="secondary-btn" to="/guide"><FontAwesomeIcon icon={faCompass} /> Guide des formules</Link>
@@ -145,7 +147,8 @@ export default function Subscription() {
         {plans.map((plan) => {
           const details = PLAN_DETAILS[plan.id] || PLAN_DETAILS.free;
           const isCurrent = currentPlan === plan.id;
-          const isPaying = payingPlan === plan.id;
+          const isPayingMonthly = payingPlan === `${plan.id}:monthly`;
+          const isPayingAnnual = payingPlan === `${plan.id}:annual`;
 
           return (
             <article className={`subscription-plan-card ${plan.id === 'premium' ? 'recommended' : ''} ${isCurrent ? 'current' : ''}`} key={plan.id}>
@@ -170,17 +173,25 @@ export default function Subscription() {
               {plan.id === 'free' ? (
                 <button className="secondary-btn large" disabled>{isCurrent ? 'Formule actuelle' : 'Toujours disponible'}</button>
               ) : (
-                <button className={plan.id === 'premium' ? 'primary-btn large' : 'secondary-btn large'} onClick={() => handlePay(plan.id)} disabled={Boolean(payingPlan)}>
-                  <FontAwesomeIcon icon={isPaying ? faSpinner : faCreditCard} spin={isPaying} />{' '}
-                  {isPaying ? 'Redirection...' : isCurrent ? 'Renouveler pour 1 mois' : `Choisir à ${Number(plan.price).toLocaleString('fr-FR')} F`}
-                </button>
+                <div className="subscription-payment-actions">
+                  <button className={plan.id === 'premium' ? 'primary-btn large' : 'secondary-btn large'} onClick={() => handlePay(plan.id, 'monthly')} disabled={Boolean(payingPlan)}>
+                    <FontAwesomeIcon icon={isPayingMonthly ? faSpinner : faCreditCard} spin={isPayingMonthly} />{' '}
+                    {isPayingMonthly ? 'Redirection...' : isCurrent ? 'Renouveler 1 mois' : `Mensuel · ${Number(plan.price).toLocaleString('fr-FR')} F`}
+                  </button>
+                  {plan.annual_price > 0 && (
+                    <button className="secondary-btn large" onClick={() => handlePay(plan.id, 'annual')} disabled={Boolean(payingPlan)}>
+                      <FontAwesomeIcon icon={isPayingAnnual ? faSpinner : faCreditCard} spin={isPayingAnnual} />{' '}
+                      {isPayingAnnual ? 'Redirection...' : `Annuel · ${Number(plan.annual_price).toLocaleString('fr-FR')} F`}
+                    </button>
+                  )}
+                </div>
               )}
             </article>
           );
         })}
       </section>
 
-      <p className="subscription-secure">Paiement sécurisé via PayTech : Wave, Orange Money ou carte bancaire.</p>
+      <p className="subscription-secure">Premier mois offert sans carte. Paiement sécurisé via PayTech, sans renouvellement automatique : Wave, Orange Money ou carte bancaire.</p>
     </div>
   );
 }

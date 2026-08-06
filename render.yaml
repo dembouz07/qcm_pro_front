@@ -2,12 +2,33 @@ services:
   # Frontend React avec Vite
   - type: web
     name: qcm-frontend
-    runtime: node
+    runtime: static
     plan: free
+    domains:
+      - app.checkperformance.sn
+    renderSubdomainPolicy: disabled
     buildCommand: bash render-build.sh
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
+        sync: false
+      - key: VITE_COMMERCIAL_LAUNCH_ENABLED
+        value: false
+      - key: VITE_LEGAL_NAME
+        sync: false
+      - key: VITE_LEGAL_ADDRESS
+        sync: false
+      - key: VITE_LEGAL_REGISTRATION
+        sync: false
+      - key: VITE_LEGAL_PUBLISHER
+        sync: false
+      - key: VITE_PRIVACY_EMAIL
+        sync: false
+      - key: VITE_DATA_HOSTING_DETAILS
+        sync: false
+      - key: VITE_TRANSFER_GUARANTEES
+        sync: false
+      - key: VITE_RETENTION_PROCESS
         sync: false
     headers:
       - path: /*
@@ -16,6 +37,18 @@ services:
       - path: /*
         name: X-Content-Type-Options
         value: nosniff
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.checkperformance.sn; manifest-src 'self'; form-action 'self'; upgrade-insecure-requests"
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=(), payment=()
     routes:
       - type: rewrite
         source: /*

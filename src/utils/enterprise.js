@@ -1,6 +1,6 @@
 export const ASSESSMENT_TYPE_LABELS = {
   initial: 'Diagnostic initial · T0',
-  follow_up: 'Entretien de suivi · T+6 mois',
+  follow_up: 'Entretien de suivi · cible T+6 mois',
 };
 
 export function formatAssessmentType(type) {
@@ -32,4 +32,13 @@ export function todayInputValue() {
   const date = new Date();
   const offset = date.getTimezoneOffset();
   return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 10);
+}
+
+export function addMonthsToDateValue(value, months) {
+  const [year, month, day] = String(value).split('-').map(Number);
+  if (!year || !month || !day) return '';
+  const firstOfTarget = new Date(Date.UTC(year, month - 1 + months, 1));
+  const lastDay = new Date(Date.UTC(firstOfTarget.getUTCFullYear(), firstOfTarget.getUTCMonth() + 1, 0)).getUTCDate();
+  const target = new Date(Date.UTC(firstOfTarget.getUTCFullYear(), firstOfTarget.getUTCMonth(), Math.min(day, lastDay)));
+  return target.toISOString().slice(0, 10);
 }

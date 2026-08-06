@@ -19,9 +19,14 @@ import { canAdvanceProgressiveStage } from '../quizFormValidation.js';
 import { useAntiCheat } from '../useAntiCheat.js';
 import AntiCheatRules from '../components/AntiCheatRules.jsx';
 
+const IN_PROGRESS_TTL_MS = 24 * 60 * 60 * 1000;
+const SUBMITTED_TTL_MS = 24 * 60 * 60 * 1000;
+
 export default function PublicQuiz() {
   const { token } = useParams();
   const storageKey = `qcm_public_${token}`;
+  const attemptIdRef = useRef(null);
+  const resultAccessTokenRef = useRef(null);
 
   // Étapes : 'loading' | 'info' | 'quiz' | 'progressive' | 'result' | 'error'
   const [step, setStep] = useState('loading');
@@ -67,11 +72,17 @@ export default function PublicQuiz() {
   const autoSubmittedRef = useRef(false);
   const restoredRef = useRef(false);
 
-  // ─── Persistance locale (localStorage) ─────────────────
+  // ─── Reprise limitée à l'onglet courant (sessionStorage) ──────────────
   function loadStored() {
     try {
-      const raw = localStorage.getItem(storageKey);
-      return raw ? JSON.parse(raw) : null;
+      localStorage.removeItem(storageKey);
+      const raw = sessionStorage.getItem(storageKey);
+      const stored = raw ? JSON.parse(raw) : null;
+      if (stored?.expiresAt && stored.expiresAt < Date.now()) {
+        sessionStorage.removeItem(storageKey);
+        return null;
+      }
+      return stored;
     } catch {
       return null;
     }
@@ -80,7 +91,14 @@ export default function PublicQuiz() {
   function saveStored(patch) {
     try {
       const current = loadStored() || {};
-      localStorage.setItem(storageKey, JSON.stringify({ ...current, ...patch }));
+      const ttl = patch.submitted ? SUBMITTED_TTL_MS : IN_PROGRESS_TTL_MS;
+      sessionStorage.setItem(storageKey, JSON.stringify({
+        ...current,
+        ...patch,
+        attemptId: attemptIdRef.current,
+        resultAccessToken: resultAccessTokenRef.current,
+        expiresAt: Date.now() + ttl,
+      }));
     } catch {
       // ignore les erreurs de quota / mode privé
     }
@@ -110,7 +128,36 @@ export default function PublicQuiz() {
       });
   }, [token]);
 
-  // Restaure l'état depuis localStorage (résultat déjà obtenu ou quiz en cours)
+  async function recoverStoredSubmission(stored) {
+    const accessToken = stored?.resultAccessToken || resultAccessTokenRef.current;
+    if (!accessToken) return false;
+
+    try {
+      const response = await api.post('/public/my-results', { access_token: accessToken });
+      const recovered = response.data.data?.[0];
+      if (!recovered) return false;
+
+      setNom(stored?.nom || '');
+      setPrenom(stored?.prenom || '');
+      setReferentiel(stored?.referentiel || '');
+
+      if (recovered.quiz_type === 'progressive') {
+        const recoveredProgressive = { stade_atteint: recovered.stade_atteint, stage_scores: null };
+        setProgressiveResult(recoveredProgressive);
+        saveStored({ submitted: true, inProgress: false, progressiveResult: recoveredProgressive });
+      } else {
+        setResult(recovered);
+        saveStored({ submitted: true, inProgress: false, result: recovered });
+      }
+
+      setStep('result');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Restaure l'état depuis sessionStorage (résultat déjà obtenu ou quiz en cours)
   async function restoreState(info) {
     if (restoredRef.current) {
       setStep('info');
@@ -119,6 +166,8 @@ export default function PublicQuiz() {
     restoredRef.current = true;
 
     const stored = loadStored();
+    if (stored?.attemptId) attemptIdRef.current = stored.attemptId;
+    if (stored?.resultAccessToken) resultAccessTokenRef.current = stored.resultAccessToken;
 
     // Déjà soumis : on réaffiche directement le résultat (interdit de refaire)
     if (stored?.submitted) {
@@ -130,6 +179,10 @@ export default function PublicQuiz() {
       setStep('result');
       return;
     }
+
+    // Une réponse HTTP peut être perdue après l'enregistrement côté serveur.
+    // Le code secret permet alors de récupérer le résultat sans recréer de soumission.
+    if (stored?.inProgress && await recoverStoredSubmission(stored)) return;
 
     // Pré-remplir l'identité si connue
     if (stored?.nom) setNom(stored.nom);
@@ -144,10 +197,13 @@ export default function PublicQuiz() {
     if (stored?.inProgress && info.is_open && hasRequiredIdentity) {
       try {
         const response = await api.post(`/public/quiz/${token}/start`, {
+          attempt_id: attemptIdRef.current,
           nom: stored.nom,
           prenom: stored.prenom,
           ...(info.type === 'progressive' ? {} : { referentiel: stored.referentiel }),
         });
+        attemptIdRef.current = response.data.attempt_id || attemptIdRef.current;
+        resultAccessTokenRef.current = response.data.result_access_token || resultAccessTokenRef.current;
         setQuiz(response.data);
         setAnswers(stored.answers || {});
         if (response.data.type === 'progressive') {
@@ -158,7 +214,8 @@ export default function PublicQuiz() {
         }
         return;
       } catch {
-        // si la reprise échoue (ex: déjà soumis côté serveur), on retombe sur l'accueil
+        if (await recoverStoredSubmission(stored)) return;
+        // Si la reprise échoue réellement, on retombe sur l'accueil.
       }
     }
 
@@ -223,10 +280,13 @@ export default function PublicQuiz() {
 
     try {
       const response = await api.post(`/public/quiz/${token}/start`, {
+        attempt_id: attemptIdRef.current,
         nom,
         prenom,
         ...(quizInfo?.type === 'progressive' ? {} : { referentiel }),
       });
+      attemptIdRef.current = response.data.attempt_id || attemptIdRef.current;
+      resultAccessTokenRef.current = response.data.result_access_token || resultAccessTokenRef.current;
       setQuiz(response.data);
       if (response.data.type === 'progressive') {
         setCurrentStage(0);
@@ -235,6 +295,7 @@ export default function PublicQuiz() {
         setStep('quiz');
       }
     } catch (err) {
+      if (err?.response?.status === 409 && await recoverStoredSubmission(loadStored())) return;
       setError(getApiError(err));
     } finally {
       setLoading(false);
@@ -286,6 +347,8 @@ export default function PublicQuiz() {
     setError('');
 
     const payload = {
+      attempt_id: attemptIdRef.current,
+      result_access_token: resultAccessTokenRef.current,
       nom,
       prenom,
       answers: Object.entries(answers).map(([questionId, choiceId]) => ({
@@ -313,6 +376,7 @@ export default function PublicQuiz() {
       });
       setStep('result');
     } catch (err) {
+      if (err?.response?.status === 409 && await recoverStoredSubmission(loadStored())) return;
       setError(getApiError(err));
     } finally {
       submittingRef.current = false;
@@ -323,6 +387,8 @@ export default function PublicQuiz() {
   function buildPayload(auto = false) {
     const currentAnswers = auto ? answersRef.current : answers;
     return {
+      attempt_id: attemptIdRef.current,
+      result_access_token: resultAccessTokenRef.current,
       nom,
       prenom,
       referentiel,
@@ -365,6 +431,7 @@ export default function PublicQuiz() {
         result: response.data.submission
       });
     } catch (err) {
+      if (err?.response?.status === 409 && await recoverStoredSubmission(loadStored())) return;
       setError(getApiError(err));
     } finally {
       submittingRef.current = false;
@@ -443,8 +510,8 @@ export default function PublicQuiz() {
               ))}
             </div>
           )}
-          <Link className="secondary-btn" to="/mes-notes" style={{ marginTop: '1.5rem' }}>
-            <FontAwesomeIcon icon={faClipboardList} /> Voir toutes mes notes
+          <Link className="secondary-btn" to={`/mes-notes#access=${encodeURIComponent(resultAccessTokenRef.current)}`} style={{ marginTop: '1.5rem' }}>
+            <FontAwesomeIcon icon={faClipboardList} /> Consulter ce résultat
           </Link>
         </div>
       </div>
@@ -461,8 +528,8 @@ export default function PublicQuiz() {
           <p>Merci <strong>{prenom} {nom}</strong>, votre note a été enregistrée.</p>
           <div className="final-score">{result.note_sur_20}/20</div>
           <p className="muted">Score : {result.score}/{result.total_points} · {result.percentage}%</p>
-          <Link className="secondary-btn" to="/mes-notes" style={{ marginTop: '1.5rem' }}>
-            <FontAwesomeIcon icon={faClipboardList} /> Voir toutes mes notes
+          <Link className="secondary-btn" to={`/mes-notes#access=${encodeURIComponent(resultAccessTokenRef.current)}`} style={{ marginTop: '1.5rem' }}>
+            <FontAwesomeIcon icon={faClipboardList} /> Consulter ce résultat
           </Link>
         </div>
       </div>
@@ -573,6 +640,10 @@ export default function PublicQuiz() {
                 />
               </label>
             )}
+
+            <p className="span-2 muted collection-notice">
+              Votre identité, vos réponses et votre résultat seront accessibles à l’organisateur de cette évaluation. Un code secret temporaire vous permettra de rouvrir le résultat pendant 30 jours. <Link to="/confidentialite#informations-par-public">Comment vos données sont utilisées</Link>.
+            </p>
 
             <button className="primary-btn span-2" disabled={loading}>
               <FontAwesomeIcon icon={faCircleQuestion} /> {loading ? 'Chargement...' : 'Accéder au QCM'}
