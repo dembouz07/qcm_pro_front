@@ -5,6 +5,7 @@ import { faCalendarCheck, faCheckCircle, faClock, faLock, faPenToSquare, faRotat
 import api, { getApiError } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { countdownTo, formatDateTime } from '../utils/time.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 function statusInfo(status) {
   return {
@@ -116,7 +117,7 @@ export default function StudentDashboard() {
           <h1>Mes QCM</h1>
           <p>
             Vous voyez uniquement les QCM programmés pour votre classe
-            {studentClass?.name ? ` : ${studentClass.name}.` : '.'}
+            {studentClass?.name ? ` : ${formatClassLabel(studentClass)}.` : '.'}
           </p>
         </div>
         <button className="secondary-btn" type="button" onClick={loadQuizzes} disabled={loading}>
@@ -151,7 +152,7 @@ export default function StudentDashboard() {
               <div className={`status-pill ${info.className}`}><FontAwesomeIcon icon={info.icon} /> {info.label}</div>
               <h2>{quiz.title}</h2>
               <p>{quiz.description || 'Aucune description.'}</p>
-              {quiz.school_class?.name && <div className="meta-line">Classe : {quiz.school_class.name}</div>}
+              {quiz.school_class?.name && <div className="meta-line">Classe : {formatClassLabel(quiz.school_class)}</div>}
               <div className="meta-line"><FontAwesomeIcon icon={faCalendarCheck} /> Ouverture : {formatDateTime(quiz.starts_at)}</div>
               {quiz.ends_at && <div className="meta-line"><FontAwesomeIcon icon={faClock} /> Fermeture : {formatDateTime(quiz.ends_at)}</div>}
               <div className="meta-line">{quiz.questions_count} questions</div>

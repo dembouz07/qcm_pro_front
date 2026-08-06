@@ -6,6 +6,7 @@ import { faChartLine, faClock, faCirclePlus, faFileImport, faLayerGroup, faMedal
 import api from '../api.js';
 import CountUp from '../components/CountUp.jsx';
 import { formatDateTime } from '../utils/time.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 const rise = {
@@ -72,7 +73,7 @@ export default function AdminDashboard() {
               transition={{ delay: 0.25 + i * 0.06 }} whileHover={{ x: 4 }}>
               <div>
                 <strong>{quiz.title}</strong>
-                <small>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || 'Sans classe')} · {quiz.questions_count} questions</small>
+                <small>{quiz.type === 'progressive' ? 'Public' : formatClassLabel(quiz.school_class)} · {quiz.questions_count} questions</small>
               </div>
               <span className="badge">
                 {quiz.type === 'progressive'

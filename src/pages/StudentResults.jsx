@@ -5,6 +5,7 @@ import { faAward, faMedal, faTrophy, faRotateRight, faTriangleExclamation, faLis
 import api, { getApiError } from '../api.js';
 import CorrectionView from '../components/CorrectionView.jsx';
 import { formatDateTime } from '../utils/time.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 export default function StudentResults() {
   const [results, setResults] = useState([]);
@@ -85,6 +86,7 @@ export default function StudentResults() {
             <thead>
               <tr>
                 <th>QCM</th>
+                <th>Classe</th>
                 <th>Score</th>
                 <th>Résultat</th>
                 <th>Passé le</th>
@@ -95,6 +97,7 @@ export default function StudentResults() {
               {results.map((r) => (
                 <tr key={r.id}>
                   <td><strong>{r.quiz_title}</strong></td>
+                  <td>{formatClassLabel({ name: r.school_class, academic_year: r.academic_year }, '-')}</td>
                   <td>{r.score}/{r.total_points}</td>
                   <td>
                     {r.quiz_type === 'progressive' ? (

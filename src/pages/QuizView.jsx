@@ -23,6 +23,7 @@ import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
 import { formatDateTime } from '../utils/time.js';
 import { useAuth } from '../AuthContext.jsx';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 function toNonNegativeNumber(value) {
   const number = Number(value);
@@ -226,7 +227,7 @@ export default function QuizView() {
             <p class="meta">
               ${quiz.type === 'progressive'
                 ? 'Accès public'
-                : `Classe : ${escapeHtml(quiz.school_class?.name || 'Non renseignée')}`}
+                : `Classe : ${escapeHtml(formatClassLabel(quiz.school_class, 'Non renseignée'))}`}
               · ${Number(stats.submissions || 0)} soumission(s)
               · Exporté le ${escapeHtml(new Date().toLocaleString('fr-FR'))}
             </p>
@@ -328,7 +329,7 @@ export default function QuizView() {
             </div>
             <div className="info-item">
               <span className="info-label"><FontAwesomeIcon icon={faLayerGroup} /> {quiz.type === 'progressive' ? 'Accès' : 'Classe'}</span>
-              <span>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || '-')}</span>
+              <span>{quiz.type === 'progressive' ? 'Public' : formatClassLabel(quiz.school_class, '-')}</span>
             </div>
             {quiz.type !== 'progressive' ? (
               <>
