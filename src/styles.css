@@ -1023,6 +1023,7 @@ tr:last-child td { border-bottom: 0; }
 .filter-group {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
   flex: 1;
 }
@@ -1043,7 +1044,8 @@ tr:last-child td { border-bottom: 0; }
   color: var(--text);
 }
 
-.filter-group select {
+.filter-group select,
+.filter-group input[type="date"] {
   width: auto;
   min-width: 200px;
   padding: 10px 14px;
@@ -1054,14 +1056,23 @@ tr:last-child td { border-bottom: 0; }
   transition: 0.2s ease;
 }
 
-.filter-group select:hover {
+.filter-group select:hover,
+.filter-group input[type="date"]:hover {
   border-color: rgba(91, 92, 246, 0.4);
 }
 
-.filter-group select:focus {
+.filter-group select:focus,
+.filter-group input[type="date"]:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(91, 92, 246, 0.10);
 }
+
+.filter-reset {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.results-filter-empty p { margin: 0 0 12px; }
 
 .filter-count {
   display: inline-flex;
@@ -1091,8 +1102,15 @@ tr:last-child td { border-bottom: 0; }
     align-items: flex-start;
   }
   
-  .filter-group select {
+  .filter-group select,
+  .filter-group input[type="date"] {
     width: 100%;
+  }
+
+  .filter-reset {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
   }
   
   .filter-count {

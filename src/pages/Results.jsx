@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAward, faChartLine, faCheck, faEye, faMedal, faXmark, faFilter, faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
@@ -6,15 +6,23 @@ import * as XLSX from 'xlsx';
 import api from '../api.js';
 import { formatDateTime } from '../utils/time.js';
 import { formatClassLabel } from '../utils/academicYear.js';
+import { filterGradeResults, toLocalDateValue } from '../utils/resultFilters.js';
 
 export default function Results() {
-  const [results, setResults] = useState([]);
   const [allResults, setAllResults] = useState([]);
   const [classes, setClasses] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedQuiz, setSelectedQuiz] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const [selected, setSelected] = useState(null);
+  const results = useMemo(() => filterGradeResults(allResults, {
+    classId: selectedClass,
+    quizId: selectedQuiz,
+    submittedDate: selectedDate,
+  }), [allResults, selectedClass, selectedQuiz, selectedDate]);
+  const hasActiveFilters = selectedClass !== '' || selectedQuiz !== '' || selectedDate !== '';
+  const today = toLocalDateValue(new Date());
 
   // Nom du participant : élève connecté OU participant public (nom/prénom)
   function participantName(result) {
@@ -90,41 +98,23 @@ export default function Results() {
     win.document.close();
   }
 
-  function applyFilters(data, classId, quizId) {
-    let filtered = data;
-    if (classId !== '') {
-      const cid = parseInt(classId, 10);
-      // On ne garde que les notes dont le QCM appartient à la classe choisie.
-      filtered = filtered.filter((result) => {
-        const quizClassId = result.quiz?.school_class?.id ?? result.quiz?.school_class_id;
-        return Number(quizClassId) === cid;
-      });
-    }
-    if (quizId !== '') {
-      filtered = filtered.filter((result) => result.quiz?.id === parseInt(quizId, 10));
-    }
-    return filtered;
-  }
-
   // Fonction pour charger les résultats
-  const loadResults = () => {
+  const loadResults = useCallback(() => {
     Promise.all([
       api.get('/admin/results'),
       api.get('/admin/classes'),
       api.get('/admin/quizzes')
     ]).then(([resultsResponse, classesResponse, quizzesResponse]) => {
-      const resultsData = resultsResponse.data;
-      setAllResults(resultsData);
-      setResults(applyFilters(resultsData, selectedClass, selectedQuiz));
+      setAllResults(resultsResponse.data);
       setClasses(classesResponse.data);
       setQuizzes(quizzesResponse.data);
     });
-  };
+  }, []);
 
   // Charger les résultats au montage
   useEffect(() => {
     loadResults();
-  }, []);
+  }, [loadResults]);
 
   // Recharger automatiquement toutes les 30 secondes pour voir les nouvelles soumissions
   useEffect(() => {
@@ -132,17 +122,17 @@ export default function Results() {
       loadResults();
     }, 30000); // 30 secondes
     return () => clearInterval(interval);
-  }, [selectedClass, selectedQuiz]);
+  }, [loadResults]);
 
   function handleClassFilter(classId) {
     setSelectedClass(classId);
     setSelectedQuiz(''); // réinitialise le filtre QCM (il ne concerne plus la même classe)
-    setResults(applyFilters(allResults, classId, ''));
   }
 
-  function handleQuizFilter(quizId) {
-    setSelectedQuiz(quizId);
-    setResults(applyFilters(allResults, selectedClass, quizId));
+  function resetFilters() {
+    setSelectedClass('');
+    setSelectedQuiz('');
+    setSelectedDate('');
   }
 
   return (
@@ -177,7 +167,7 @@ export default function Results() {
           </label>
           <label>
             QCM :
-            <select value={selectedQuiz} onChange={(e) => handleQuizFilter(e.target.value)}>
+            <select value={selectedQuiz} onChange={(e) => setSelectedQuiz(e.target.value)}>
               <option value="">Tous les QCM</option>
               {quizzes
                 .filter((quiz) => selectedClass === '' || Number(quiz.school_class?.id ?? quiz.school_class_id) === parseInt(selectedClass, 10))
@@ -186,14 +176,38 @@ export default function Results() {
                 ))}
             </select>
           </label>
-          <span className="filter-count">
-            {results.length} résultat{results.length > 1 ? 's' : ''}
+          <label>
+            Date de passage :
+            <input
+              type="date"
+              value={selectedDate}
+              max={today}
+              onChange={(event) => setSelectedDate(event.target.value)}
+              title="Afficher les notes envoyées à cette date"
+            />
+          </label>
+          {hasActiveFilters && (
+            <button className="secondary-btn small filter-reset" type="button" onClick={resetFilters}>
+              <FontAwesomeIcon icon={faXmark} /> Réinitialiser
+            </button>
+          )}
+          <span className="filter-count" aria-live="polite">
+            {results.length} résultat{results.length !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
 
       <div className="panel table-panel results-table-panel">
-        {results.length === 0 ? <div className="empty">Aucune soumission pour le moment.</div> : (
+        {results.length === 0 ? (
+          <div className="empty results-filter-empty">
+            <p>{hasActiveFilters ? 'Aucun résultat ne correspond aux filtres sélectionnés.' : 'Aucune soumission pour le moment.'}</p>
+            {hasActiveFilters && (
+              <button className="secondary-btn small" type="button" onClick={resetFilters}>
+                <FontAwesomeIcon icon={faXmark} /> Effacer les filtres
+              </button>
+            )}
+          </div>
+        ) : (
           <table>
             <thead>
               <tr>
