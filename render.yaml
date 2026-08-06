@@ -39,7 +39,7 @@ services:
         value: nosniff
       - path: /*
         name: Content-Security-Policy
-        value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.checkperformance.sn; manifest-src 'self'; form-action 'self'; upgrade-insecure-requests"
+        value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.checkperformance.sn https://qcm-pro-back-main-ipg9zr.laravel.cloud; manifest-src 'self'; form-action 'self'; upgrade-insecure-requests"
       - path: /*
         name: Strict-Transport-Security
         value: max-age=31536000; includeSubDomains
