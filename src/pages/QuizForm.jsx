@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarDays, faCheckCircle, faCircle, faCirclePlus, faCircleQuestion, faFloppyDisk, faPlus, faTrash, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { validateStandardQuiz } from '../quizFormValidation.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 const emptyQuestion = () => ({
   body: '',
@@ -127,7 +128,7 @@ export default function QuizForm() {
             Classe concernée
             <select value={form.school_class_id} onChange={(e) => setForm({ ...form, school_class_id: e.target.value })} required>
               <option value="">Choisir une classe</option>
-              {classes.map((classe) => <option key={classe.id} value={classe.id}>{classe.name}</option>)}
+              {classes.map((classe) => <option key={classe.id} value={classe.id}>{formatClassLabel(classe)}</option>)}
             </select>
           </label>
           <label>

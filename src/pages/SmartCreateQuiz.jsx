@@ -8,6 +8,7 @@ import {
 import api, { getApiError } from '../api.js';
 import { parseQuiz } from '../quizParser.js';
 import { validateStandardQuiz } from '../quizFormValidation.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 const SAMPLE = `1. Quelle est la capitale du Sénégal ?
 A) Dakar
@@ -165,7 +166,7 @@ b. Choix ✓
               Classe concernée
               <select value={meta.school_class_id} onChange={(e) => setMeta({ ...meta, school_class_id: e.target.value })} required>
                 <option value="">Choisir une classe</option>
-                {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {classes.map((c) => <option key={c.id} value={c.id}>{formatClassLabel(c)}</option>)}
               </select>
             </label>
             <label>

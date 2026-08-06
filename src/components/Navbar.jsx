@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBookOpen, faBuilding, faChartLine, faClipboardCheck, faClipboardQuestion, faCirclePlus, faCompass, faCrown, faDoorOpen, faGear, faLayerGroup, faSackDollar, faUserShield, faUsers, faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../AuthContext.jsx';
 import { homePathFor } from '../utils/homePath.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 export default function Navbar() {
   const { user, loading, logout } = useAuth();
@@ -46,7 +47,7 @@ export default function Navbar() {
           <FontAwesomeIcon icon={user.role === 'superadmin' ? faCrown : user.role === 'admin' ? faUserShield : user.role === 'enterprise' ? faBuilding : faBookOpen} />
           <div>
             <strong>{user.name}</strong>
-            <small>{user.role === 'superadmin' ? 'Super-administrateur' : user.role === 'admin' ? 'Formateur' : user.role === 'enterprise' ? user.company?.name || 'Entreprise' : user.school_class?.name || 'Élève'}</small>
+            <small>{user.role === 'superadmin' ? 'Super-administrateur' : user.role === 'admin' ? 'Formateur' : user.role === 'enterprise' ? user.company?.name || 'Entreprise' : formatClassLabel(user.school_class, 'Élève')}</small>
           </div>
         </div>
 

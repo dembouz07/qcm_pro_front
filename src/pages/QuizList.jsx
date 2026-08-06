@@ -8,6 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 const PAGE_SIZE = 8;
 
@@ -108,7 +109,7 @@ export default function QuizList() {
       .filter((q) => {
         if (!s) return true;
         return (q.title || '').toLowerCase().includes(s)
-          || (q.school_class?.name || '').toLowerCase().includes(s);
+          || formatClassLabel(q.school_class, '').toLowerCase().includes(s);
       });
   }, [quizzes, tab, search]);
 
@@ -195,7 +196,7 @@ export default function QuizList() {
                         <small className="text-muted"> {quiz.description.substring(0, 50)}...</small>
                       )}
                     </td>
-                    <td>{quiz.type === 'progressive' ? 'Public' : (quiz.school_class?.name || '-')}</td>
+                    <td>{quiz.type === 'progressive' ? 'Public' : formatClassLabel(quiz.school_class, '-')}</td>
                     <td>{quiz.questions_count || 0}</td>
                     <td>{quiz.submissions_count || 0}</td>
                     <td>{getStatusBadge(quiz)}</td>

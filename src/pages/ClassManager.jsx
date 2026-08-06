@@ -1,13 +1,15 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass, faKey, faCopy, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { faLayerGroup, faPlus, faTrash, faUsers, faChevronRight, faEnvelope, faUserGraduate, faMagnifyingGlass, faKey, faCopy, faChartLine, faCalendarDays } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
+import { formatClassLabel, getAcademicYearOptions, getCurrentAcademicYear, isValidAcademicYear } from '../utils/academicYear.js';
 
 export default function ClassManager() {
   const [classes, setClasses] = useState([]);
-  const [form, setForm] = useState({ name: '', code: '' });
+  const [form, setForm] = useState(() => ({ name: '', academic_year: getCurrentAcademicYear(), code: '' }));
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState(() => getCurrentAcademicYear());
   const [error, setError] = useState('');
   const { confirm } = useDialog();
 
@@ -17,6 +19,12 @@ export default function ClassManager() {
   const [search, setSearch] = useState('');
   const [copied, setCopied] = useState(false);
   const studentsRef = useRef(null);
+  const academicYears = useMemo(() => getAcademicYearOptions(classes), [classes]);
+  const filteredClasses = useMemo(() => (
+    selectedAcademicYear
+      ? classes.filter((classe) => classe.academic_year === selectedAcademicYear)
+      : classes
+  ), [classes, selectedAcademicYear]);
 
   async function loadClasses() {
     const response = await api.get('/admin/classes');
@@ -56,12 +64,26 @@ export default function ClassManager() {
   async function addClass(event) {
     event.preventDefault();
     setError('');
+    if (!isValidAcademicYear(form.academic_year)) {
+      setError('L’année scolaire doit respecter le format AAAA-AAAA avec deux années consécutives (ex. 2026-2027).');
+      return;
+    }
     try {
       await api.post('/admin/classes', form);
-      setForm({ name: '', code: '' });
+      setSelectedAcademicYear(form.academic_year);
+      setForm({ name: '', academic_year: form.academic_year, code: '' });
       await loadClasses();
     } catch (err) {
       setError(getApiError(err));
+    }
+  }
+
+  function filterByAcademicYear(academicYear) {
+    setSelectedAcademicYear(academicYear);
+    if (selectedClass && academicYear && selectedClass.academic_year !== academicYear) {
+      setSelectedClass(null);
+      setStudents([]);
+      setSearch('');
     }
   }
 
@@ -90,19 +112,42 @@ export default function ClassManager() {
         </div>
       </div>
 
-      <form className="panel inline-form" onSubmit={addClass}>
+      <form className="panel inline-form class-create-form" onSubmit={addClass}>
         {error && <div className="alert error full">{error}</div>}
         <input placeholder="Nom de la classe" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+        <input
+          aria-label="Année scolaire"
+          title="Format attendu : 2026-2027"
+          placeholder="Année : 2026-2027"
+          value={form.academic_year}
+          onChange={(e) => setForm({ ...form, academic_year: e.target.value })}
+          pattern="[0-9]{4}-[0-9]{4}"
+          maxLength="9"
+          required
+        />
         <input placeholder="Code (laisser vide = auto)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
         <button className="primary-btn"><FontAwesomeIcon icon={faPlus} /> Ajouter</button>
       </form>
 
       <div className="grid-two">
         <div className="panel">
-          <h2><FontAwesomeIcon icon={faLayerGroup} /> Classes</h2>
+          <div className="class-list-header">
+            <h2><FontAwesomeIcon icon={faLayerGroup} /> Classes</h2>
+            <label className="class-year-filter">
+              <span><FontAwesomeIcon icon={faCalendarDays} /> Année scolaire</span>
+              <select value={selectedAcademicYear} onChange={(e) => filterByAcademicYear(e.target.value)}>
+                <option value="">Toutes les années</option>
+                {academicYears.map((academicYear) => (
+                  <option key={academicYear} value={academicYear}>{academicYear}</option>
+                ))}
+              </select>
+            </label>
+          </div>
           {classes.length === 0 ? <div className="empty">Aucune classe créée.</div> : (
             <div className="classes-scroll">
-              {classes.map((classe) => (
+              {filteredClasses.length === 0 ? (
+                <div className="empty">Aucune classe pour l’année {selectedAcademicYear}.</div>
+              ) : filteredClasses.map((classe) => (
                 <div
                   className={`list-item class-row ${selectedClass?.id === classe.id ? 'selected' : ''}`}
                   key={classe.id}
@@ -110,7 +155,7 @@ export default function ClassManager() {
                   role="button"
                 >
                   <div>
-                    <strong>{classe.name}</strong>
+                    <strong>{formatClassLabel(classe)}</strong>
                     <small>Code : {classe.code || '—'} · {classe.quizzes_count || 0} QCM</small>
                   </div>
                   <div className="row-actions">
@@ -130,7 +175,7 @@ export default function ClassManager() {
         </div>
 
         <div className="panel" ref={studentsRef} style={{ scrollMarginTop: '80px' }}>
-          <h2><FontAwesomeIcon icon={faUserGraduate} /> Étudiants {selectedClass ? `· ${selectedClass.name}` : ''}</h2>
+          <h2><FontAwesomeIcon icon={faUserGraduate} /> Étudiants {selectedClass ? `· ${formatClassLabel(selectedClass)}` : ''}</h2>
           {!selectedClass ? (
             <div className="empty">Sélectionnez une classe à gauche pour voir ses étudiants.</div>
           ) : (

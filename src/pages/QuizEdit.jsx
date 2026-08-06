@@ -10,6 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { useDialog } from '../components/DialogProvider.jsx';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 export default function QuizEdit() {
   const { id } = useParams();
@@ -163,7 +164,7 @@ export default function QuizEdit() {
           >
             <option value="">Choisir une classe</option>
             {classes.map((classe) => (
-              <option key={classe.id} value={classe.id}>{classe.name}</option>
+              <option key={classe.id} value={classe.id}>{formatClassLabel(classe)}</option>
             ))}
           </select>
         </label>

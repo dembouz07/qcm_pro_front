@@ -291,6 +291,7 @@ label { display: flex; flex-direction: column; gap: 8px; font-weight: 800; color
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .span-2, .full { grid-column: 1 / -1; }
 .inline-form { display: grid; grid-template-columns: 1fr 180px auto; gap: 12px; align-items: end; margin-bottom: 24px; }
+.class-create-form { grid-template-columns: minmax(0, 1fr) 170px 180px auto; }
 
 .input-icon { position: relative; }
 .input-icon svg { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: var(--muted); }
@@ -1411,6 +1412,18 @@ tr:last-child td { border-bottom: 0; }
 }
 
 /* ─── Classes cliquables ────────────────────────────── */
+.class-list-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.class-list-header h2 { margin: 0; }
+.class-year-filter { gap: 5px; font-size: 0.82rem; }
+.class-year-filter span { color: var(--muted); }
+.class-year-filter select { min-width: 170px; padding: 9px 12px; border-radius: 11px; }
+
 .class-row {
   cursor: pointer;
   padding-left: 12px;
@@ -1820,6 +1833,9 @@ tr:last-child td { border-bottom: 0; }
   }
   .class-code-banner strong { font-size: 1.3rem; }
   .class-code-banner .secondary-btn { width: 100%; justify-content: center; }
+
+  .class-list-header { align-items: stretch; flex-direction: column; }
+  .class-year-filter select { width: 100%; }
 
   /* En-tête de page : aligné à gauche, compact */
   .page-header { gap: 14px; margin-bottom: 20px; }

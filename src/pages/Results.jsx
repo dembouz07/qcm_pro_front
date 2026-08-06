@@ -5,6 +5,7 @@ import { faAward, faChartLine, faCheck, faEye, faMedal, faXmark, faFilter, faFil
 import * as XLSX from 'xlsx';
 import api from '../api.js';
 import { formatDateTime } from '../utils/time.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 export default function Results() {
   const [results, setResults] = useState([]);
@@ -26,7 +27,7 @@ export default function Results() {
   function participantContext(result) {
     if (result.participant_referentiel) return result.participant_referentiel;
     if (result.quiz?.type === 'progressive') return 'Public';
-    return result.user?.school_class?.name || result.quiz?.school_class?.name || '-';
+    return formatClassLabel(result.user?.school_class || result.quiz?.school_class, '-');
   }
 
   // Prépare les lignes à exporter (selon le filtre courant)
@@ -170,7 +171,7 @@ export default function Results() {
             <select value={selectedClass} onChange={(e) => handleClassFilter(e.target.value)}>
               <option value="">Toutes les classes</option>
               {classes.map((classe) => (
-                <option key={classe.id} value={classe.id}>{classe.name}</option>
+                <option key={classe.id} value={classe.id}>{formatClassLabel(classe)}</option>
               ))}
             </select>
           </label>

@@ -16,6 +16,7 @@ import {
 import api, { getApiError } from '../api.js';
 import CorrectionView from '../components/CorrectionView.jsx';
 import { formatDateTime } from '../utils/time.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 export default function StudentGradebook() {
   const { id } = useParams();
@@ -89,7 +90,7 @@ export default function StudentGradebook() {
             <span><FontAwesomeIcon icon={faUserGraduate} /></span>
             <div>
               <h2>{gradebook.student.name}</h2>
-              <p>{gradebook.student.email} · {gradebook.student.class?.name || 'Sans classe'}</p>
+              <p>{gradebook.student.email} · {formatClassLabel(gradebook.student.class)}</p>
             </div>
           </section>
 
@@ -130,7 +131,10 @@ export default function StudentGradebook() {
                   {results.map((result) => (
                     <tr key={result.id}>
                       <td><strong>{result.quiz?.title || 'QCM supprimé'}</strong></td>
-                      <td>{result.quiz?.class || gradebook.student.class?.name || '-'}</td>
+                      <td>{formatClassLabel({
+                        name: result.quiz?.class || gradebook.student.class?.name,
+                        academic_year: result.quiz?.academic_year || gradebook.student.class?.academic_year,
+                      }, '-')}</td>
                       <td>{result.score}/{result.total_points}</td>
                       <td>
                         {result.quiz?.type === 'progressive' ? (

@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarDays, faDownload, faFileCsv, faFileImport, faFileLines, faUpload, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';
 import { validateQuizImport } from '../quizFormValidation.js';
+import { formatClassLabel } from '../utils/academicYear.js';
 
 export default function ImportQuiz() {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ export default function ImportQuiz() {
               required
             >
               <option value="">Choisir une classe</option>
-              {classes.map((classe) => <option key={classe.id} value={classe.id}>{classe.name}</option>)}
+              {classes.map((classe) => <option key={classe.id} value={classe.id}>{formatClassLabel(classe)}</option>)}
             </select>
           </label>
 
