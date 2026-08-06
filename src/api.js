@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+const configuredApiURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const usesVercelSameOriginProxy = typeof window !== 'undefined'
+  && window.location.hostname.endsWith('.vercel.app');
+const apiBaseURL = usesVercelSameOriginProxy ? '/api' : configuredApiURL;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  baseURL: apiBaseURL,
   withCredentials: true,
   withXSRFToken: true,
   headers: {
@@ -12,8 +17,7 @@ const api = axios.create({
 
 // Fonction pour obtenir le CSRF cookie avant l'authentification
 export async function getCsrfCookie() {
-  const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-  const sanctumURL = `${baseURL.replace(/\/api\/?$/, '')}/sanctum/csrf-cookie`;
+  const sanctumURL = `${apiBaseURL.replace(/\/api\/?$/, '')}/sanctum/csrf-cookie`;
 
   return axios.get(sanctumURL, { withCredentials: true, withXSRFToken: true });
 }
