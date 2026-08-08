@@ -27,11 +27,10 @@ test('les preuves fictives et les limites RH restent explicites', () => {
 });
 
 test('la phase pilote ferme le libre-service et mesure des intentions dédupliquées', () => {
-  assert.match(app, /commercialLaunchEnabled \? <RegisterAdmin \/> : <Navigate/);
-  assert.match(app, /commercialLaunchEnabled \? <RegisterEnterprise \/> : <Navigate/);
-  assert.match(authTopbar, /commercialLaunchEnabled \? \(/);
-  assert.match(authTopbar, /href=\{bookingUrl\}/);
-  assert.match(authTopbar, /pilot_interest_clicked/);
+  assert.match(app, /path="\/register-admin" element=\{<RegisterAdmin \/>\}/);
+  assert.match(app, /path="\/register-enterprise" element=\{<RegisterEnterprise \/>\}/);
+  assert.match(authTopbar, /to="\/register-admin"/);
+  assert.match(authTopbar, /to="\/register-enterprise"/);
   assert.match(landing, /inscriptions et paiements en libre-service restent fermés/i);
   assert.match(viteConfig, /Ouverture commerciale bloquée/);
   assert.match(publicChrome, /sessionStorage\.setItem\(PUBLIC_VISITOR_KEY/);

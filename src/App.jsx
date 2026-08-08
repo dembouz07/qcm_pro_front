@@ -7,8 +7,6 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Landing from './pages/LandingImpact.jsx';
 import { homePathFor } from './utils/homePath.js';
 
-const commercialLaunchEnabled = import.meta.env.VITE_COMMERCIAL_LAUNCH_ENABLED === 'true';
-
 const Login = lazy(() => import('./pages/Login.jsx'));
 const Register = lazy(() => import('./pages/Register.jsx'));
 const RegisterAdmin = lazy(() => import('./pages/RegisterAdmin.jsx'));
@@ -91,8 +89,8 @@ export default function App() {
           <Route path="/mentions-legales" element={<LegalPage document="notices" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/register-admin" element={commercialLaunchEnabled ? <RegisterAdmin /> : <Navigate to="/" replace />} />
-          <Route path="/register-enterprise" element={commercialLaunchEnabled ? <RegisterEnterprise /> : <Navigate to="/" replace />} />
+          <Route path="/register-admin" element={<RegisterAdmin />} />
+          <Route path="/register-enterprise" element={<RegisterEnterprise />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Route publique pour accès au quiz via lien partagé */}
