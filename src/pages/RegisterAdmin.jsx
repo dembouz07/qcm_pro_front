@@ -29,7 +29,7 @@ export default function RegisterAdmin() {
 
   return (
     <section className="auth-page">
-      <AuthTopbar />
+      <AuthTopbar active="register-admin" />
       <div className="auth-card">
         <div className="auth-hero">
           <span><FontAwesomeIcon icon={faUserShield} /></span>

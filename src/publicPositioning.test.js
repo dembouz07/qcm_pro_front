@@ -8,6 +8,7 @@ const legal = readFileSync(new URL('./pages/LegalPage.jsx', import.meta.url), 'u
 const offers = readFileSync(new URL('./config/offers.js', import.meta.url), 'utf8');
 const app = readFileSync(new URL('./App.jsx', import.meta.url), 'utf8');
 const publicChrome = readFileSync(new URL('./components/PublicChrome.jsx', import.meta.url), 'utf8');
+const authTopbar = readFileSync(new URL('./components/AuthTopbar.jsx', import.meta.url), 'utf8');
 const viteConfig = readFileSync(new URL('../vite.config.js', import.meta.url), 'utf8');
 
 test('la page publique expose la promesse, les cibles et les prix décidés', () => {
@@ -28,6 +29,9 @@ test('les preuves fictives et les limites RH restent explicites', () => {
 test('la phase pilote ferme le libre-service et mesure des intentions dédupliquées', () => {
   assert.match(app, /commercialLaunchEnabled \? <RegisterAdmin \/> : <Navigate/);
   assert.match(app, /commercialLaunchEnabled \? <RegisterEnterprise \/> : <Navigate/);
+  assert.match(authTopbar, /commercialLaunchEnabled \? \(/);
+  assert.match(authTopbar, /href=\{bookingUrl\}/);
+  assert.match(authTopbar, /pilot_interest_clicked/);
   assert.match(landing, /inscriptions et paiements en libre-service restent fermés/i);
   assert.match(viteConfig, /Ouverture commerciale bloquée/);
   assert.match(publicChrome, /sessionStorage\.setItem\(PUBLIC_VISITOR_KEY/);
