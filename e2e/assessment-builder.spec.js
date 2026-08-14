@@ -460,7 +460,10 @@ Réponse : A`);
 
       await page.screenshot({
         path: path.join(artifacts, `after-${viewport.width}.png`),
-        fullPage: true,
+        animations: 'disabled',
+        caret: 'hide',
+        fullPage: false,
+        timeout: 10_000,
       });
     }
 
