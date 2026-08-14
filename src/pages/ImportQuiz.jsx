@@ -1,171 +1,140 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDays, faDownload, faFileCsv, faFileImport, faFileLines, faUpload, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import api, { getApiError } from '../api.js';
-import { validateQuizImport } from '../quizFormValidation.js';
-import { formatClassLabel } from '../utils/academicYear.js';
+import { faArrowLeft, faDownload, faFileCsv, faFileImport, faFileLines, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { getApiError } from '../api.js';
+import AssessmentBuilderPage from '../features/assessmentBuilder/AssessmentBuilderPage.jsx';
+import {
+  createAssessmentDraft,
+  getAssessmentDraft,
+  parseAssessmentImport,
+} from '../features/assessmentBuilder/assessmentBuilderApi.js';
+import {
+  normalizeDraftDocument,
+  normalizeStandardQuiz,
+} from '../features/assessmentBuilder/assessmentBuilderModel.js';
+import ParticipantQuizState from '../features/participantQuiz/ParticipantQuizState.jsx';
+
+const ALLOWED_EXTENSIONS = ['csv', 'json', 'doc', 'docx', 'pdf'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+function validateFile(file) {
+  if (!file) return 'Choisissez un fichier à importer.';
+  if (file.size > MAX_FILE_SIZE) return 'Le fichier ne doit pas dépasser 10 Mo.';
+  const extension = file.name?.split('.').pop()?.toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(extension)) return 'Format non pris en charge. Utilisez CSV, JSON, DOC, DOCX ou PDF.';
+  return '';
+}
 
 export default function ImportQuiz() {
-  const navigate = useNavigate();
-  const [classes, setClasses] = useState([]);
-  const [form, setForm] = useState({ title: '', description: '', school_class_id: '', starts_at: '', ends_at: '', show_corrections: false, file: null });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const draftId = searchParams.get('draft');
+  const [file, setFile] = useState(null);
+  const [seed, setSeed] = useState(null);
+  const [status, setStatus] = useState(draftId ? 'loading' : 'idle');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    api.get('/admin/classes')
-      .then((response) => setClasses(response.data))
-      .catch((err) => setError(`Impossible de charger les classes. ${getApiError(err)}`));
-  }, []);
+    if (!draftId) return;
+    let active = true;
+    setStatus('loading');
+    getAssessmentDraft(draftId)
+      .then((draft) => {
+        if (!active) return;
+        if (draft.mode !== 'standard') throw new Error('Ce brouillon importé n’est pas un QCM standard.');
+        setSeed({ draft, document: normalizeDraftDocument(draft) });
+        setStatus('ready');
+      })
+      .catch((loadError) => {
+        if (!active) return;
+        setError(getApiError(loadError));
+        setStatus('error');
+      });
+    return () => { active = false; };
+  }, [draftId]);
 
-  async function handleSubmit(event) {
+  async function handleImport(event) {
     event.preventDefault();
-    setError('');
-
-    const validationError = validateQuizImport(form);
+    const validationError = validateFile(file);
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    const payload = new FormData();
-    Object.entries(form).forEach(([key, value]) => {
-      if (value !== null && value !== '') payload.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
-    });
-
-    setLoading(true);
+    setError('');
+    setStatus('saving');
     try {
-      await api.post('/admin/quizzes/import', payload);
-      navigate('/admin/quizzes');
-    } catch (err) {
-      setError(getApiError(err));
-    } finally {
-      setLoading(false);
+      const parsed = await parseAssessmentImport(file);
+      const document = normalizeStandardQuiz(parsed.data || {}, 'import');
+      document.is_published = false;
+      const draft = await createAssessmentDraft(document, null);
+      setSeed({ draft, document });
+      setSearchParams({ draft: String(draft.id) }, { replace: true });
+      setStatus('ready');
+    } catch (importError) {
+      setError(getApiError(importError));
+      setStatus('error');
     }
   }
 
+  if (status === 'loading') {
+    return <div className="page narrow"><ParticipantQuizState type="loading" message="Reprise du brouillon importé…" /></div>;
+  }
+
+  if (seed) {
+    return (
+      <AssessmentBuilderPage
+        type="standard"
+        mode="create"
+        source="import"
+        initialDocument={seed.document}
+        initialDraft={seed.draft}
+      />
+    );
+  }
+
   return (
-    <div className="page">
+    <div className="page assessment-source-page">
       <div className="page-header">
         <div>
-          <Link to="/admin/quizzes/create" className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> Retour au choix du format</Link>
-          <span className="eyebrow"><FontAwesomeIcon icon={faFileImport} /> Import</span>
-          <h1>Importer un QCM</h1>
-          <p>Importez un fichier CSV, JSON, Word ou PDF, puis choisissez la classe et l'heure d'ouverture.</p>
+          <Link to="/admin/quizzes/create" className="back-link"><FontAwesomeIcon icon={faArrowLeft} /> Retour aux modes de création</Link>
+          <span className="eyebrow"><FontAwesomeIcon icon={faFileImport} /> Import sécurisé</span>
+          <h1>Importer dans le builder</h1>
+          <p>Le fichier est analysé sans publication, puis sauvegardé comme brouillon modifiable.</p>
         </div>
       </div>
 
-      <section className="grid-two">
-        <form className="panel form-grid" onSubmit={handleSubmit}>
-          {error && <div className="alert error span-2">{error}</div>}
+      {error && <div className="alert error" role="alert">{error}</div>}
 
-          <label>
-            Titre du QCM *
-            <input 
-              value={form.title} 
-              onChange={(e) => setForm({ ...form, title: e.target.value })} 
-              placeholder="Titre obligatoire" 
-              required 
-            />
-          </label>
-
-          <label>
-            Classe concernée *
-            <select 
-              value={form.school_class_id} 
-              onChange={(e) => setForm({ ...form, school_class_id: e.target.value })}
-              required
-            >
-              <option value="">Choisir une classe</option>
-              {classes.map((classe) => <option key={classe.id} value={classe.id}>{formatClassLabel(classe)}</option>)}
-            </select>
-          </label>
-
-          <label>
-            Ouverture précise *
-            <div className="input-icon plain">
-              <FontAwesomeIcon icon={faCalendarDays} />
-              <input 
-                type="datetime-local" 
-                value={form.starts_at} 
-                onChange={(e) => setForm({ ...form, starts_at: e.target.value })} 
-                required 
-              />
-            </div>
-          </label>
-
-          <label>
-            Fermeture facultative
-            <div className="input-icon plain">
-              <FontAwesomeIcon icon={faCalendarDays} />
-              <input type="datetime-local" min={form.starts_at || undefined} value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} />
-            </div>
-          </label>
-
-          <label className="span-2">
-            Description
-            <textarea rows="3" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-          </label>
-
-          <label className="span-2 toggle-field">
-            <input
-              type="checkbox"
-              checked={form.show_corrections}
-              onChange={(e) => setForm({ ...form, show_corrections: e.target.checked })}
-            />
-            <span>Afficher la correction aux élèves après soumission</span>
-          </label>
-
-          <label className="span-2 upload-zone">
+      <section className="grid-two assessment-source-grid">
+        <form className="panel" onSubmit={handleImport}>
+          <label className="upload-zone">
             <FontAwesomeIcon icon={faUpload} />
-            <strong>{form.file ? form.file.name : 'Choisir un fichier CSV, JSON, Word ou PDF'}</strong>
-            <small>Formats supportés : CSV, JSON, DOCX, DOC, PDF (max 10 Mo)</small>
-            <input type="file" accept=".csv,.json,.doc,.docx,.pdf" onChange={(e) => setForm({ ...form, file: e.target.files?.[0] || null })} required />
+            <strong>{file ? file.name : 'Choisir un fichier CSV, JSON, Word ou PDF'}</strong>
+            <small>Formats supportés : CSV, JSON, DOCX, DOC, PDF — 10 Mo maximum</small>
+            <input type="file" accept=".csv,.json,.doc,.docx,.pdf" onChange={(event) => setFile(event.target.files?.[0] || null)} />
           </label>
-
-          <button className="primary-btn span-2" disabled={loading}>
-            <FontAwesomeIcon icon={faFileImport} /> {loading ? 'Import...' : 'Importer le QCM'}
+          <button className="primary-btn assessment-import-submit" disabled={!file || status === 'saving'}>
+            <FontAwesomeIcon icon={faFileImport} /> {status === 'saving' ? 'Analyse et sauvegarde…' : 'Analyser et ouvrir le builder'}
           </button>
         </form>
 
-        <div className="panel docs-panel">
+        <aside className="panel docs-panel">
           <h2><FontAwesomeIcon icon={faFileCsv} /> Modèle CSV</h2>
           <pre>{`question,choice,is_correct,points
-"Quelle est la capitale du Sénégal ?","Dakar",1,1
-"Quelle est la capitale du Sénégal ?","Paris",0,1
-"Combien font 2 + 2 ?","4",1,1`}</pre>
-
-          <h2><FontAwesomeIcon icon={faFileLines} /> Modèle JSON</h2>
-          <pre>{`{
-  "title": "QCM exemple",
-  "school_class_id": 1,
-  "starts_at": "2026-06-20 08:00:00",
-  "questions": [
-    {
-      "body": "Question ?",
-      "points": 1,
-      "choices": [
-        { "body": "Bonne réponse", "is_correct": true },
-        { "body": "Mauvaise réponse", "is_correct": false }
-      ]
-    }
-  ]
-}`}</pre>
-
-          <h2><FontAwesomeIcon icon={faFileLines} /> Format Word/PDF</h2>
-          <pre>{`1. Votre question ici ?
+"Capitale du Sénégal ?","Dakar",1,1
+"Capitale du Sénégal ?","Paris",0,1`}</pre>
+          <h2><FontAwesomeIcon icon={faFileLines} /> Word et PDF</h2>
+          <pre>{`1. Votre question ?
 [x] Bonne réponse
 [ ] Mauvaise réponse
-[ ] Autre réponse
 
 2. Autre question ?
 A) Première option
-B) Deuxième option (bonne)
-C) Troisième option
+B) Deuxième option
 Réponse : B`}</pre>
-          <div className="hint"><FontAwesomeIcon icon={faDownload} /> Marquez chaque bonne réponse avec [x], « (bonne réponse) » ou une ligne « Réponse : B ».</div>
-        </div>
+          <div className="hint"><FontAwesomeIcon icon={faDownload} /> Les réponses détectées restent toujours à vérifier dans le builder avant publication.</div>
+        </aside>
       </section>
     </div>
   );

@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -63,22 +62,12 @@ function HomeRedirect() {
 }
 
 export default function App() {
-  const location = useLocation();
-  const reducedMotion = useReducedMotion();
   return (
     <div className="app-shell">
       <Navbar />
       <main className="main-content">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-            transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Suspense fallback={<div className="center-screen">Chargement...</div>}>
-            <Routes location={location}>
+        <Suspense fallback={<div className="center-screen">Chargement...</div>}>
+          <Routes>
               <Route path="/" element={<HomeRedirect />} />
           <Route path="/demo-qcm" element={<DemoQuiz />} />
           <Route path="/evaluation-des-acquis" element={<KnowledgeAssessment />} />
@@ -140,10 +129,8 @@ export default function App() {
           <Route path="/superadmin" element={<ProtectedRoute role="superadmin"><SuperAdminDashboard /></ProtectedRoute>} />
           <Route path="/superadmin/revenue" element={<ProtectedRoute role="superadmin"><SuperAdminRevenue /></ProtectedRoute>} />
           <Route path="/superadmin/users" element={<ProtectedRoute role="superadmin"><SuperAdminUsers /></ProtectedRoute>} />
-            </Routes>
-            </Suspense>
-          </motion.div>
-        </AnimatePresence>
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );

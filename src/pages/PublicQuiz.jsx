@@ -395,10 +395,11 @@ export default function PublicQuiz() {
       prenom,
       referentiel,
       auto_submit: auto,
-      answers: Object.entries(currentAnswers).map(([questionId, choiceId]) => ({
-        question_id: Number(questionId),
-        choice_id: Number(choiceId)
-      }))
+      answers: Object.entries(currentAnswers).map(([questionId, value]) => (
+        Array.isArray(value)
+          ? { question_id: Number(questionId), choice_ids: value.map(Number) }
+          : { question_id: Number(questionId), choice_id: Number(value) }
+      ))
     };
   }
 
