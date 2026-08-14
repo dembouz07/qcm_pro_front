@@ -66,6 +66,62 @@ test.describe('moteur QCM participant', () => {
     }
   });
 
+  test('le bouton Modifier reste identifiable et tactile aux trois largeurs', async ({ page }) => {
+    test.setTimeout(90_000);
+    const viewports = [
+      { width: 360, height: 800 },
+      { width: 768, height: 1024 },
+      { width: 1440, height: 1000 },
+    ];
+    const answers = [
+      'Une réponse à une situation d’application',
+      'Établir le niveau initial',
+      'Environ six mois après le diagnostic initial',
+      'Non, jamais sans analyse humaine et éléments complémentaires',
+      'Une comparaison documentée avant/après',
+    ];
+    await page.addInitScript(() => sessionStorage.clear());
+
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      await page.goto('/demo-qcm');
+
+      for (let index = 0; index < answers.length; index += 1) {
+        await page.getByRole('radio', { name: answers[index] }).check();
+        await page.getByRole('button', {
+          name: index === answers.length - 1 ? /relire mes réponses/i : /suivant/i,
+        }).click();
+      }
+
+      const editButton = page.getByRole('button', { name: 'Modifier la réponse à la question 1' });
+      await expect(editButton).toBeVisible();
+      const box = await editButton.boundingBox();
+      expect(box?.height).toBeGreaterThanOrEqual(44);
+      expect(box?.width).toBeGreaterThanOrEqual(44);
+      if (viewport.width === 360) expect(box?.width).toBeGreaterThan(250);
+
+      const style = await editButton.evaluate((element) => {
+        const computed = getComputedStyle(element);
+        return {
+          display: computed.display,
+          borderRadius: computed.borderRadius,
+          color: computed.color,
+        };
+      });
+      expect(['flex', 'inline-flex']).toContain(style.display);
+      expect(style.borderRadius).toBe('12px');
+      expect(style.color).toBe('rgb(91, 92, 246)');
+
+      await page.screenshot({
+        path: path.join(artifacts, `review-button-${viewport.width}.png`),
+        fullPage: true,
+      });
+      await editButton.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('heading', { name: /quel indicateur permet/i })).toBeFocused();
+    }
+  });
+
   test('prefers-reduced-motion neutralise les mouvements du parcours', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/demo-qcm');

@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faCheck, faClock, faPaperPlane, faRotateRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faCheck, faClock, faPaperPlane, faPen, faRotateRight } from '@fortawesome/free-solid-svg-icons';
 import { answerLabels, countAnswered, firstUnansweredIndex, toggleAnswer } from './quizEngine.js';
 
 export default function ParticipantQuizFlow({
@@ -199,7 +199,16 @@ export default function ParticipantQuizFlow({
                       {labels.length ? labels.join(', ') : 'Sans réponse'}
                     </small>
                   </div>
-                  <button className="text-btn" type="button" onClick={() => editQuestion(index)}>Modifier</button>
+                  <button
+                    className="participant-review-edit"
+                    type="button"
+                    aria-label={`Modifier la réponse à la question ${index + 1}`}
+                    onClick={() => editQuestion(index)}
+                    disabled={disabled || busy}
+                  >
+                    <FontAwesomeIcon icon={faPen} aria-hidden="true" />
+                    Modifier
+                  </button>
                 </li>
               );
             })}

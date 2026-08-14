@@ -106,7 +106,10 @@ describe('ParticipantQuizFlow', () => {
     expect(screen.getByRole('heading', { name: 'Vérifiez vos réponses' })).toHaveFocus();
     expect(screen.getByText('Alpha')).toBeInTheDocument();
     expect(screen.getByText('Deux, Trois')).toBeInTheDocument();
-    await user.click(screen.getAllByRole('button', { name: 'Modifier' })[0]);
+    const editButton = screen.getByRole('button', { name: 'Modifier la réponse à la question 1' });
+    expect(editButton).toHaveClass('participant-review-edit');
+    editButton.focus();
+    await user.keyboard('[Enter]');
     expect(screen.getByRole('radio', { name: 'Alpha' })).toBeChecked();
 
     await user.click(screen.getByRole('button', { name: /suivant/i }));
@@ -122,6 +125,12 @@ describe('ParticipantQuizFlow', () => {
 
     render(<ControlledFlow initialAnswers={{ 0: 0, 2: [20] }} />);
     expect(screen.getByRole('heading', { name: 'Vérifiez vos réponses' })).toBeInTheDocument();
+  });
+
+  it('verrouille les actions de modification pendant la soumission', () => {
+    render(<ControlledFlow initialAnswers={{ 0: 0, 2: [20] }} submitting />);
+    expect(screen.getByRole('button', { name: 'Modifier la réponse à la question 1' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Modifier la réponse à la question 2' })).toBeDisabled();
   });
 
   it('permet la navigation native au clavier et conserve le focus à chaque étape', async () => {
