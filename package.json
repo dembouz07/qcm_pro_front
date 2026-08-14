@@ -7,21 +7,38 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test --test-concurrency=1 src/quizCreation.test.js src/offers.test.js src/usageGuides.test.js src/utils/academicYear.test.js src/utils/enterprise.test.js src/utils/resultFilters.test.js src/authSecurity.test.js src/publicPositioning.test.js"
+    "test": "npm run test:legacy && npm run test:ui",
+    "test:legacy": "node --test --test-concurrency=1 src/quizCreation.test.js src/offers.test.js src/usageGuides.test.js src/utils/academicYear.test.js src/utils/enterprise.test.js src/utils/resultFilters.test.js src/authSecurity.test.js src/publicPositioning.test.js",
+    "test:ui": "vitest run",
+    "test:ui:watch": "vitest",
+    "test:e2e": "node scripts/run-participant-e2e.mjs",
+    "lint": "eslint src/features/participantQuiz src/pages/TakeQuiz.jsx src/pages/PublicQuiz.jsx src/pages/DemoQuiz.jsx src/pages/TakeQuiz.dom.test.jsx src/pages/PublicQuiz.dom.test.jsx src/pages/DemoQuiz.dom.test.jsx src/components/CorrectionView.jsx src/App.jsx e2e scripts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "axios": "^1.6.5",
-    "framer-motion": "^12.42.2",
+    "motion": "^12.42.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.3",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.62.1",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^6.0.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.8.0",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.10",
     "vite": "^8.0.16"
   }
 }

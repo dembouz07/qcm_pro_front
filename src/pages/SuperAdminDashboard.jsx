@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, animate, useMotionValue, useTransform } from 'framer-motion';
+import { motion, animate, useMotionValue, useTransform } from 'motion/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faListCheck, faCircleCheck, faStar, faArrowUp, faArrowDown,

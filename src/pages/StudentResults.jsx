@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAward, faMedal, faTrophy, faRotateRight, faTriangleExclamation, faListCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import api, { getApiError } from '../api.js';

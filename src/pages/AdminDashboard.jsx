@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartLine, faClock, faCirclePlus, faFileImport, faLayerGroup, faMedal, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
 import api from '../api.js';

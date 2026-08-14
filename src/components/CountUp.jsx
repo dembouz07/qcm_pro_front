@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { motion, animate, useMotionValue, useTransform } from 'framer-motion';
+import { motion, animate, useMotionValue, useTransform } from 'motion/react';
 
 const nf = new Intl.NumberFormat('fr-FR');
 
