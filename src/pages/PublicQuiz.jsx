@@ -2,11 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faCheckCircle, 
   faCircleQuestion, 
   faClock, 
   faLock, 
-  faPaperPlane, 
   faTriangleExclamation,
   faUser,
   faBookOpen,
@@ -18,6 +16,9 @@ import { countdownTo, formatDateTime } from '../utils/time.js';
 import { canAdvanceProgressiveStage } from '../quizFormValidation.js';
 import { useAntiCheat } from '../useAntiCheat.js';
 import AntiCheatRules from '../components/AntiCheatRules.jsx';
+import ParticipantQuizFlow from '../features/participantQuiz/ParticipantQuizFlow.jsx';
+import ParticipantQuizResult from '../features/participantQuiz/ParticipantQuizResult.jsx';
+import ParticipantQuizState from '../features/participantQuiz/ParticipantQuizState.jsx';
 
 const IN_PROGRESS_TTL_MS = 24 * 60 * 60 * 1000;
 const SUBMITTED_TTL_MS = 24 * 60 * 60 * 1000;
@@ -45,6 +46,8 @@ export default function PublicQuiz() {
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [autoSubmitting, setAutoSubmitting] = useState(false);
+  const [autoSubmitError, setAutoSubmitError] = useState('');
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   // Diagnostic progressif
   const [currentStage, setCurrentStage] = useState(0);
@@ -109,7 +112,7 @@ export default function PublicQuiz() {
     if (step === 'quiz' || step === 'progressive') {
       saveStored({ nom, prenom, referentiel, answers, currentStage, inProgress: true });
     }
-  }, [answers, currentStage, step, nom, prenom, referentiel]);
+  }, [answers, currentStage, step, nom, prenom, referentiel]); // eslint-disable-line react-hooks/exhaustive-deps -- saveStored encapsule le contrat sessionStorage existant.
 
   useEffect(() => {
     answersRef.current = answers;
@@ -117,6 +120,7 @@ export default function PublicQuiz() {
 
   // Charger les infos du quiz
   useEffect(() => {
+    setStep('loading');
     api.get(`/public/quiz/${token}`)
       .then((response) => {
         setQuizInfo(response.data);
@@ -126,7 +130,7 @@ export default function PublicQuiz() {
         setError(getApiError(err));
         setStep('error');
       });
-  }, [token]);
+  }, [token, loadAttempt]); // eslint-disable-line react-hooks/exhaustive-deps -- restoreState orchestre volontairement une seule reprise par chargement.
 
   async function recoverStoredSubmission(stored) {
     const accessToken = stored?.resultAccessToken || resultAccessTokenRef.current;
@@ -159,10 +163,7 @@ export default function PublicQuiz() {
 
   // Restaure l'état depuis sessionStorage (résultat déjà obtenu ou quiz en cours)
   async function restoreState(info) {
-    if (restoredRef.current) {
-      setStep('info');
-      return;
-    }
+    if (restoredRef.current) return;
     restoredRef.current = true;
 
     const stored = loadStored();
@@ -271,7 +272,7 @@ export default function PublicQuiz() {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [quiz, result, progressiveResult]);
+  }, [quiz, result, progressiveResult]); // eslint-disable-line react-hooks/exhaustive-deps -- les callbacks utilisent les refs de soumission pour éviter les doublons.
 
   async function handleStart(event) {
     event.preventDefault();
@@ -332,7 +333,7 @@ export default function PublicQuiz() {
     // Si le blocage est actif, seul un score strictement inférieur au seuil permet d'avancer.
     if (canAdvanceProgressiveStage(score, threshold, quiz.require_stage_pass !== false) && !isLastStage) {
       setCurrentStage((s) => s + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'auto' });
       return;
     }
 
@@ -345,6 +346,7 @@ export default function PublicQuiz() {
     submittingRef.current = true;
     setLoading(true);
     setError('');
+    setAutoSubmitError('');
 
     const payload = {
       attempt_id: attemptIdRef.current,
@@ -415,6 +417,7 @@ export default function PublicQuiz() {
     submittingRef.current = true;
     setLoading(true);
     setError('');
+    setAutoSubmitError('');
 
     if (auto) setAutoSubmitting(true);
 
@@ -432,7 +435,9 @@ export default function PublicQuiz() {
       });
     } catch (err) {
       if (err?.response?.status === 409 && await recoverStoredSubmission(loadStored())) return;
-      setError(getApiError(err));
+      const message = getApiError(err);
+      if (auto) setAutoSubmitError(message);
+      else setError(message);
     } finally {
       submittingRef.current = false;
       setLoading(false);
@@ -440,14 +445,9 @@ export default function PublicQuiz() {
     }
   }
 
-  function choose(questionId, choiceId) {
+  function updateAnswers(nextAnswers) {
     if (timeLeft === 0 || loading || autoSubmitting) return;
-    setAnswers((current) => ({ ...current, [questionId]: choiceId }));
-  }
-
-  function submit(event) {
-    event.preventDefault();
-    submitAnswers({ auto: false });
+    setAnswers(nextAnswers);
   }
 
   function formatTimeLeftDisplay() {
@@ -471,68 +471,73 @@ export default function PublicQuiz() {
   if (step === 'error') {
     return (
       <div className="page narrow public-quiz-page">
-        <div className="panel center">
-          <div className="big-icon warning"><FontAwesomeIcon icon={faTriangleExclamation} /></div>
-          <h1>QCM indisponible</h1>
-          <p>{error}</p>
-        </div>
+        <ParticipantQuizState
+          type="error"
+          message={error}
+          onRetry={() => {
+            restoredRef.current = false;
+            setLoadAttempt((attempt) => attempt + 1);
+          }}
+        />
       </div>
     );
   }
 
   // ─── ÉTAPE : Chargement ──────────────────────────────────
   if (step === 'loading') {
-    return <div className="center-screen">Chargement du QCM...</div>;
+    return <ParticipantQuizState type="loading" />;
   }
 
   // ─── ÉTAPE : Résultat ────────────────────────────────────
   if (step === 'result' && progressiveResult) {
     return (
-      <div className="page narrow public-quiz-page">
-        <div className="panel center success-panel">
-          <div className="big-icon success"><FontAwesomeIcon icon={faCheckCircle} /></div>
-          <h1>{terminationReason ? 'Diagnostic terminé' : 'Diagnostic terminé'}</h1>
-          {terminationReason && <div className="alert error">{terminationReason}</div>}
-          <p>Merci <strong>{prenom} {nom}</strong>, vos réponses ont été enregistrées.</p>
-          <div className="stade-result">
-            <small>Stade atteint</small>
-            <div className="final-score">
-              {quiz?.stages?.find((stage) => Number(stage.stage) === Number(progressiveResult.stade_atteint))?.name || `Stade ${progressiveResult.stade_atteint}`}
-            </div>
-          </div>
-          {progressiveResult.stage_scores && (
-            <div className="stage-scores">
-              {Object.entries(progressiveResult.stage_scores).map(([stage, score]) => (
-                <div className="stage-score-item" key={stage}>
-                  <span>{quiz?.stages?.find((item) => Number(item.stage) === Number(stage))?.name || `Stade ${stage}`}</span>
-                  <strong>{score} Oui</strong>
-                </div>
-              ))}
-            </div>
-          )}
-          <Link className="secondary-btn" to={`/mes-notes#access=${encodeURIComponent(resultAccessTokenRef.current)}`} style={{ marginTop: '1.5rem' }}>
+      <ParticipantQuizResult
+        title="Diagnostic terminé"
+        announcement="Votre diagnostic est terminé et vos réponses ont été enregistrées."
+        actions={(
+          <Link className="secondary-btn" to={`/mes-notes#access=${encodeURIComponent(resultAccessTokenRef.current)}`}>
             <FontAwesomeIcon icon={faClipboardList} /> Consulter ce résultat
           </Link>
+        )}
+      >
+        {terminationReason && <div className="alert error">{terminationReason}</div>}
+        <p>Merci <strong>{prenom} {nom}</strong>, vos réponses ont été enregistrées.</p>
+        <div className="stade-result">
+          <small>Stade atteint</small>
+          <div className="final-score">
+            {quiz?.stages?.find((stage) => Number(stage.stage) === Number(progressiveResult.stade_atteint))?.name || `Stade ${progressiveResult.stade_atteint}`}
+          </div>
         </div>
-      </div>
+        {progressiveResult.stage_scores && (
+          <div className="stage-scores">
+            {Object.entries(progressiveResult.stage_scores).map(([stage, score]) => (
+              <div className="stage-score-item" key={stage}>
+                <span>{quiz?.stages?.find((item) => Number(item.stage) === Number(stage))?.name || `Stade ${stage}`}</span>
+                <strong>{score} Oui</strong>
+              </div>
+            ))}
+          </div>
+        )}
+      </ParticipantQuizResult>
     );
   }
 
   if (step === 'result' && result) {
     return (
-      <div className="page narrow public-quiz-page">
-        <div className="panel center success-panel">
-          <div className="big-icon success"><FontAwesomeIcon icon={faCheckCircle} /></div>
-          <h1>{terminationReason ? 'Test terminé' : 'Réponses envoyées'}</h1>
-          {terminationReason && <div className="alert error">{terminationReason}</div>}
-          <p>Merci <strong>{prenom} {nom}</strong>, votre note a été enregistrée.</p>
-          <div className="final-score">{result.note_sur_20}/20</div>
-          <p className="muted">Score : {result.score}/{result.total_points} · {result.percentage}%</p>
-          <Link className="secondary-btn" to={`/mes-notes#access=${encodeURIComponent(resultAccessTokenRef.current)}`} style={{ marginTop: '1.5rem' }}>
+      <ParticipantQuizResult
+        title={terminationReason ? 'Test terminé' : 'Réponses envoyées'}
+        announcement="Vos réponses ont été envoyées et votre résultat est disponible."
+        actions={(
+          <Link className="secondary-btn" to={`/mes-notes#access=${encodeURIComponent(resultAccessTokenRef.current)}`}>
             <FontAwesomeIcon icon={faClipboardList} /> Consulter ce résultat
           </Link>
-        </div>
-      </div>
+        )}
+      >
+        {terminationReason && <div className="alert error">{terminationReason}</div>}
+        <p>Merci <strong>{prenom} {nom}</strong>, votre note a été enregistrée.</p>
+        <div className="final-score">{result.note_sur_20}/20</div>
+        <p className="muted">Score : {result.score}/{result.total_points} · {result.percentage}%</p>
+      </ParticipantQuizResult>
     );
   }
 
@@ -656,9 +661,17 @@ export default function PublicQuiz() {
 
   // ─── ÉTAPE : Quiz en cours ───────────────────────────────
   if (step === 'quiz' && quiz) {
+    if (!quiz.questions?.length) {
+      return (
+        <div className="page narrow public-quiz-page">
+          <ParticipantQuizState type="empty" message="Cette évaluation ne contient pas encore de question." />
+        </div>
+      );
+    }
+
     return (
-      <div className="page narrow public-quiz-page no-select">
-        <div className="page-header">
+      <div className="page narrow public-quiz-page no-select participant-quiz-page">
+        <div className="page-header participant-quiz-header">
           <div>
             <span className="eyebrow"><FontAwesomeIcon icon={faCircleQuestion} /> Test en cours</span>
             <h1>{quiz.title}</h1>
@@ -667,47 +680,23 @@ export default function PublicQuiz() {
             <div className="alert warning anticheat-notice">
               <FontAwesomeIcon icon={faTriangleExclamation} /> Anti-triche actif : quitter la page, copier ou capturer l'écran mettra fin au test.
             </div>
-            {formatTimeLeftDisplay()}
           </div>
         </div>
 
-        <form onSubmit={submit} className="test-form">
-          {error && <div className="alert error">{error}</div>}
-          {warning && <div className="alert warning">{warning}</div>}
-          {autoSubmitting && <div className="alert warning"><FontAwesomeIcon icon={faClock} /> Temps écoulé : soumission automatique en cours...</div>}
-
-          {quiz.questions.map((question, index) => {
-            const longestChoice = question.choices.reduce((max, c) => Math.max(max, (c.body || '').length), 0);
-            const useSingleColumn = question.choices.length < 2 || longestChoice > 60;
-
-            return (
-              <article className="question-card test-question" key={question.id}>
-                <h2>Question {index + 1}</h2>
-                <p className="question-text">{question.body}</p>
-                <div className={`choice-options ${useSingleColumn ? 'single-column' : ''}`}>
-                  {question.choices.map((choice) => (
-                    <label className={`answer-option ${answers[question.id] === choice.id ? 'selected' : ''}`} key={choice.id}>
-                      <input
-                        type="radio"
-                        name={`question-${question.id}`}
-                        checked={answers[question.id] === choice.id}
-                        onChange={() => choose(question.id, choice.id)}
-                        disabled={timeLeft === 0 || loading || autoSubmitting}
-                      />
-                      <span>{choice.body}</span>
-                    </label>
-                  ))}
-                </div>
-              </article>
-            );
-          })}
-
-          <div className="builder-actions sticky-actions">
-            <button className="primary-btn" disabled={loading || timeLeft === 0 || autoSubmitting}>
-              <FontAwesomeIcon icon={faPaperPlane} /> {loading ? 'Envoi...' : 'Envoyer mes réponses'}
-            </button>
-          </div>
-        </form>
+        <ParticipantQuizFlow
+          questions={quiz.questions}
+          answers={answers}
+          onAnswersChange={updateAnswers}
+          onSubmit={() => submitAnswers({ auto: false })}
+          disabled={timeLeft === 0}
+          submitting={loading && !autoSubmitting}
+          autoSubmitting={autoSubmitting}
+          error={error}
+          warning={warning}
+          autoSubmitError={autoSubmitError}
+          onRetryAutoSubmit={() => submitAnswers({ auto: true })}
+          timer={formatTimeLeftDisplay()}
+        />
       </div>
     );
   }
@@ -718,6 +707,14 @@ export default function PublicQuiz() {
     const stage = stages[currentStage];
     const isLastStage = currentStage >= stages.length - 1;
     const requiresStagePass = quiz.require_stage_pass !== false;
+
+    if (!stage?.questions?.length) {
+      return (
+        <div className="page narrow public-quiz-page">
+          <ParticipantQuizState type="empty" message="Ce stade ne contient pas encore de question." />
+        </div>
+      );
+    }
 
     return (
       <div className="page narrow public-quiz-page no-select">
@@ -750,44 +747,20 @@ export default function PublicQuiz() {
           </div>
         )}
 
-        <form onSubmit={(e) => { e.preventDefault(); handleNextStage(); }} className="test-form">
-          {error && <div className="alert error">{error}</div>}
-          {warning && <div className="alert warning">{warning}</div>}
-
-          {stage.questions.map((question, index) => (
-            <article className="question-card test-question" key={question.id}>
-              <h2>Question {index + 1}</h2>
-              <p className="question-text">{question.body}</p>
-              <div className="choice-options">
-                {question.choices.map((choice) => (
-                  <label className={`answer-option ${answers[question.id] === choice.id ? 'selected' : ''}`} key={choice.id}>
-                    <input
-                      type="radio"
-                      name={`question-${question.id}`}
-                      checked={answers[question.id] === choice.id}
-                      onChange={() => setAnswers((c) => ({ ...c, [question.id]: choice.id }))}
-                      disabled={loading}
-                    />
-                    <span>{choice.body}</span>
-                  </label>
-                ))}
-              </div>
-            </article>
-          ))}
-
-          <div className="builder-actions sticky-actions">
-            <button className="primary-btn" disabled={loading}>
-              {isLastStage ? (
-                <><FontAwesomeIcon icon={faPaperPlane} /> {loading ? 'Envoi...' : 'Terminer le diagnostic'}</>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faCircleQuestion} />{' '}
-                  {loading ? '...' : (requiresStagePass ? 'Vérifier ce stade' : 'Passer au stade suivant')}
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+        <ParticipantQuizFlow
+          key={`stage-${stage.stage}-${currentStage}`}
+          questions={stage.questions}
+          answers={answers}
+          onAnswersChange={updateAnswers}
+          onSubmit={handleNextStage}
+          submitting={loading}
+          error={error}
+          warning={warning}
+          reviewLabel="Relire ce stade"
+          submitLabel={isLastStage
+            ? 'Terminer le diagnostic'
+            : (requiresStagePass ? 'Vérifier ce stade' : 'Passer au stade suivant')}
+        />
       </div>
     );
   }

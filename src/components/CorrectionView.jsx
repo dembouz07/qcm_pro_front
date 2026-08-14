@@ -15,6 +15,7 @@ export default function CorrectionView({ correction, answerLabel = 'votre répon
           <div className="corr-q-head">
             <span className={`corr-badge ${q.is_correct ? 'ok' : 'ko'}`}>
               <FontAwesomeIcon icon={q.is_correct ? faCheck : faXmark} />
+              <span className="sr-only">{q.is_correct ? 'Réponse correcte' : 'Réponse incorrecte'}</span>
             </span>
             <strong>Question {i + 1}. {q.body}</strong>
           </div>
@@ -29,6 +30,11 @@ export default function CorrectionView({ correction, answerLabel = 'votre répon
                 <li key={c.id} className={cls}>
                   <span className="corr-mark">
                     {c.is_correct ? <FontAwesomeIcon icon={faCheck} /> : (c.chosen ? <FontAwesomeIcon icon={faXmark} /> : null)}
+                    {(c.is_correct || c.chosen) && (
+                      <span className="sr-only">
+                        {c.is_correct ? 'Bonne réponse' : 'Réponse sélectionnée incorrecte'}
+                      </span>
+                    )}
                   </span>
                   <span className="corr-body">{c.body}</span>
                   {c.chosen && <span className="corr-tag">{answerLabel}</span>}
