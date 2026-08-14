@@ -14,41 +14,57 @@ async function expectOk(response) {
   }
 }
 
+async function browserSessionHeaders(page) {
+  const xsrfCookie = (await page.context().cookies(apiRoot))
+    .find((cookie) => cookie.name === 'XSRF-TOKEN');
+
+  if (!xsrfCookie) throw new Error('Cookie CSRF Sanctum introuvable après inscription.');
+
+  return {
+    Accept: 'application/json',
+    Origin: 'http://127.0.0.1:4177',
+    Referer: 'http://127.0.0.1:4177/',
+    'X-XSRF-TOKEN': decodeURIComponent(xsrfCookie.value),
+  };
+}
+
 test.describe('smoke builder avec API Laravel réelle', () => {
   test.skip(!configuredRealApi, 'Définir REAL_API_URL pour activer le smoke réel isolé.');
 
-  test('crée le compte et la classe, publie puis passe réellement l’évaluation', async ({ page, request }) => {
+  test('crée le compte et la classe, publie puis passe réellement l’évaluation', async ({ page }) => {
     test.setTimeout(90_000);
     const unique = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    let token = process.env.REAL_API_TOKEN || '';
     let classId = process.env.REAL_CLASS_ID ? Number(process.env.REAL_CLASS_ID) : null;
     let quizId = null;
     let draftId = null;
+    let authorization;
 
-    if (!token) {
-      const registration = await request.post(`${apiRoot}/auth/register-admin`, {
-        data: {
-          name: 'Formatrice Smoke Builder',
-          email: `builder-smoke-${unique}@example.test`,
-          password: 'SmokeBuilder123!',
-          password_confirmation: 'SmokeBuilder123!',
-        },
-      });
-      await expectOk(registration);
-      token = (await registration.json()).token;
+    if (process.env.REAL_API_TOKEN) {
+      authorization = {
+        Accept: 'application/json',
+        Authorization: `Bearer ${process.env.REAL_API_TOKEN}`,
+      };
+      await page.setExtraHTTPHeaders(authorization);
+      await page.goto('/admin');
+    } else {
+      await page.goto('/register-admin');
+      await page.getByLabel('Nom complet').fill('Formatrice Smoke Builder');
+      await page.getByLabel('Email').fill(`builder-smoke-${unique}@example.test`);
+      await page.getByLabel('Mot de passe').fill('SmokeBuilder123!');
+      await page.getByLabel('Confirmer').fill('SmokeBuilder123!');
+      await page.getByRole('button', { name: /créer mon compte formateur/i }).click();
+      await expect(page).toHaveURL(/\/admin$/, { timeout: 20_000 });
+      authorization = await browserSessionHeaders(page);
     }
 
-    const authorization = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
     if (!classId) {
-      const createdClass = await request.post(`${apiRoot}/admin/classes`, {
+      const createdClass = await page.request.post(`${apiRoot}/admin/classes`, {
         headers: authorization,
         data: { name: `Cohorte smoke ${unique}`, academic_year: '2026-2027', code: '' },
       });
       await expectOk(createdClass);
       classId = (await createdClass.json()).id;
     }
-
-    await page.addInitScript((storedToken) => localStorage.setItem('qcm_token', storedToken), token);
 
     try {
       await page.goto('/admin/quizzes/new');
@@ -83,11 +99,18 @@ test.describe('smoke builder avec API Laravel réelle', () => {
       await expect(preview).toBeHidden();
       await expect(previewTrigger).toBeFocused();
 
+      // Laisser l'auto-sauvegarde finir avant le clic : pendant "saving",
+      // le bouton de publication est volontairement désactivé.
+      await expect(page.locator('.builder-save-status')).toContainText('Brouillon enregistré', { timeout: 15_000 });
+      const publishButton = page.locator('.assessment-builder-header-actions')
+        .getByRole('button', { name: /^vérifier et publier$/i });
+      await expect(publishButton).toBeEnabled();
+
       const publishResponsePromise = page.waitForResponse((response) => (
         /\/api\/admin\/quiz-drafts\/\d+\/publish$/.test(new URL(response.url()).pathname)
         && response.request().method() === 'POST'
       ));
-      await page.getByRole('button', { name: /vérifier et publier/i }).first().click();
+      await publishButton.click();
       const publishResponse = await publishResponsePromise;
       await expectOk(publishResponse);
       const published = await publishResponse.json();
@@ -117,10 +140,10 @@ test.describe('smoke builder avec API Laravel réelle', () => {
       expect(submitPayload.answers[1].choice_ids).toHaveLength(2);
       await expect(page.getByRole('heading', { name: 'Réponses envoyées' })).toBeFocused();
     } finally {
-      if (draftId) await request.delete(`${apiRoot}/admin/quiz-drafts/${draftId}`, { headers: authorization });
-      if (quizId) await request.delete(`${apiRoot}/admin/quizzes/${quizId}`, { headers: authorization });
+      if (draftId) await page.request.delete(`${apiRoot}/admin/quiz-drafts/${draftId}`, { headers: authorization });
+      if (quizId) await page.request.delete(`${apiRoot}/admin/quizzes/${quizId}`, { headers: authorization });
       if (!process.env.REAL_CLASS_ID && classId) {
-        await request.delete(`${apiRoot}/admin/classes/${classId}`, { headers: authorization });
+        await page.request.delete(`${apiRoot}/admin/classes/${classId}`, { headers: authorization });
       }
     }
   });
