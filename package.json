@@ -12,7 +12,9 @@
     "test:ui": "vitest run",
     "test:ui:watch": "vitest",
     "test:e2e": "node scripts/run-participant-e2e.mjs",
-    "lint": "eslint src/features/participantQuiz src/pages/TakeQuiz.jsx src/pages/PublicQuiz.jsx src/pages/DemoQuiz.jsx src/pages/TakeQuiz.dom.test.jsx src/pages/PublicQuiz.dom.test.jsx src/pages/DemoQuiz.dom.test.jsx src/components/CorrectionView.jsx src/App.jsx e2e scripts"
+    "test:e2e:builder": "node scripts/run-participant-e2e.mjs assessment-builder.spec.js",
+    "test:e2e:builder:real": "node scripts/run-participant-e2e.mjs assessment-builder.real.spec.js",
+    "lint": "eslint src/features/participantQuiz src/features/assessmentBuilder src/pages/TakeQuiz.jsx src/pages/PublicQuiz.jsx src/pages/DemoQuiz.jsx src/pages/QuizForm.jsx src/pages/QuizEdit.jsx src/pages/ProgressiveQuizForm.jsx src/pages/ImportQuiz.jsx src/pages/SmartCreateQuiz.jsx src/pages/TakeQuiz.dom.test.jsx src/pages/PublicQuiz.dom.test.jsx src/pages/DemoQuiz.dom.test.jsx src/pages/AssessmentSources.dom.test.jsx src/components/CorrectionView.jsx src/App.jsx e2e scripts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",

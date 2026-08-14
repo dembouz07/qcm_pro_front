@@ -8,6 +8,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.js'],
     include: ['src/**/*.dom.test.{js,jsx}'],
+    fileParallelism: false,
     restoreMocks: true,
     clearMocks: true,
   },

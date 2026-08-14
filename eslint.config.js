@@ -10,8 +10,9 @@ export default [
   {
     files: [
       'src/features/participantQuiz/**/*.{js,jsx}',
-      'src/pages/{TakeQuiz,PublicQuiz,DemoQuiz}.jsx',
-      'src/pages/{TakeQuiz,PublicQuiz,DemoQuiz}.dom.test.jsx',
+      'src/features/assessmentBuilder/**/*.{js,jsx}',
+      'src/pages/{TakeQuiz,PublicQuiz,DemoQuiz,QuizForm,QuizEdit,ProgressiveQuizForm,ImportQuiz,SmartCreateQuiz}.jsx',
+      'src/pages/{TakeQuiz,PublicQuiz,DemoQuiz,AssessmentSources}.dom.test.jsx',
       'src/components/CorrectionView.jsx',
       'src/App.jsx',
       'e2e/**/*.js',

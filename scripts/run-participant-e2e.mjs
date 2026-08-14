@@ -4,7 +4,12 @@ import process from 'node:process';
 const host = '127.0.0.1';
 const port = '4177';
 const baseUrl = `http://${host}:${port}`;
-const runtimeEnv = { ...process.env, VITE_API_URL: '/api' };
+const configuredRealApi = process.env.REAL_API_URL?.replace(/\/$/, '') || '';
+const realApiRoot = configuredRealApi.endsWith('/api') ? configuredRealApi : `${configuredRealApi}/api`;
+const runtimeEnv = {
+  ...process.env,
+  VITE_API_URL: configuredRealApi ? realApiRoot : '/api',
+};
 let viteProcess = null;
 let viteOutput = '';
 

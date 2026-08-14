@@ -105,6 +105,37 @@ describe('adaptateur QCM public', () => {
     expect(screen.getByRole('link', { name: /consulter ce résultat/i })).toHaveAttribute('href', '/mes-notes#access=secret-1');
   });
 
+  it('sérialise une réponse multiple avec choice_ids tout en gardant les réponses simples en choice_id', async () => {
+    const user = userEvent.setup();
+    apiMocks.get.mockResolvedValue({ data: INFO });
+    apiMocks.post
+      .mockResolvedValueOnce({
+        data: {
+          ...STARTED_QUIZ,
+          questions: [
+            { ...STARTED_QUIZ.questions[0], multiple: false },
+            { ...STARTED_QUIZ.questions[1], multiple: true },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({ data: { submission: RESULT } });
+    renderPublicQuiz();
+    await identifyAndStart(user);
+
+    await user.click(await screen.findByRole('radio', { name: 'Public A' }));
+    await user.click(screen.getByRole('button', { name: /suivant/i }));
+    await user.click(screen.getByRole('checkbox', { name: 'Public C' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Public D' }));
+    await user.click(screen.getByRole('button', { name: /relire mes réponses/i }));
+    await user.click(screen.getByRole('button', { name: /envoyer mes réponses/i }));
+
+    await waitFor(() => expect(apiMocks.post).toHaveBeenCalledTimes(2));
+    expect(apiMocks.post.mock.calls[1][1].answers).toEqual([
+      { question_id: 1, choice_id: 11 },
+      { question_id: 2, choice_ids: [21, 22] },
+    ]);
+  });
+
   it('reprend les réponses et conserve un ancien secret si /start renvoie null', async () => {
     const user = userEvent.setup();
     sessionStorage.setItem('qcm_public_token-test', JSON.stringify({
