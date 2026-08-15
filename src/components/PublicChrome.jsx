@@ -8,7 +8,6 @@ export const WHATSAPP_NUMBER = '221774006235';
 export function whatsappUrl(message) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
-
 export const bookingUrl = whatsappUrl(
   'Bonjour, je souhaite réserver une démonstration de Check Performance pour mon organisation.',
 );
@@ -44,12 +43,15 @@ export function PublicMobileMenu({ landing = false }) {
       <div>
         {landing ? (
           <>
-            <a href="#solutions">Solutions</a>
+            <Link to="/qcm-en-ligne">QCM en ligne</Link>
+            <Link to="/evaluation-des-acquis">Évaluation des acquis</Link>
+            <Link to="/developpement-soft-skills">Soft skills</Link>
             <a href="#preuves">Exemples</a>
             <a href="#tarifs">Tarifs</a>
           </>
         ) : (
           <>
+            <Link to="/qcm-en-ligne">QCM en ligne</Link>
             <Link to="/evaluation-des-acquis">Évaluation des acquis</Link>
             <Link to="/developpement-soft-skills">Soft skills</Link>
             <Link to="/ressources">Exemples & méthode</Link>
@@ -70,6 +72,7 @@ export function PublicHeader() {
         </picture>
       </Link>
       <nav className="landing-nav-links" aria-label="Navigation publique">
+        <Link to="/qcm-en-ligne">QCM en ligne</Link>
         <Link to="/evaluation-des-acquis">Évaluation des acquis</Link>
         <Link to="/developpement-soft-skills">Soft skills</Link>
         <Link to="/ressources">Preuves & méthode</Link>
@@ -91,6 +94,9 @@ export function PublicFooter() {
       <div className="brand landing-brand"><img src="/cp.svg?v=2" className="brand-logo" alt="Check Performance" /></div>
       <small>© {new Date().getFullYear()} Check Performance — Mesurer les acquis et documenter la progression.</small>
       <div>
+        <Link to="/qcm-en-ligne">QCM en ligne</Link>
+        <Link to="/evaluation-des-acquis">Évaluation des acquis</Link>
+        <Link to="/developpement-soft-skills">Soft skills</Link>
         <Link to="/ressources">Ressources</Link>
         <Link to="/confidentialite">Confidentialité</Link>
         <Link to="/cgu">CGU</Link>

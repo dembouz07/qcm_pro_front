@@ -12,6 +12,10 @@ services:
     envVars:
       - key: VITE_API_URL
         sync: false
+      - key: VITE_SITE_URL
+        value: https://app.checkperformance.sn
+      - key: VITE_GOOGLE_SITE_VERIFICATION
+        sync: false
       - key: VITE_COMMERCIAL_LAUNCH_ENABLED
         value: false
       - key: VITE_LEGAL_NAME
@@ -49,7 +53,157 @@ services:
       - path: /*
         name: Permissions-Policy
         value: camera=(), microphone=(), geolocation=(), payment=()
+      - path: /admin/*
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /admin
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /entreprise/*
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /entreprise
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /student/*
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /student
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /superadmin/*
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /superadmin
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /quiz/*
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /sondage/*
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /login
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /register*
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /forgot-password
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /account
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /guide
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /mes-notes
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /confidentialite
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /cgu
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /cgv
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
+      - path: /mentions-legales
+        name: X-Robots-Tag
+        value: noindex, nofollow, noarchive
     routes:
+      - type: redirect
+        source: /index.html
+        destination: /
+      - type: redirect
+        source: /qcm-en-ligne.html
+        destination: /qcm-en-ligne
+      - type: redirect
+        source: /evaluation-des-acquis.html
+        destination: /evaluation-des-acquis
+      - type: redirect
+        source: /developpement-soft-skills.html
+        destination: /developpement-soft-skills
+      - type: redirect
+        source: /ressources.html
+        destination: /ressources
+      - type: redirect
+        source: /demo-qcm.html
+        destination: /demo-qcm
       - type: rewrite
-        source: /*
+        source: /qcm-en-ligne
+        destination: /qcm-en-ligne.html
+      - type: rewrite
+        source: /evaluation-des-acquis
+        destination: /evaluation-des-acquis.html
+      - type: rewrite
+        source: /developpement-soft-skills
+        destination: /developpement-soft-skills.html
+      - type: rewrite
+        source: /ressources
+        destination: /ressources.html
+      - type: rewrite
+        source: /demo-qcm
+        destination: /demo-qcm.html
+      - type: rewrite
+        source: /login
+        destination: /index.html
+      - type: rewrite
+        source: /register*
+        destination: /index.html
+      - type: rewrite
+        source: /forgot-password
+        destination: /index.html
+      - type: rewrite
+        source: /account
+        destination: /index.html
+      - type: rewrite
+        source: /guide
+        destination: /index.html
+      - type: rewrite
+        source: /mes-notes
+        destination: /index.html
+      - type: rewrite
+        source: /confidentialite
+        destination: /index.html
+      - type: rewrite
+        source: /cgu
+        destination: /index.html
+      - type: rewrite
+        source: /cgv
+        destination: /index.html
+      - type: rewrite
+        source: /mentions-legales
+        destination: /index.html
+      - type: rewrite
+        source: /admin/*
+        destination: /index.html
+      - type: rewrite
+        source: /admin
+        destination: /index.html
+      - type: rewrite
+        source: /entreprise/*
+        destination: /index.html
+      - type: rewrite
+        source: /entreprise
+        destination: /index.html
+      - type: rewrite
+        source: /student/*
+        destination: /index.html
+      - type: rewrite
+        source: /student
+        destination: /index.html
+      - type: rewrite
+        source: /superadmin/*
+        destination: /index.html
+      - type: rewrite
+        source: /superadmin
+        destination: /index.html
+      - type: rewrite
+        source: /quiz/*
+        destination: /index.html
+      - type: rewrite
+        source: /sondage/*
         destination: /index.html

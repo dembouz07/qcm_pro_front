@@ -54,7 +54,8 @@ test('Vercel rend Sanctum first-party via des routes non mises en cache', () => 
 
   for (const source of ['/api/:path*', '/sanctum/:path*']) {
     const routeHeaders = vercelConfig.headers.find((entry) => entry.source === source)?.headers || [];
-    assert.deepEqual(routeHeaders, [{ key: 'Cache-Control', value: 'private, no-store' }]);
+    assert.ok(routeHeaders.some((header) => header.key === 'Cache-Control' && header.value === 'private, no-store'));
+    assert.ok(routeHeaders.some((header) => header.key === 'X-Robots-Tag' && header.value.includes('noindex')));
   }
 });
 

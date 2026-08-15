@@ -136,7 +136,7 @@ export default function DemoQuiz() {
             <section className="page narrow participant-demo-hero">
               <Link className="back-link" to="/"><FontAwesomeIcon icon={faArrowLeft} /> Retour à l’accueil</Link>
               <span className="eyebrow"><FontAwesomeIcon icon={faClipboardQuestion} /> Démonstration publique · sans compte</span>
-              <h1>Testez une évaluation comme un participant.</h1>
+              <h1>Testez un QCM en ligne sans créer de compte.</h1>
               <p>Cinq questions, une revue finale et aucun compte à créer. Vos réponses restent dans cet onglet pendant la démonstration.</p>
             </section>
 

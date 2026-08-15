@@ -12,7 +12,7 @@ const authTopbar = readFileSync(new URL('./components/AuthTopbar.jsx', import.me
 const viteConfig = readFileSync(new URL('../vite.config.js', import.meta.url), 'utf8');
 
 test('la page publique expose la promesse, les cibles et les prix décidés', () => {
-  assert.match(landing, /Mesurez et prouvez l’impact de vos formations/);
+  assert.match(landing, /Évaluez les acquis et documentez la progression/);
   assert.match(landing, /Centres de formation/);
   assert.match(landing, /Consultants RH/);
   assert.match(offers, /annual:\s*50000/);
@@ -29,6 +29,7 @@ test('les preuves fictives et les limites RH restent explicites', () => {
 test('la phase pilote ferme le libre-service et mesure des intentions dédupliquées', () => {
   assert.match(app, /path="\/register-admin" element=\{<RegisterAdmin \/>\}/);
   assert.match(app, /path="\/register-enterprise" element=\{<RegisterEnterprise \/>\}/);
+  assert.match(app, /path="\/qcm-en-ligne" element=\{<QcmOnline \/>\}/);
   assert.match(authTopbar, /to="\/register-admin"/);
   assert.match(authTopbar, /to="\/register-enterprise"/);
   assert.match(landing, /inscriptions et paiements en libre-service restent fermés/i);

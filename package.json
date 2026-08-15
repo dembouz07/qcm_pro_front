@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender-seo.mjs",
     "preview": "vite preview",
     "test": "npm run test:legacy && npm run test:ui",
-    "test:legacy": "node --test --test-concurrency=1 src/quizCreation.test.js src/offers.test.js src/usageGuides.test.js src/utils/academicYear.test.js src/utils/enterprise.test.js src/utils/resultFilters.test.js src/authSecurity.test.js src/publicPositioning.test.js",
+    "test:legacy": "node --test --test-concurrency=1 src/quizCreation.test.js src/offers.test.js src/usageGuides.test.js src/utils/academicYear.test.js src/utils/enterprise.test.js src/utils/resultFilters.test.js src/authSecurity.test.js src/publicPositioning.test.js src/seo.test.js",
     "test:ui": "vitest run",
     "test:ui:watch": "vitest",
     "test:e2e": "node scripts/run-participant-e2e.mjs",

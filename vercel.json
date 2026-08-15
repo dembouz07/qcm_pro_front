@@ -1,15 +1,30 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "headers": [
     {
       "source": "/api/:path*",
       "headers": [
-        { "key": "Cache-Control", "value": "private, no-store" }
+        { "key": "Cache-Control", "value": "private, no-store" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
       ]
     },
     {
       "source": "/sanctum/:path*",
       "headers": [
-        { "key": "Cache-Control", "value": "private, no-store" }
+        { "key": "Cache-Control", "value": "private, no-store" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+      ]
+    },
+    {
+      "source": "/:section(admin|entreprise|student|superadmin|quiz|sondage)/:path*",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+      ]
+    },
+    {
+      "source": "/:page(login|register|register-admin|register-enterprise|forgot-password|account|guide|mes-notes|confidentialite|cgu|cgv|mentions-legales)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
       ]
     },
     {
@@ -24,6 +39,14 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/qcm-en-ligne.html", "destination": "/qcm-en-ligne", "permanent": true },
+    { "source": "/evaluation-des-acquis.html", "destination": "/evaluation-des-acquis", "permanent": true },
+    { "source": "/developpement-soft-skills.html", "destination": "/developpement-soft-skills", "permanent": true },
+    { "source": "/ressources.html", "destination": "/ressources", "permanent": true },
+    { "source": "/demo-qcm.html", "destination": "/demo-qcm", "permanent": true }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -34,7 +57,31 @@
       "destination": "https://qcm-pro-back-main-ipg9zr.laravel.cloud/sanctum/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/qcm-en-ligne",
+      "destination": "/qcm-en-ligne.html"
+    },
+    {
+      "source": "/evaluation-des-acquis",
+      "destination": "/evaluation-des-acquis.html"
+    },
+    {
+      "source": "/developpement-soft-skills",
+      "destination": "/developpement-soft-skills.html"
+    },
+    {
+      "source": "/ressources",
+      "destination": "/ressources.html"
+    },
+    {
+      "source": "/demo-qcm",
+      "destination": "/demo-qcm.html"
+    },
+    {
+      "source": "/:section(admin|entreprise|student|superadmin|quiz|sondage)/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:page(login|register|register-admin|register-enterprise|forgot-password|account|guide|mes-notes|confidentialite|cgu|cgv|mentions-legales)",
       "destination": "/index.html"
     }
   ]

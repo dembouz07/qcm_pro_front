@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,10 +15,10 @@ const commercialLaunchEnabled = import.meta.env.VITE_COMMERCIAL_LAUNCH_ENABLED =
 
 const professionalTracks = [
   {
-    id: 'knowledge', label: 'Évaluation des acquis', icon: faClipboardQuestion,
-    title: 'Diagnostiquez, évaluez et restituez par cohorte.',
+    id: 'knowledge', label: 'QCM en ligne et évaluation des acquis', icon: faClipboardQuestion,
+    title: 'Créez vos QCM, évaluez et restituez par cohorte.',
     description: 'QCM manuels, importés ou progressifs, liens publics sans compte, corrections, statistiques et rapports formateur.',
-    to: '/evaluation-des-acquis', cta: 'Découvrir l’évaluation des acquis',
+    to: '/qcm-en-ligne', cta: 'Découvrir le logiciel de QCM en ligne',
     points: ['QCM de positionnement ou évaluation finale', 'Classes, cohortes et diffusion publique', 'Résultats individuels et rapports'],
   },
   {
@@ -73,7 +73,7 @@ export default function LandingImpact() {
     <div className="landing landing-v2 impact-landing">
       <motion.header className="landing-nav" initial={{ y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.45, ease }}>
         <Link className="brand landing-brand" to="/" aria-label="Accueil Check Performance"><picture className="brand-picture"><source media="(max-width: 980px)" srcSet="/cp.svg?v=2" /><img src="/cp.svg?v=2" className="brand-logo" alt="Check Performance" /></picture></Link>
-        <nav className="landing-nav-links" aria-label="Navigation de présentation"><a href="#solutions">Solutions</a><a href="#preuves">Preuves</a><a href="#tarifs">Tarifs</a></nav>
+        <nav className="landing-nav-links" aria-label="Navigation de présentation"><Link to="/qcm-en-ligne">QCM en ligne</Link><Link to="/developpement-soft-skills">Soft skills</Link><a href="#tarifs">Tarifs</a></nav>
         <PublicMobileMenu landing />
         <div className="landing-nav-actions"><Link className="secondary-btn" to="/login"><FontAwesomeIcon icon={faRightToBracket} /> Connexion</Link><a className="primary-btn" href={bookingUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackPublicIntent('demo_booking_clicked', 'landing')}><FontAwesomeIcon icon={faCalendarCheck} /> Réserver une démo</a></div>
       </motion.header>
@@ -81,8 +81,8 @@ export default function LandingImpact() {
       <section className="landing-hero">
         <motion.div className="landing-hero-text" initial="hidden" animate="show" variants={stagger}>
           <motion.span className="landing-badge" variants={fadeUp}><FontAwesomeIcon icon={faChartLine} /> Phase pilote · mesure d’impact T0 à T+6</motion.span>
-          <motion.h1 variants={fadeUp}>Mesurez et prouvez l’impact de vos formations. <span>Du diagnostic initial au suivi à six mois.</span></motion.h1>
-          <motion.p variants={fadeUp}>Check Performance aide les centres de formation, consultants RH et organismes d’employabilité à évaluer les acquis, documenter la progression et produire des rapports compréhensibles.</motion.p>
+          <motion.h1 variants={fadeUp}>Évaluez les acquis et documentez la progression. <span>Du QCM en ligne au suivi des soft skills.</span></motion.h1>
+          <motion.p variants={fadeUp}>Check Performance aide les centres de formation, consultants RH et organismes d’employabilité à créer des QCM en ligne, analyser les résultats et suivre les compétences comportementales.</motion.p>
           <motion.div className="landing-cta" variants={fadeUp}><a className="primary-btn large" href={bookingUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackPublicIntent('demo_booking_clicked', 'landing')}>Réserver une démonstration <FontAwesomeIcon icon={faArrowRight} /></a><Link className="secondary-btn large" to="/demo-qcm">Tester le QCM sans compte</Link></motion.div>
           <motion.div className="hero-proof" variants={fadeUp}><span><FontAwesomeIcon icon={faCircleCheck} /> Web responsive · PWA en validation</span><span><FontAwesomeIcon icon={faCircleCheck} /> Maquettes de rapports visibles</span><span><FontAwesomeIcon icon={faCircleCheck} /> Décision humaine obligatoire</span></motion.div>
           <motion.small className="hero-causality-note" variants={fadeUp}>« Prouver » signifie ici documenter des résultats et une progression observée. L’attribution causale à une formation exige un protocole d’évaluation complémentaire.</motion.small>

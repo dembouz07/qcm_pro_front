@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
 import Navbar from './components/Navbar.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import SeoManager from './components/SeoManager.jsx';
 import Landing from './pages/LandingImpact.jsx';
 import { homePathFor } from './utils/homePath.js';
 
@@ -14,6 +15,8 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPasswordSecure.jsx'));
 const DemoQuiz = lazy(() => import('./pages/DemoQuiz.jsx'));
 const Resources = lazy(() => import('./pages/Resources.jsx'));
 const LegalPage = lazy(() => import('./pages/LegalPage.jsx'));
+const NotFound = lazy(() => import('./pages/NotFound.jsx'));
+const QcmOnline = lazy(() => import('./pages/ProfessionalSolutions.jsx').then((module) => ({ default: module.QcmOnline })));
 const KnowledgeAssessment = lazy(() => import('./pages/ProfessionalSolutions.jsx').then((module) => ({ default: module.KnowledgeAssessment })));
 const SoftSkillsDevelopment = lazy(() => import('./pages/ProfessionalSolutions.jsx').then((module) => ({ default: module.SoftSkillsDevelopment })));
 const Account = lazy(() => import('./pages/Account.jsx'));
@@ -55,7 +58,7 @@ const EnterpriseSubscription = lazy(() => import('./pages/enterprise/EnterpriseS
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
-  if (loading) return <div className="center-screen">Chargement...</div>;
+  if (loading) return <Landing />;
   if (!user) return <Landing />;
   if (user.role === 'superadmin') return <Navigate to="/superadmin" replace />;
   return <Navigate to={homePathFor(user)} replace />;
@@ -63,13 +66,16 @@ function HomeRedirect() {
 
 export default function App() {
   return (
-    <div className="app-shell">
-      <Navbar />
-      <main className="main-content">
-        <Suspense fallback={<div className="center-screen">Chargement...</div>}>
-          <Routes>
-              <Route path="/" element={<HomeRedirect />} />
+    <>
+      <SeoManager />
+      <div className="app-shell">
+        <Navbar />
+        <div className="main-content">
+          <Suspense fallback={<div className="center-screen">Chargement...</div>}>
+            <Routes>
+          <Route path="/" element={<HomeRedirect />} />
           <Route path="/demo-qcm" element={<DemoQuiz />} />
+          <Route path="/qcm-en-ligne" element={<QcmOnline />} />
           <Route path="/evaluation-des-acquis" element={<KnowledgeAssessment />} />
           <Route path="/developpement-soft-skills" element={<SoftSkillsDevelopment />} />
           <Route path="/ressources" element={<Resources />} />
@@ -129,9 +135,11 @@ export default function App() {
           <Route path="/superadmin" element={<ProtectedRoute role="superadmin"><SuperAdminDashboard /></ProtectedRoute>} />
           <Route path="/superadmin/revenue" element={<ProtectedRoute role="superadmin"><SuperAdminRevenue /></ProtectedRoute>} />
           <Route path="/superadmin/users" element={<ProtectedRoute role="superadmin"><SuperAdminUsers /></ProtectedRoute>} />
-          </Routes>
-        </Suspense>
-      </main>
-    </div>
+          <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </div>
+    </>
   );
 }

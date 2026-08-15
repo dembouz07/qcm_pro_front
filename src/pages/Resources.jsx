@@ -39,8 +39,8 @@ export default function Resources() {
       <main>
         <section className="public-page-hero compact">
           <span className="eyebrow"><FontAwesomeIcon icon={faFlask} /> Preuves & méthodologie</span>
-          <h1>Vérifiez le produit avant de nous faire confiance.</h1>
-          <p>Testez le parcours participant, consultez des rapports illustratifs et comprenez exactement comment la grille Mindset est utilisée — limites comprises.</p>
+          <h1>Guides, exemples et méthode Check Performance.</h1>
+          <p>Testez le QCM en ligne, consultez des rapports illustratifs et comprenez exactement comment la grille soft skills est utilisée — limites comprises.</p>
           <div className="landing-cta">
             <Link className="primary-btn large" to="/demo-qcm">Tester le QCM sans compte <FontAwesomeIcon icon={faArrowRight} /></Link>
             <a className="secondary-btn large" href={bookingUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackPublicIntent('demo_booking_clicked', 'resources')}>Réserver une démonstration</a>

@@ -1,0 +1,64 @@
+/api/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+/sanctum/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/admin
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/entreprise/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/entreprise
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/student/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/student
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/superadmin/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/superadmin
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/quiz/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/sondage/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/login
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/register*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/forgot-password
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/account
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/guide
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/mes-notes
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/confidentialite
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/cgu
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/cgv
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/mentions-legales
+  X-Robots-Tag: noindex, nofollow, noarchive
